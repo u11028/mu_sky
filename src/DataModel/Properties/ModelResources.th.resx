@@ -1,0 +1,5129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <data name="Account_TypeCaption" xml:space="preserve">
+    <value>ไอดี</value>
+  </data>
+  <data name="Account_TypeCaptionPlural" xml:space="preserve">
+    <value>ไอดี</value>
+  </data>
+  <data name="Account_LoginName_Caption" xml:space="preserve">
+    <value>ชื่อล็อกอิน</value>
+  </data>
+  <data name="Account_PasswordHash_Caption" xml:space="preserve">
+    <value>รหัสผ่าน (แฮช)</value>
+  </data>
+  <data name="Account_SecurityCode_Caption" xml:space="preserve">
+    <value>รหัสความปลอดภัย</value>
+  </data>
+  <data name="Account_EMail_Caption" xml:space="preserve">
+    <value>อีเมล</value>
+  </data>
+  <data name="Account_LanguageIsoCode_Caption" xml:space="preserve">
+    <value>รหัสภาษา</value>
+  </data>
+  <data name="Account_ChatBanUntil_Caption" xml:space="preserve">
+    <value>ห้ามแชทถึง</value>
+  </data>
+  <data name="Account_UnlockedCharacterClasses_Caption" xml:space="preserve">
+    <value>คลาสตัวละครที่ปลดล็อก</value>
+  </data>
+  <data name="Account_RegistrationDate_Caption" xml:space="preserve">
+    <value>วันที่สมัคร</value>
+  </data>
+  <data name="Account_State_Caption" xml:space="preserve">
+    <value>สถานะ</value>
+  </data>
+  <data name="Account_TimeZone_Caption" xml:space="preserve">
+    <value>เขตเวลา</value>
+  </data>
+  <data name="Account_VaultPassword_Caption" xml:space="preserve">
+    <value>รหัสโกดัง</value>
+  </data>
+  <data name="Account_Vault_Caption" xml:space="preserve">
+    <value>โกดัง</value>
+  </data>
+  <data name="Account_IsVaultExtended_Caption" xml:space="preserve">
+    <value>ขยายโกดังแล้ว</value>
+  </data>
+  <data name="Account_WCoinC_Caption" xml:space="preserve">
+    <value>WCoin (C)</value>
+  </data>
+  <data name="Account_WCoinC_Description" xml:space="preserve">
+    <value>WCoin (C) ที่มีสำหรับ Cash shop</value>
+  </data>
+  <data name="Account_WCoinP_Caption" xml:space="preserve">
+    <value>WCoin (P)</value>
+  </data>
+  <data name="Account_WCoinP_Description" xml:space="preserve">
+    <value>WCoin (P) ที่มีสำหรับ Cash shop</value>
+  </data>
+  <data name="Account_GoblinPoints_Caption" xml:space="preserve">
+    <value>Goblin Points</value>
+  </data>
+  <data name="Account_GoblinPoints_Description" xml:space="preserve">
+    <value>Goblin Points ที่มีสำหรับ Cash shop</value>
+  </data>
+  <data name="Account_IsTemplate_Caption" xml:space="preserve">
+    <value>เป็นไอดีแม่แบบ</value>
+  </data>
+  <data name="Account_IsTemplate_Description" xml:space="preserve">
+    <value>ไอดีแม่แบบล็อกอินซ้อนได้หลายครั้งเพื่อทดสอบ และแก้ไขไม่ได้</value>
+  </data>
+  <data name="Account_Characters_Caption" xml:space="preserve">
+    <value>ตัวละคร</value>
+  </data>
+  <data name="Account_Attributes_Caption" xml:space="preserve">
+    <value>ค่าสถานะ</value>
+  </data>
+  <data name="AccountState_TypeCaption" xml:space="preserve">
+    <value>สถานะไอดี</value>
+  </data>
+  <data name="AccountState_Normal_Caption" xml:space="preserve">
+    <value>ปกติ</value>
+  </data>
+  <data name="AccountState_Spectator_Caption" xml:space="preserve">
+    <value>ผู้ชม</value>
+  </data>
+  <data name="AccountState_GameMaster_Caption" xml:space="preserve">
+    <value>GM</value>
+  </data>
+  <data name="AccountState_GameMasterInvisible_Caption" xml:space="preserve">
+    <value>GM (ล่องหน)</value>
+  </data>
+  <data name="AccountState_Banned_Caption" xml:space="preserve">
+    <value>ถูกแบน</value>
+  </data>
+  <data name="AccountState_TemporarilyBanned_Caption" xml:space="preserve">
+    <value>ถูกแบนชั่วคราว</value>
+  </data>
+  <data name="AggregateRootAttribute_TypeCaption" xml:space="preserve">
+    <value>Aggregate Root Attribute</value>
+  </data>
+  <data name="AggregateRootAttribute_TypeCaptionPlural" xml:space="preserve">
+    <value>Aggregate Root Attributes</value>
+  </data>
+  <data name="AppearanceData_TypeCaption" xml:space="preserve">
+    <value>ข้อมูลรูปลักษณ์</value>
+  </data>
+  <data name="AppearanceData_TypeCaptionPlural" xml:space="preserve">
+    <value>ข้อมูลรูปลักษณ์</value>
+  </data>
+  <data name="AppearanceData_CharacterClass_Caption" xml:space="preserve">
+    <value>คลาสตัวละคร</value>
+  </data>
+  <data name="AppearanceData_CharacterStatus_Caption" xml:space="preserve">
+    <value>สถานะตัวละคร</value>
+  </data>
+  <data name="AppearanceData_Pose_Caption" xml:space="preserve">
+    <value>ท่าทาง</value>
+  </data>
+  <data name="AppearanceData_FullAncientSetEquipped_Caption" xml:space="preserve">
+    <value>ใส่เซ็ต Ancient ครบ</value>
+  </data>
+  <data name="AppearanceData_EquippedItems_Caption" xml:space="preserve">
+    <value>ไอเทมที่สวมใส่</value>
+  </data>
+  <data name="AreaSkillSettings_TypeCaption" xml:space="preserve">
+    <value>ตั้งค่าสกิลวงกว้าง</value>
+  </data>
+  <data name="AreaSkillSettings_TypeCaptionPlural" xml:space="preserve">
+    <value>ตั้งค่าสกิลวงกว้าง</value>
+  </data>
+  <data name="AreaSkillSettings_UseFrustumFilter_Caption" xml:space="preserve">
+    <value>ใช้ตัวกรองรูปกรวย</value>
+  </data>
+  <data name="AreaSkillSettings_FrustumStartWidth_Caption" xml:space="preserve">
+    <value>ความกว้างเริ่มต้นของกรวย</value>
+  </data>
+  <data name="AreaSkillSettings_FrustumEndWidth_Caption" xml:space="preserve">
+    <value>ความกว้างปลายกรวย</value>
+  </data>
+  <data name="AreaSkillSettings_FrustumDistance_Caption" xml:space="preserve">
+    <value>ระยะของกรวย</value>
+  </data>
+  <data name="AreaSkillSettings_UseTargetAreaFilter_Caption" xml:space="preserve">
+    <value>ใช้ตัวกรองพื้นที่เป้าหมาย</value>
+  </data>
+  <data name="AreaSkillSettings_TargetAreaDiameter_Caption" xml:space="preserve">
+    <value>เส้นผ่านศูนย์กลางพื้นที่เป้าหมาย</value>
+  </data>
+  <data name="AreaSkillSettings_UseDeferredHits_Caption" xml:space="preserve">
+    <value>ใช้การโจมตีแบบหน่วงเวลา</value>
+  </data>
+  <data name="AreaSkillSettings_DelayPerOneDistance_Caption" xml:space="preserve">
+    <value>หน่วงเวลาต่อระยะ 1 ช่อง</value>
+  </data>
+  <data name="AreaSkillSettings_DelayBetweenHits_Caption" xml:space="preserve">
+    <value>หน่วงเวลาระหว่างการโจมตี</value>
+  </data>
+  <data name="AreaSkillSettings_MinimumNumberOfHitsPerTarget_Caption" xml:space="preserve">
+    <value>จำนวนครั้งโจมตีต่ำสุดต่อเป้าหมาย</value>
+  </data>
+  <data name="AreaSkillSettings_MaximumNumberOfHitsPerTarget_Caption" xml:space="preserve">
+    <value>จำนวนครั้งโจมตีสูงสุดต่อเป้าหมาย</value>
+  </data>
+  <data name="AreaSkillSettings_MaximumNumberOfHitsPerAttack_Caption" xml:space="preserve">
+    <value>จำนวนครั้งโจมตีสูงสุดต่อการโจมตี</value>
+  </data>
+  <data name="AreaSkillSettings_HitChancePerDistanceMultiplier_Caption" xml:space="preserve">
+    <value>ตัวคูณโอกาสโดนตามระยะ</value>
+  </data>
+  <data name="AssignableExtensions_TypeCaption" xml:space="preserve">
+    <value>ส่วนขยายที่กำหนดได้</value>
+  </data>
+  <data name="AssignableExtensions_TypeCaptionPlural" xml:space="preserve">
+    <value>ส่วนขยายที่กำหนดได้</value>
+  </data>
+  <data name="AttributeRequirement_TypeCaption" xml:space="preserve">
+    <value>เงื่อนไขค่าสถานะ</value>
+  </data>
+  <data name="AttributeRequirement_TypeCaptionPlural" xml:space="preserve">
+    <value>เงื่อนไขค่าสถานะ</value>
+  </data>
+  <data name="AttributeRequirement_Attribute_Caption" xml:space="preserve">
+    <value>ค่าสถานะ</value>
+  </data>
+  <data name="AttributeRequirement_MinimumValue_Caption" xml:space="preserve">
+    <value>ค่าต่ำสุด</value>
+  </data>
+  <data name="BattleType_TypeCaption" xml:space="preserve">
+    <value>ประเภทการต่อสู้</value>
+  </data>
+  <data name="BattleType_Normal_Caption" xml:space="preserve">
+    <value>ปกติ</value>
+  </data>
+  <data name="BattleType_Soccer_Caption" xml:space="preserve">
+    <value>ฟุตบอล</value>
+  </data>
+  <data name="BattleZoneDefinition_TypeCaption" xml:space="preserve">
+    <value>โซนต่อสู้</value>
+  </data>
+  <data name="BattleZoneDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>โซนต่อสู้</value>
+  </data>
+  <data name="BattleZoneDefinition_Type_Caption" xml:space="preserve">
+    <value>ประเภท</value>
+  </data>
+  <data name="BattleZoneDefinition_LeftTeamSpawnPointX_Caption" xml:space="preserve">
+    <value>จุดเกิดทีมซ้าย X</value>
+  </data>
+  <data name="BattleZoneDefinition_LeftTeamSpawnPointY_Caption" xml:space="preserve">
+    <value>จุดเกิดทีมซ้าย Y</value>
+  </data>
+  <data name="BattleZoneDefinition_RightTeamSpawnPointX_Caption" xml:space="preserve">
+    <value>จุดเกิดทีมขวา X</value>
+  </data>
+  <data name="BattleZoneDefinition_RightTeamSpawnPointY_Caption" xml:space="preserve">
+    <value>จุดเกิดทีมขวา Y</value>
+  </data>
+  <data name="BattleZoneDefinition_Ground_Caption" xml:space="preserve">
+    <value>สนาม</value>
+  </data>
+  <data name="BattleZoneDefinition_LeftGoal_Caption" xml:space="preserve">
+    <value>ประตูซ้าย</value>
+  </data>
+  <data name="BattleZoneDefinition_RightGoal_Caption" xml:space="preserve">
+    <value>ประตูขวา</value>
+  </data>
+  <data name="Character_TypeCaption" xml:space="preserve">
+    <value>ตัวละคร</value>
+  </data>
+  <data name="Character_TypeCaptionPlural" xml:space="preserve">
+    <value>ตัวละคร</value>
+  </data>
+  <data name="Character_Id_Caption" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="Character_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="Character_CharacterClass_Caption" xml:space="preserve">
+    <value>คลาสตัวละคร</value>
+  </data>
+  <data name="Character_CharacterSlot_Caption" xml:space="preserve">
+    <value>ช่องตัวละคร</value>
+  </data>
+  <data name="Character_CreateDate_Caption" xml:space="preserve">
+    <value>วันที่สร้าง</value>
+  </data>
+  <data name="Character_Experience_Caption" xml:space="preserve">
+    <value>ค่าประสบการณ์</value>
+  </data>
+  <data name="Character_MasterExperience_Caption" xml:space="preserve">
+    <value>ค่าประสบการณ์มาสเตอร์</value>
+  </data>
+  <data name="Character_LevelUpPoints_Caption" xml:space="preserve">
+    <value>แต้มอัปสเตตัส</value>
+  </data>
+  <data name="Character_MasterLevelUpPoints_Caption" xml:space="preserve">
+    <value>แต้มมาสเตอร์</value>
+  </data>
+  <data name="Character_CurrentMap_Caption" xml:space="preserve">
+    <value>แผนที่ปัจจุบัน</value>
+  </data>
+  <data name="Character_PositionX_Caption" xml:space="preserve">
+    <value>ตำแหน่ง X</value>
+  </data>
+  <data name="Character_PositionY_Caption" xml:space="preserve">
+    <value>ตำแหน่ง Y</value>
+  </data>
+  <data name="Character_PlayerKillCount_Caption" xml:space="preserve">
+    <value>จำนวนการฆ่าผู้เล่น</value>
+  </data>
+  <data name="Character_StateRemainingSeconds_Caption" xml:space="preserve">
+    <value>เวลาสถานะที่เหลือ (วินาที)</value>
+  </data>
+  <data name="Character_State_Caption" xml:space="preserve">
+    <value>สถานะ (PK)</value>
+  </data>
+  <data name="Character_CharacterStatus_Caption" xml:space="preserve">
+    <value>สถานะตัวละคร</value>
+  </data>
+  <data name="Character_Pose_Caption" xml:space="preserve">
+    <value>ท่าทาง</value>
+  </data>
+  <data name="Character_UsedFruitPoints_Caption" xml:space="preserve">
+    <value>แต้มผลไม้ที่ใช้</value>
+  </data>
+  <data name="Character_UsedNegFruitPoints_Caption" xml:space="preserve">
+    <value>แต้มผลไม้ลบที่ใช้</value>
+  </data>
+  <data name="Character_InventoryExtensions_Caption" xml:space="preserve">
+    <value>ส่วนขยายช่องเก็บของ</value>
+  </data>
+  <data name="Character_KeyConfiguration_Caption" xml:space="preserve">
+    <value>ตั้งค่าปุ่มลัด</value>
+  </data>
+  <data name="Character_MuHelperConfiguration_Caption" xml:space="preserve">
+    <value>ตั้งค่า MU Helper</value>
+  </data>
+  <data name="Character_StoreName_Caption" xml:space="preserve">
+    <value>ชื่อร้านค้า</value>
+  </data>
+  <data name="Character_IsStoreOpened_Caption" xml:space="preserve">
+    <value>เปิดร้านค้าอยู่</value>
+  </data>
+  <data name="Character_Attributes_Caption" xml:space="preserve">
+    <value>ค่าสถานะ</value>
+  </data>
+  <data name="Character_Letters_Caption" xml:space="preserve">
+    <value>จดหมาย</value>
+  </data>
+  <data name="Character_LearnedSkills_Caption" xml:space="preserve">
+    <value>สกิลที่เรียนแล้ว</value>
+  </data>
+  <data name="Character_Inventory_Caption" xml:space="preserve">
+    <value>ช่องเก็บของ</value>
+  </data>
+  <data name="Character_DropItemGroups_Caption" xml:space="preserve">
+    <value>กลุ่มไอเทมดรอป</value>
+  </data>
+  <data name="Character_QuestStates_Caption" xml:space="preserve">
+    <value>สถานะเควสต์</value>
+  </data>
+  <data name="CharacterClass_TypeCaption" xml:space="preserve">
+    <value>คลาสตัวละคร</value>
+  </data>
+  <data name="CharacterClass_TypeCaptionPlural" xml:space="preserve">
+    <value>คลาสตัวละคร</value>
+  </data>
+  <data name="CharacterClass_Number_Caption" xml:space="preserve">
+    <value>หมายเลข</value>
+  </data>
+  <data name="CharacterClass_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="CharacterClass_CanGetCreated_Caption" xml:space="preserve">
+    <value>สร้างได้</value>
+  </data>
+  <data name="CharacterClass_LevelRequirementByCreation_Caption" xml:space="preserve">
+    <value>เลเวลที่ต้องมีเพื่อสร้าง</value>
+  </data>
+  <data name="CharacterClass_CreationAllowedFlag_Caption" xml:space="preserve">
+    <value>แฟล็กอนุญาตการสร้าง</value>
+  </data>
+  <data name="CharacterClass_NextGenerationClass_Caption" xml:space="preserve">
+    <value>คลาสขั้นถัดไป</value>
+  </data>
+  <data name="CharacterClass_IsMasterClass_Caption" xml:space="preserve">
+    <value>เป็นคลาสมาสเตอร์</value>
+  </data>
+  <data name="CharacterClass_LevelWarpRequirementReductionPercent_Caption" xml:space="preserve">
+    <value>ลดเลเวลที่ต้องใช้วาร์ป (%)</value>
+  </data>
+  <data name="CharacterClass_FruitCalculation_Caption" xml:space="preserve">
+    <value>การคำนวณผลไม้</value>
+  </data>
+  <data name="CharacterClass_StatAttributes_Caption" xml:space="preserve">
+    <value>ค่าสเตตัส</value>
+  </data>
+  <data name="CharacterClass_AttributeCombinations_Caption" xml:space="preserve">
+    <value>สูตรค่าสถานะ</value>
+  </data>
+  <data name="CharacterClass_BaseAttributeValues_Caption" xml:space="preserve">
+    <value>ค่าสถานะพื้นฐาน</value>
+  </data>
+  <data name="CharacterClass_HomeMap_Caption" xml:space="preserve">
+    <value>แผนที่บ้าน</value>
+  </data>
+  <data name="CharacterClass_ComboDefinition_Caption" xml:space="preserve">
+    <value>คอมโบ</value>
+  </data>
+  <data name="CharacterPose_TypeCaption" xml:space="preserve">
+    <value>ท่าทางตัวละคร</value>
+  </data>
+  <data name="CharacterPose_Standing_Caption" xml:space="preserve">
+    <value>ยืน</value>
+  </data>
+  <data name="CharacterPose_Sitting_Caption" xml:space="preserve">
+    <value>นั่ง</value>
+  </data>
+  <data name="CharacterPose_Leaning_Caption" xml:space="preserve">
+    <value>พิง</value>
+  </data>
+  <data name="CharacterPose_Hanging_Caption" xml:space="preserve">
+    <value>ห้อย</value>
+  </data>
+  <data name="CharacterQuestState_TypeCaption" xml:space="preserve">
+    <value>สถานะเควสต์ของตัวละคร</value>
+  </data>
+  <data name="CharacterQuestState_TypeCaptionPlural" xml:space="preserve">
+    <value>สถานะเควสต์ของตัวละคร</value>
+  </data>
+  <data name="CharacterQuestState_Group_Caption" xml:space="preserve">
+    <value>กลุ่ม</value>
+  </data>
+  <data name="CharacterQuestState_ClientActionPerformed_Caption" xml:space="preserve">
+    <value>ทำการกระทำฝั่งตัวเกมแล้ว</value>
+  </data>
+  <data name="CharacterQuestState_LastFinishedQuest_Caption" xml:space="preserve">
+    <value>เควสต์ล่าสุดที่จบ</value>
+  </data>
+  <data name="CharacterQuestState_ActiveQuest_Caption" xml:space="preserve">
+    <value>เควสต์ที่ทำอยู่</value>
+  </data>
+  <data name="CharacterQuestState_RequirementStates_Caption" xml:space="preserve">
+    <value>สถานะเงื่อนไข</value>
+  </data>
+  <data name="CharacterStatus_TypeCaption" xml:space="preserve">
+    <value>สถานะตัวละคร</value>
+  </data>
+  <data name="CharacterStatus_Normal_Caption" xml:space="preserve">
+    <value>ปกติ</value>
+  </data>
+  <data name="CharacterStatus_Banned_Caption" xml:space="preserve">
+    <value>ถูกแบน</value>
+  </data>
+  <data name="CharacterStatus_GameMaster_Caption" xml:space="preserve">
+    <value>GM</value>
+  </data>
+  <data name="ChatServerDefinition_TypeCaption" xml:space="preserve">
+    <value>Chat Server</value>
+  </data>
+  <data name="ChatServerDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>Chat Server</value>
+  </data>
+  <data name="ChatServerDefinition_ServerId_Caption" xml:space="preserve">
+    <value>Server Id</value>
+  </data>
+  <data name="ChatServerDefinition_Description_Caption" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="ChatServerDefinition_MaximumConnections_Caption" xml:space="preserve">
+    <value>การเชื่อมต่อสูงสุด</value>
+  </data>
+  <data name="ChatServerDefinition_ClientTimeout_Caption" xml:space="preserve">
+    <value>เวลาหมดการเชื่อมต่อ</value>
+  </data>
+  <data name="ChatServerDefinition_ClientCleanUpInterval_Caption" xml:space="preserve">
+    <value>รอบล้างการเชื่อมต่อ</value>
+  </data>
+  <data name="ChatServerDefinition_RoomCleanUpInterval_Caption" xml:space="preserve">
+    <value>รอบล้างห้องแชท</value>
+  </data>
+  <data name="ChatServerDefinition_Endpoints_Caption" xml:space="preserve">
+    <value>ปลายทาง</value>
+  </data>
+  <data name="ChatServerEndpoint_TypeCaption" xml:space="preserve">
+    <value>ปลายทาง Chat Server</value>
+  </data>
+  <data name="ChatServerEndpoint_TypeCaptionPlural" xml:space="preserve">
+    <value>ปลายทาง Chat Server</value>
+  </data>
+  <data name="CombinationBonusRequirement_TypeCaption" xml:space="preserve">
+    <value>เงื่อนไขโบนัสผสม</value>
+  </data>
+  <data name="CombinationBonusRequirement_TypeCaptionPlural" xml:space="preserve">
+    <value>เงื่อนไขโบนัสผสม</value>
+  </data>
+  <data name="CombinationBonusRequirement_OptionType_Caption" xml:space="preserve">
+    <value>ประเภทออปชัน</value>
+  </data>
+  <data name="CombinationBonusRequirement_SubOptionType_Caption" xml:space="preserve">
+    <value>ประเภทออปชันย่อย</value>
+  </data>
+  <data name="CombinationBonusRequirement_MinimumCount_Caption" xml:space="preserve">
+    <value>จำนวนขั้นต่ำ</value>
+  </data>
+  <data name="ConfigurationUpdate_TypeCaption" xml:space="preserve">
+    <value>อัปเดตการตั้งค่า</value>
+  </data>
+  <data name="ConfigurationUpdate_TypeCaptionPlural" xml:space="preserve">
+    <value>อัปเดตการตั้งค่า</value>
+  </data>
+  <data name="ConfigurationUpdate_Key_Caption" xml:space="preserve">
+    <value>คีย์</value>
+  </data>
+  <data name="ConfigurationUpdate_Version_Caption" xml:space="preserve">
+    <value>เวอร์ชัน</value>
+  </data>
+  <data name="ConfigurationUpdate_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="ConfigurationUpdate_Description_Caption" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="ConfigurationUpdate_CreatedAt_Caption" xml:space="preserve">
+    <value>สร้างเมื่อ</value>
+  </data>
+  <data name="ConfigurationUpdate_UpdatedAt_Caption" xml:space="preserve">
+    <value>อัปเดตเมื่อ</value>
+  </data>
+  <data name="ConfigurationUpdate_InstalledAt_Caption" xml:space="preserve">
+    <value>ติดตั้งเมื่อ</value>
+  </data>
+  <data name="ConfigurationUpdateState_TypeCaption" xml:space="preserve">
+    <value>สถานะอัปเดตการตั้งค่า</value>
+  </data>
+  <data name="ConfigurationUpdateState_TypeCaptionPlural" xml:space="preserve">
+    <value>สถานะอัปเดตการตั้งค่า</value>
+  </data>
+  <data name="ConfigurationUpdateState_InitializationKey_Caption" xml:space="preserve">
+    <value>คีย์การติดตั้ง</value>
+  </data>
+  <data name="ConnectServerDefinition_TypeCaption" xml:space="preserve">
+    <value>Connect Server</value>
+  </data>
+  <data name="ConnectServerDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>Connect Server</value>
+  </data>
+  <data name="ConnectServerDefinition_Id_Caption" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="ConnectServerDefinition_ConfigurationId_Caption" xml:space="preserve">
+    <value>Id การตั้งค่า</value>
+  </data>
+  <data name="ConnectServerDefinition_ServerId_Caption" xml:space="preserve">
+    <value>Server Id</value>
+  </data>
+  <data name="ConnectServerDefinition_Description_Caption" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="ConnectServerDefinition_Client_Caption" xml:space="preserve">
+    <value>ตัวเกม</value>
+  </data>
+  <data name="ConnectServerDefinition_DisconnectOnUnknownPacket_Caption" xml:space="preserve">
+    <value>ตัดการเชื่อมต่อเมื่อเจอแพ็กเก็ตไม่รู้จัก</value>
+  </data>
+  <data name="ConnectServerDefinition_MaximumReceiveSize_Caption" xml:space="preserve">
+    <value>ขนาดรับสูงสุด</value>
+  </data>
+  <data name="ConnectServerDefinition_ClientListenerPort_Caption" xml:space="preserve">
+    <value>พอร์ตรอรับตัวเกม</value>
+  </data>
+  <data name="ConnectServerDefinition_Timeout_Caption" xml:space="preserve">
+    <value>เวลาหมดการเชื่อมต่อ</value>
+  </data>
+  <data name="ConnectServerDefinition_CurrentPatchVersion_Caption" xml:space="preserve">
+    <value>เวอร์ชันแพตช์ปัจจุบัน</value>
+  </data>
+  <data name="ConnectServerDefinition_PatchAddress_Caption" xml:space="preserve">
+    <value>ที่อยู่แพตช์</value>
+  </data>
+  <data name="ConnectServerDefinition_MaxConnectionsPerAddress_Caption" xml:space="preserve">
+    <value>การเชื่อมต่อสูงสุดต่อ IP</value>
+  </data>
+  <data name="ConnectServerDefinition_CheckMaxConnectionsPerAddress_Caption" xml:space="preserve">
+    <value>ตรวจการเชื่อมต่อสูงสุดต่อ IP</value>
+  </data>
+  <data name="ConnectServerDefinition_MaxConnections_Caption" xml:space="preserve">
+    <value>การเชื่อมต่อสูงสุด</value>
+  </data>
+  <data name="ConnectServerDefinition_ListenerBacklog_Caption" xml:space="preserve">
+    <value>คิวรอรับการเชื่อมต่อ</value>
+  </data>
+  <data name="ConnectServerDefinition_MaxFtpRequests_Caption" xml:space="preserve">
+    <value>คำขอ FTP สูงสุด</value>
+  </data>
+  <data name="ConnectServerDefinition_MaxIpRequests_Caption" xml:space="preserve">
+    <value>คำขอ IP สูงสุด</value>
+  </data>
+  <data name="ConnectServerDefinition_MaxServerListRequests_Caption" xml:space="preserve">
+    <value>คำขอรายการเซิร์ฟเวอร์สูงสุด</value>
+  </data>
+  <data name="DamageType_TypeCaption" xml:space="preserve">
+    <value>ประเภทความเสียหาย</value>
+  </data>
+  <data name="DamageType_None_Caption" xml:space="preserve">
+    <value>ไม่มี</value>
+  </data>
+  <data name="DamageType_Physical_Caption" xml:space="preserve">
+    <value>กายภาพ</value>
+  </data>
+  <data name="DamageType_Wizardry_Caption" xml:space="preserve">
+    <value>เวทมนตร์</value>
+  </data>
+  <data name="DamageType_Curse_Caption" xml:space="preserve">
+    <value>คำสาป</value>
+  </data>
+  <data name="DamageType_SummonedMonster_Caption" xml:space="preserve">
+    <value>มอนสเตอร์อัญเชิญ</value>
+  </data>
+  <data name="DamageType_Fenrir_Caption" xml:space="preserve">
+    <value>Fenrir</value>
+  </data>
+  <data name="DamageType_All_Caption" xml:space="preserve">
+    <value>ทั้งหมด</value>
+  </data>
+  <data name="Direction_TypeCaption" xml:space="preserve">
+    <value>ทิศทาง</value>
+  </data>
+  <data name="Direction_Undefined_Caption" xml:space="preserve">
+    <value>ไม่กำหนด</value>
+  </data>
+  <data name="Direction_West_Caption" xml:space="preserve">
+    <value>ตะวันตก</value>
+  </data>
+  <data name="Direction_SouthWest_Caption" xml:space="preserve">
+    <value>ตะวันตกเฉียงใต้</value>
+  </data>
+  <data name="Direction_South_Caption" xml:space="preserve">
+    <value>ใต้</value>
+  </data>
+  <data name="Direction_SouthEast_Caption" xml:space="preserve">
+    <value>ตะวันออกเฉียงใต้</value>
+  </data>
+  <data name="Direction_East_Caption" xml:space="preserve">
+    <value>ตะวันออก</value>
+  </data>
+  <data name="Direction_NorthEast_Caption" xml:space="preserve">
+    <value>ตะวันออกเฉียงเหนือ</value>
+  </data>
+  <data name="Direction_North_Caption" xml:space="preserve">
+    <value>เหนือ</value>
+  </data>
+  <data name="Direction_NorthWest_Caption" xml:space="preserve">
+    <value>ตะวันตกเฉียงเหนือ</value>
+  </data>
+  <data name="DropItemGroup_TypeCaption" xml:space="preserve">
+    <value>กลุ่มไอเทมดรอป</value>
+  </data>
+  <data name="DropItemGroup_TypeCaptionPlural" xml:space="preserve">
+    <value>กลุ่มไอเทมดรอป</value>
+  </data>
+  <data name="DropItemGroup_Description_Caption" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="DropItemGroup_Chance_Caption" xml:space="preserve">
+    <value>โอกาส</value>
+  </data>
+  <data name="DropItemGroup_MinimumMonsterLevel_Caption" xml:space="preserve">
+    <value>เลเวลมอนสเตอร์ต่ำสุด</value>
+  </data>
+  <data name="DropItemGroup_MaximumMonsterLevel_Caption" xml:space="preserve">
+    <value>เลเวลมอนสเตอร์สูงสุด</value>
+  </data>
+  <data name="DropItemGroup_Monster_Caption" xml:space="preserve">
+    <value>มอนสเตอร์</value>
+  </data>
+  <data name="DropItemGroup_ItemLevel_Caption" xml:space="preserve">
+    <value>เลเวลไอเทม</value>
+  </data>
+  <data name="DropItemGroup_ItemType_Caption" xml:space="preserve">
+    <value>ประเภทไอเทม</value>
+  </data>
+  <data name="DropItemGroup_PossibleItems_Caption" xml:space="preserve">
+    <value>ไอเทมที่อาจได้</value>
+  </data>
+  <data name="DuelArea_TypeCaption" xml:space="preserve">
+    <value>พื้นที่ดวล</value>
+  </data>
+  <data name="DuelArea_TypeCaptionPlural" xml:space="preserve">
+    <value>พื้นที่ดวล</value>
+  </data>
+  <data name="DuelArea_Index_Caption" xml:space="preserve">
+    <value>ลำดับ</value>
+  </data>
+  <data name="DuelArea_FirstPlayerGate_Caption" xml:space="preserve">
+    <value>ประตูผู้เล่นคนที่ 1</value>
+  </data>
+  <data name="DuelArea_SecondPlayerGate_Caption" xml:space="preserve">
+    <value>ประตูผู้เล่นคนที่ 2</value>
+  </data>
+  <data name="DuelArea_SpectatorsGate_Caption" xml:space="preserve">
+    <value>ประตูผู้ชม</value>
+  </data>
+  <data name="DuelConfiguration_TypeCaption" xml:space="preserve">
+    <value>ตั้งค่าการดวล</value>
+  </data>
+  <data name="DuelConfiguration_TypeCaptionPlural" xml:space="preserve">
+    <value>ตั้งค่าการดวล</value>
+  </data>
+  <data name="DuelConfiguration_MaximumScore_Caption" xml:space="preserve">
+    <value>คะแนนสูงสุด</value>
+  </data>
+  <data name="DuelConfiguration_EntranceFee_Caption" xml:space="preserve">
+    <value>ค่าเข้า</value>
+  </data>
+  <data name="DuelConfiguration_MinimumCharacterLevel_Caption" xml:space="preserve">
+    <value>เลเวลตัวละครต่ำสุด</value>
+  </data>
+  <data name="DuelConfiguration_MaximumSpectatorsPerDuelRoom_Caption" xml:space="preserve">
+    <value>ผู้ชมสูงสุดต่อห้องดวล</value>
+  </data>
+  <data name="DuelConfiguration_Exit_Caption" xml:space="preserve">
+    <value>ทางออก</value>
+  </data>
+  <data name="DuelConfiguration_DuelAreas_Caption" xml:space="preserve">
+    <value>พื้นที่ดวล</value>
+  </data>
+  <data name="EnterGate_TypeCaption" xml:space="preserve">
+    <value>ประตูเข้า</value>
+  </data>
+  <data name="EnterGate_TypeCaptionPlural" xml:space="preserve">
+    <value>ประตูเข้า</value>
+  </data>
+  <data name="EnterGate_TargetGate_Caption" xml:space="preserve">
+    <value>ประตูปลายทาง</value>
+  </data>
+  <data name="EnterGate_LevelRequirement_Caption" xml:space="preserve">
+    <value>เลเวลที่ต้องมี</value>
+  </data>
+  <data name="EnterGate_Number_Caption" xml:space="preserve">
+    <value>หมายเลข</value>
+  </data>
+  <data name="Error_TypeCaption" xml:space="preserve">
+    <value>ข้อผิดพลาด</value>
+  </data>
+  <data name="Error_TypeCaptionPlural" xml:space="preserve">
+    <value>ข้อผิดพลาด</value>
+  </data>
+  <data name="ExitGate_TypeCaption" xml:space="preserve">
+    <value>ประตูออก</value>
+  </data>
+  <data name="ExitGate_TypeCaptionPlural" xml:space="preserve">
+    <value>ประตูออก</value>
+  </data>
+  <data name="ExitGate_Direction_Caption" xml:space="preserve">
+    <value>ทิศทาง</value>
+  </data>
+  <data name="ExitGate_Map_Caption" xml:space="preserve">
+    <value>แผนที่</value>
+  </data>
+  <data name="ExitGate_IsSpawnGate_Caption" xml:space="preserve">
+    <value>เป็นจุดเกิด</value>
+  </data>
+  <data name="FruitCalculationStrategy_TypeCaption" xml:space="preserve">
+    <value>วิธีคำนวณผลไม้</value>
+  </data>
+  <data name="FruitCalculationStrategy_Default_Caption" xml:space="preserve">
+    <value>ค่าเริ่มต้น</value>
+  </data>
+  <data name="FruitCalculationStrategy_MagicGladiator_Caption" xml:space="preserve">
+    <value>Magic Gladiator</value>
+  </data>
+  <data name="FruitCalculationStrategy_DarkLord_Caption" xml:space="preserve">
+    <value>Dark Lord</value>
+  </data>
+  <data name="GameClientDefinition_TypeCaption" xml:space="preserve">
+    <value>ตัวเกม</value>
+  </data>
+  <data name="GameClientDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>ตัวเกม</value>
+  </data>
+  <data name="GameClientDefinition_Season_Caption" xml:space="preserve">
+    <value>Season</value>
+  </data>
+  <data name="GameClientDefinition_Episode_Caption" xml:space="preserve">
+    <value>Episode</value>
+  </data>
+  <data name="GameClientDefinition_Language_Caption" xml:space="preserve">
+    <value>ภาษา</value>
+  </data>
+  <data name="GameClientDefinition_Version_Caption" xml:space="preserve">
+    <value>เวอร์ชัน</value>
+  </data>
+  <data name="GameClientDefinition_Serial_Caption" xml:space="preserve">
+    <value>ซีเรียล</value>
+  </data>
+  <data name="GameClientDefinition_Description_Caption" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="GameConfiguration_TypeCaption" xml:space="preserve">
+    <value>การตั้งค่าเกม</value>
+  </data>
+  <data name="GameConfiguration_TypeCaptionPlural" xml:space="preserve">
+    <value>การตั้งค่าเกม</value>
+  </data>
+  <data name="GameConfiguration_MaximumLevel_Caption" xml:space="preserve">
+    <value>เลเวลสูงสุด</value>
+  </data>
+  <data name="GameConfiguration_MaximumMasterLevel_Caption" xml:space="preserve">
+    <value>มาสเตอร์เลเวลสูงสุด</value>
+  </data>
+  <data name="GameConfiguration_ExperienceRate_Caption" xml:space="preserve">
+    <value>อัตราค่าประสบการณ์</value>
+  </data>
+  <data name="GameConfiguration_MasterExperienceRate_Caption" xml:space="preserve">
+    <value>อัตราค่าประสบการณ์มาสเตอร์</value>
+  </data>
+  <data name="GameConfiguration_PreventExperienceOverflow_Caption" xml:space="preserve">
+    <value>กันค่าประสบการณ์ล้น</value>
+  </data>
+  <data name="GameConfiguration_MinimumMonsterLevelForMasterExperience_Caption" xml:space="preserve">
+    <value>เลเวลมอนสเตอร์ต่ำสุดที่ให้ค่าประสบการณ์มาสเตอร์</value>
+  </data>
+  <data name="GameConfiguration_InfoRange_Caption" xml:space="preserve">
+    <value>ระยะมองเห็นข้อมูล</value>
+  </data>
+  <data name="GameConfiguration_AreaSkillHitsPlayer_Caption" xml:space="preserve">
+    <value>สกิลวงกว้างโดนผู้เล่น</value>
+  </data>
+  <data name="GameConfiguration_MaximumInventoryMoney_Caption" xml:space="preserve">
+    <value>เงินสูงสุดในช่องเก็บของ</value>
+  </data>
+  <data name="GameConfiguration_MaximumVaultMoney_Caption" xml:space="preserve">
+    <value>เงินสูงสุดในโกดัง</value>
+  </data>
+  <data name="GameConfiguration_ClampMoneyOnPickup_Caption" xml:space="preserve">
+    <value>จำกัดเงินเมื่อเก็บ</value>
+  </data>
+  <data name="GameConfiguration_ExperienceFormula_Caption" xml:space="preserve">
+    <value>สูตรค่าประสบการณ์</value>
+  </data>
+  <data name="GameConfiguration_MasterExperienceFormula_Caption" xml:space="preserve">
+    <value>สูตรค่าประสบการณ์มาสเตอร์</value>
+  </data>
+  <data name="GameConfiguration_RecoveryInterval_Caption" xml:space="preserve">
+    <value>รอบการฟื้นฟู</value>
+  </data>
+  <data name="GameConfiguration_MaximumLetters_Caption" xml:space="preserve">
+    <value>จดหมายสูงสุด</value>
+  </data>
+  <data name="GameConfiguration_LetterSendPrice_Caption" xml:space="preserve">
+    <value>ค่าส่งจดหมาย</value>
+  </data>
+  <data name="GameConfiguration_MaximumCharactersPerAccount_Caption" xml:space="preserve">
+    <value>ตัวละครสูงสุดต่อไอดี</value>
+  </data>
+  <data name="GameConfiguration_CharacterNameRegex_Caption" xml:space="preserve">
+    <value>รูปแบบชื่อตัวละคร (Regex)</value>
+  </data>
+  <data name="GameConfiguration_MaximumPasswordLength_Caption" xml:space="preserve">
+    <value>ความยาวรหัสผ่านสูงสุด</value>
+  </data>
+  <data name="GameConfiguration_MaximumPartySize_Caption" xml:space="preserve">
+    <value>สมาชิกปาร์ตี้สูงสุด</value>
+  </data>
+  <data name="GameConfiguration_ShouldDropMoney_Caption" xml:space="preserve">
+    <value>ดรอปเงินลงพื้น</value>
+  </data>
+  <data name="GameConfiguration_ItemDropDuration_Caption" xml:space="preserve">
+    <value>เวลาที่ไอเทมอยู่บนพื้น</value>
+  </data>
+  <data name="GameConfiguration_MaximumItemOptionLevelDrop_Caption" xml:space="preserve">
+    <value>เลเวลออปชันไอเทมดรอปสูงสุด</value>
+  </data>
+  <data name="GameConfiguration_DamagePerOneItemDurability_Caption" xml:space="preserve">
+    <value>ความเสียหายต่อความทนทานไอเทม 1 หน่วย</value>
+  </data>
+  <data name="GameConfiguration_DamagePerOnePetDurability_Caption" xml:space="preserve">
+    <value>ความเสียหายต่อความทนทานสัตว์เลี้ยง 1 หน่วย</value>
+  </data>
+  <data name="GameConfiguration_HitsPerOneItemDurability_Caption" xml:space="preserve">
+    <value>จำนวนครั้งตีต่อความทนทานไอเทม 1 หน่วย</value>
+  </data>
+  <data name="GameConfiguration_DuelConfiguration_Caption" xml:space="preserve">
+    <value>ตั้งค่าการดวล</value>
+  </data>
+  <data name="GameConfiguration_JewelMixes_Caption" xml:space="preserve">
+    <value>การรวมจิวเวล</value>
+  </data>
+  <data name="GameConfiguration_WarpList_Caption" xml:space="preserve">
+    <value>รายการวาร์ป</value>
+  </data>
+  <data name="GameConfiguration_DropItemGroups_Caption" xml:space="preserve">
+    <value>กลุ่มไอเทมดรอป</value>
+  </data>
+  <data name="GameConfiguration_Skills_Caption" xml:space="preserve">
+    <value>สกิล</value>
+  </data>
+  <data name="GameConfiguration_CharacterClasses_Caption" xml:space="preserve">
+    <value>คลาสตัวละคร</value>
+  </data>
+  <data name="GameConfiguration_Items_Caption" xml:space="preserve">
+    <value>ไอเทม</value>
+  </data>
+  <data name="GameConfiguration_ItemLevelBonusTables_Caption" xml:space="preserve">
+    <value>ตารางโบนัสเลเวลไอเทม</value>
+  </data>
+  <data name="GameConfiguration_ItemSlotTypes_Caption" xml:space="preserve">
+    <value>ประเภทช่องไอเทม</value>
+  </data>
+  <data name="GameConfiguration_ItemOptions_Caption" xml:space="preserve">
+    <value>ออปชันไอเทม</value>
+  </data>
+  <data name="GameConfiguration_ItemOptionTypes_Caption" xml:space="preserve">
+    <value>ประเภทออปชันไอเทม</value>
+  </data>
+  <data name="GameConfiguration_ItemSetGroups_Caption" xml:space="preserve">
+    <value>กลุ่มเซ็ตไอเทม</value>
+  </data>
+  <data name="GameConfiguration_ItemOptionCombinationBonuses_Caption" xml:space="preserve">
+    <value>โบนัสผสมออปชันไอเทม</value>
+  </data>
+  <data name="GameConfiguration_Maps_Caption" xml:space="preserve">
+    <value>แผนที่</value>
+  </data>
+  <data name="GameConfiguration_Monsters_Caption" xml:space="preserve">
+    <value>มอนสเตอร์</value>
+  </data>
+  <data name="GameConfiguration_Attributes_Caption" xml:space="preserve">
+    <value>ค่าสถานะ</value>
+  </data>
+  <data name="GameConfiguration_MagicEffects_Caption" xml:space="preserve">
+    <value>เอฟเฟกต์เวทมนตร์</value>
+  </data>
+  <data name="GameConfiguration_MasterSkillRoots_Caption" xml:space="preserve">
+    <value>รากสกิลมาสเตอร์</value>
+  </data>
+  <data name="GameConfiguration_PlugInConfigurations_Caption" xml:space="preserve">
+    <value>ตั้งค่าปลั๊กอิน</value>
+  </data>
+  <data name="GameConfiguration_MiniGameDefinitions_Caption" xml:space="preserve">
+    <value>มินิเกม</value>
+  </data>
+  <data name="GameConfigurationHelper_TypeCaption" xml:space="preserve">
+    <value>ตัวช่วยการตั้งค่าเกม</value>
+  </data>
+  <data name="GameConfigurationHelper_TypeCaptionPlural" xml:space="preserve">
+    <value>ตัวช่วยการตั้งค่าเกม</value>
+  </data>
+  <data name="GameMapDefinition_TypeCaption" xml:space="preserve">
+    <value>แผนที่เกม</value>
+  </data>
+  <data name="GameMapDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>แผนที่เกม</value>
+  </data>
+  <data name="GameMapDefinition_Number_Caption" xml:space="preserve">
+    <value>หมายเลข</value>
+  </data>
+  <data name="GameMapDefinition_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="GameMapDefinition_TerrainData_Caption" xml:space="preserve">
+    <value>ข้อมูลภูมิประเทศ</value>
+  </data>
+  <data name="GameMapDefinition_MonsterSpawns_Caption" xml:space="preserve">
+    <value>จุดเกิดมอนสเตอร์</value>
+  </data>
+  <data name="GameMapDefinition_EnterGates_Caption" xml:space="preserve">
+    <value>ประตูเข้า</value>
+  </data>
+  <data name="GameMapDefinition_ExpMultiplier_Caption" xml:space="preserve">
+    <value>ตัวคูณค่าประสบการณ์</value>
+  </data>
+  <data name="GameMapDefinition_Discriminator_Caption" xml:space="preserve">
+    <value>ตัวแยกแยะ</value>
+  </data>
+  <data name="GameMapDefinition_SafezoneMap_Caption" xml:space="preserve">
+    <value>แผนที่เขตปลอดภัย</value>
+  </data>
+  <data name="GameMapDefinition_BattleZone_Caption" xml:space="preserve">
+    <value>โซนต่อสู้</value>
+  </data>
+  <data name="GameMapDefinition_ExitGates_Caption" xml:space="preserve">
+    <value>ประตูออก</value>
+  </data>
+  <data name="GameMapDefinition_DropItemGroups_Caption" xml:space="preserve">
+    <value>กลุ่มไอเทมดรอป</value>
+  </data>
+  <data name="GameMapDefinition_MapRequirements_Caption" xml:space="preserve">
+    <value>เงื่อนไขเข้าแผนที่</value>
+  </data>
+  <data name="GameMapDefinition_CharacterPowerUpDefinitions_Caption" xml:space="preserve">
+    <value>การเพิ่มพลังตัวละคร</value>
+  </data>
+  <data name="GameServerConfiguration_TypeCaption" xml:space="preserve">
+    <value>ตั้งค่าเกมเซิร์ฟเวอร์</value>
+  </data>
+  <data name="GameServerConfiguration_TypeCaptionPlural" xml:space="preserve">
+    <value>ตั้งค่าเกมเซิร์ฟเวอร์</value>
+  </data>
+  <data name="GameServerConfiguration_MaximumPlayers_Caption" xml:space="preserve">
+    <value>ผู้เล่นสูงสุด</value>
+  </data>
+  <data name="GameServerConfiguration_Maps_Caption" xml:space="preserve">
+    <value>แผนที่</value>
+  </data>
+  <data name="GameServerDefinition_TypeCaption" xml:space="preserve">
+    <value>เกมเซิร์ฟเวอร์</value>
+  </data>
+  <data name="GameServerDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>เกมเซิร์ฟเวอร์</value>
+  </data>
+  <data name="GameServerDefinition_ServerID_Caption" xml:space="preserve">
+    <value>Server ID</value>
+  </data>
+  <data name="GameServerDefinition_Description_Caption" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="GameServerDefinition_ExperienceRate_Caption" xml:space="preserve">
+    <value>อัตราค่าประสบการณ์</value>
+  </data>
+  <data name="GameServerDefinition_PvpEnabled_Caption" xml:space="preserve">
+    <value>เปิด PvP</value>
+  </data>
+  <data name="GameServerDefinition_ServerConfiguration_Caption" xml:space="preserve">
+    <value>ตั้งค่าเซิร์ฟเวอร์</value>
+  </data>
+  <data name="GameServerDefinition_GameConfiguration_Caption" xml:space="preserve">
+    <value>การตั้งค่าเกม</value>
+  </data>
+  <data name="GameServerDefinition_Endpoints_Caption" xml:space="preserve">
+    <value>ปลายทาง</value>
+  </data>
+  <data name="GameServerEndpoint_TypeCaption" xml:space="preserve">
+    <value>ปลายทางเกมเซิร์ฟเวอร์</value>
+  </data>
+  <data name="GameServerEndpoint_TypeCaptionPlural" xml:space="preserve">
+    <value>ปลายทางเกมเซิร์ฟเวอร์</value>
+  </data>
+  <data name="GameServerEndpoint_AlternativePublishedPort_Caption" xml:space="preserve">
+    <value>พอร์ตที่เผยแพร่สำรอง</value>
+  </data>
+  <data name="Gate_TypeCaption" xml:space="preserve">
+    <value>ประตู</value>
+  </data>
+  <data name="Gate_TypeCaptionPlural" xml:space="preserve">
+    <value>ประตู</value>
+  </data>
+  <data name="Gate_X1_Caption" xml:space="preserve">
+    <value>X1</value>
+  </data>
+  <data name="Gate_Y1_Caption" xml:space="preserve">
+    <value>Y1</value>
+  </data>
+  <data name="Gate_X2_Caption" xml:space="preserve">
+    <value>X2</value>
+  </data>
+  <data name="Gate_Y2_Caption" xml:space="preserve">
+    <value>Y2</value>
+  </data>
+  <data name="Guild_TypeCaption" xml:space="preserve">
+    <value>กิลด์</value>
+  </data>
+  <data name="Guild_TypeCaptionPlural" xml:space="preserve">
+    <value>กิลด์</value>
+  </data>
+  <data name="Guild_Id_Caption" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="Guild_Members_Caption" xml:space="preserve">
+    <value>สมาชิก</value>
+  </data>
+  <data name="GuildMember_TypeCaption" xml:space="preserve">
+    <value>สมาชิกกิลด์</value>
+  </data>
+  <data name="GuildMember_TypeCaptionPlural" xml:space="preserve">
+    <value>สมาชิกกิลด์</value>
+  </data>
+  <data name="GuildMember_Id_Caption" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="GuildMember_GuildId_Caption" xml:space="preserve">
+    <value>Id กิลด์</value>
+  </data>
+  <data name="GuildMember_Status_Caption" xml:space="preserve">
+    <value>สถานะ</value>
+  </data>
+  <data name="HeroState_TypeCaption" xml:space="preserve">
+    <value>สถานะฮีโร่</value>
+  </data>
+  <data name="HeroState_New_Caption" xml:space="preserve">
+    <value>ใหม่</value>
+  </data>
+  <data name="HeroState_Hero_Caption" xml:space="preserve">
+    <value>ฮีโร่</value>
+  </data>
+  <data name="HeroState_LightHero_Caption" xml:space="preserve">
+    <value>ฮีโร่ระดับต้น</value>
+  </data>
+  <data name="HeroState_Normal_Caption" xml:space="preserve">
+    <value>ปกติ</value>
+  </data>
+  <data name="HeroState_PlayerKillWarning_Caption" xml:space="preserve">
+    <value>เตือน PK</value>
+  </data>
+  <data name="HeroState_PlayerKiller1stStage_Caption" xml:space="preserve">
+    <value>PK ขั้นที่ 1</value>
+  </data>
+  <data name="HeroState_PlayerKiller2ndStage_Caption" xml:space="preserve">
+    <value>PK ขั้นที่ 2</value>
+  </data>
+  <data name="HiddenAtCreationAttribute_TypeCaption" xml:space="preserve">
+    <value>ซ่อนตอนสร้าง</value>
+  </data>
+  <data name="HiddenAtCreationAttribute_TypeCaptionPlural" xml:space="preserve">
+    <value>ซ่อนตอนสร้าง</value>
+  </data>
+  <data name="IncreasableItemOption_TypeCaption" xml:space="preserve">
+    <value>ออปชันไอเทมที่เพิ่มระดับได้</value>
+  </data>
+  <data name="IncreasableItemOption_TypeCaptionPlural" xml:space="preserve">
+    <value>ออปชันไอเทมที่เพิ่มระดับได้</value>
+  </data>
+  <data name="IncreasableItemOption_LevelType_Caption" xml:space="preserve">
+    <value>ประเภทเลเวล</value>
+  </data>
+  <data name="IncreasableItemOption_Weight_Caption" xml:space="preserve">
+    <value>น้ำหนัก</value>
+  </data>
+  <data name="IncreasableItemOption_LevelDependentOptions_Caption" xml:space="preserve">
+    <value>ออปชันตามเลเวล</value>
+  </data>
+  <data name="InventoryConstants_TypeCaption" xml:space="preserve">
+    <value>ค่าคงที่ช่องเก็บของ</value>
+  </data>
+  <data name="InventoryConstants_TypeCaptionPlural" xml:space="preserve">
+    <value>ค่าคงที่ช่องเก็บของ</value>
+  </data>
+  <data name="Item_TypeCaption" xml:space="preserve">
+    <value>ไอเทม</value>
+  </data>
+  <data name="Item_TypeCaptionPlural" xml:space="preserve">
+    <value>ไอเทม</value>
+  </data>
+  <data name="Item_ItemSlot_Caption" xml:space="preserve">
+    <value>ช่องไอเทม</value>
+  </data>
+  <data name="Item_Definition_Caption" xml:space="preserve">
+    <value>นิยาม</value>
+  </data>
+  <data name="Item_Durability_Caption" xml:space="preserve">
+    <value>ความทนทาน</value>
+  </data>
+  <data name="Item_Level_Caption" xml:space="preserve">
+    <value>เลเวล</value>
+  </data>
+  <data name="Item_HasSkill_Caption" xml:space="preserve">
+    <value>มีสกิล</value>
+  </data>
+  <data name="Item_ItemOptions_Caption" xml:space="preserve">
+    <value>ออปชันไอเทม</value>
+  </data>
+  <data name="Item_ItemSetGroups_Caption" xml:space="preserve">
+    <value>กลุ่มเซ็ตไอเทม</value>
+  </data>
+  <data name="Item_SocketCount_Caption" xml:space="preserve">
+    <value>จำนวนซ็อกเก็ต</value>
+  </data>
+  <data name="Item_StorePrice_Caption" xml:space="preserve">
+    <value>ราคาในร้าน</value>
+  </data>
+  <data name="Item_PetExperience_Caption" xml:space="preserve">
+    <value>ค่าประสบการณ์สัตว์เลี้ยง</value>
+  </data>
+  <data name="ItemAppearance_TypeCaption" xml:space="preserve">
+    <value>รูปลักษณ์ไอเทม</value>
+  </data>
+  <data name="ItemAppearance_TypeCaptionPlural" xml:space="preserve">
+    <value>รูปลักษณ์ไอเทม</value>
+  </data>
+  <data name="ItemAppearance_ItemSlot_Caption" xml:space="preserve">
+    <value>ช่องไอเทม</value>
+  </data>
+  <data name="ItemAppearance_Definition_Caption" xml:space="preserve">
+    <value>นิยาม</value>
+  </data>
+  <data name="ItemAppearance_Level_Caption" xml:space="preserve">
+    <value>เลเวล</value>
+  </data>
+  <data name="ItemAppearance_VisibleOptions_Caption" xml:space="preserve">
+    <value>ออปชันที่มองเห็น</value>
+  </data>
+  <data name="ItemBasePowerUpDefinition_TypeCaption" xml:space="preserve">
+    <value>พลังพื้นฐานของไอเทม</value>
+  </data>
+  <data name="ItemBasePowerUpDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>พลังพื้นฐานของไอเทม</value>
+  </data>
+  <data name="ItemBasePowerUpDefinition_TargetAttribute_Caption" xml:space="preserve">
+    <value>ค่าสถานะเป้าหมาย</value>
+  </data>
+  <data name="ItemBasePowerUpDefinition_BonusPerLevelTable_Caption" xml:space="preserve">
+    <value>ตารางโบนัสต่อเลเวล</value>
+  </data>
+  <data name="ItemBasePowerUpDefinition_BaseValue_Caption" xml:space="preserve">
+    <value>ค่าพื้นฐาน</value>
+  </data>
+  <data name="ItemBasePowerUpDefinition_AggregateType_Caption" xml:space="preserve">
+    <value>วิธีรวมค่า</value>
+  </data>
+  <data name="ItemCrafting_TypeCaption" xml:space="preserve">
+    <value>การผสมไอเทม</value>
+  </data>
+  <data name="ItemCrafting_TypeCaptionPlural" xml:space="preserve">
+    <value>การผสมไอเทม</value>
+  </data>
+  <data name="ItemCrafting_Number_Caption" xml:space="preserve">
+    <value>หมายเลข</value>
+  </data>
+  <data name="ItemCrafting_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="ItemCrafting_ItemCraftingHandlerClassName_Caption" xml:space="preserve">
+    <value>คลาสตัวจัดการการผสม</value>
+  </data>
+  <data name="ItemCrafting_SimpleCraftingSettings_Caption" xml:space="preserve">
+    <value>ตั้งค่าการผสมแบบง่าย</value>
+  </data>
+  <data name="ItemCraftingRequiredItem_TypeCaption" xml:space="preserve">
+    <value>ไอเทมที่ต้องใช้ผสม</value>
+  </data>
+  <data name="ItemCraftingRequiredItem_TypeCaptionPlural" xml:space="preserve">
+    <value>ไอเทมที่ต้องใช้ผสม</value>
+  </data>
+  <data name="ItemCraftingRequiredItem_PossibleItems_Caption" xml:space="preserve">
+    <value>ไอเทมที่ใช้ได้</value>
+  </data>
+  <data name="ItemCraftingRequiredItem_MinimumItemLevel_Caption" xml:space="preserve">
+    <value>เลเวลไอเทมต่ำสุด</value>
+  </data>
+  <data name="ItemCraftingRequiredItem_MaximumItemLevel_Caption" xml:space="preserve">
+    <value>เลเวลไอเทมสูงสุด</value>
+  </data>
+  <data name="ItemCraftingRequiredItem_RequiredItemOptions_Caption" xml:space="preserve">
+    <value>ออปชันไอเทมที่ต้องมี</value>
+  </data>
+  <data name="ItemCraftingRequiredItem_MinimumAmount_Caption" xml:space="preserve">
+    <value>จำนวนต่ำสุด</value>
+  </data>
+  <data name="ItemCraftingRequiredItem_MaximumAmount_Caption" xml:space="preserve">
+    <value>จำนวนสูงสุด</value>
+  </data>
+  <data name="ItemCraftingRequiredItem_SuccessResult_Caption" xml:space="preserve">
+    <value>ผลเมื่อสำเร็จ</value>
+  </data>
+  <data name="ItemCraftingRequiredItem_FailResult_Caption" xml:space="preserve">
+    <value>ผลเมื่อล้มเหลว</value>
+  </data>
+  <data name="ItemCraftingRequiredItem_NpcPriceDivisor_Caption" xml:space="preserve">
+    <value>ตัวหารราคา NPC</value>
+  </data>
+  <data name="ItemCraftingRequiredItem_AddPercentage_Caption" xml:space="preserve">
+    <value>เพิ่มเปอร์เซ็นต์</value>
+  </data>
+  <data name="ItemCraftingRequiredItem_Reference_Caption" xml:space="preserve">
+    <value>อ้างอิง</value>
+  </data>
+  <data name="ItemCraftingResultItem_TypeCaption" xml:space="preserve">
+    <value>ไอเทมผลลัพธ์การผสม</value>
+  </data>
+  <data name="ItemCraftingResultItem_TypeCaptionPlural" xml:space="preserve">
+    <value>ไอเทมผลลัพธ์การผสม</value>
+  </data>
+  <data name="ItemCraftingResultItem_ItemDefinition_Caption" xml:space="preserve">
+    <value>ไอเทม</value>
+  </data>
+  <data name="ItemCraftingResultItem_RandomMinimumLevel_Caption" xml:space="preserve">
+    <value>เลเวลสุ่มต่ำสุด</value>
+  </data>
+  <data name="ItemCraftingResultItem_RandomMaximumLevel_Caption" xml:space="preserve">
+    <value>เลเวลสุ่มสูงสุด</value>
+  </data>
+  <data name="ItemCraftingResultItem_Durability_Caption" xml:space="preserve">
+    <value>ความทนทาน</value>
+  </data>
+  <data name="ItemCraftingResultItem_Reference_Caption" xml:space="preserve">
+    <value>อ้างอิง</value>
+  </data>
+  <data name="ItemCraftingResultItem_AddLevel_Caption" xml:space="preserve">
+    <value>เพิ่มเลเวล</value>
+  </data>
+  <data name="ItemDefinition_TypeCaption" xml:space="preserve">
+    <value>ไอเทม</value>
+  </data>
+  <data name="ItemDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>ไอเทม</value>
+  </data>
+  <data name="ItemDefinition_Number_Caption" xml:space="preserve">
+    <value>หมายเลข</value>
+  </data>
+  <data name="ItemDefinition_ItemSlot_Caption" xml:space="preserve">
+    <value>ช่องไอเทม</value>
+  </data>
+  <data name="ItemDefinition_Width_Caption" xml:space="preserve">
+    <value>ความกว้าง</value>
+  </data>
+  <data name="ItemDefinition_Height_Caption" xml:space="preserve">
+    <value>ความสูง</value>
+  </data>
+  <data name="ItemDefinition_DropsFromMonsters_Caption" xml:space="preserve">
+    <value>ดรอปจากมอนสเตอร์</value>
+  </data>
+  <data name="ItemDefinition_IsAmmunition_Caption" xml:space="preserve">
+    <value>เป็นกระสุน</value>
+  </data>
+  <data name="ItemDefinition_IsBoundToCharacter_Caption" xml:space="preserve">
+    <value>ผูกกับตัวละคร</value>
+  </data>
+  <data name="ItemDefinition_StorageLimitPerCharacter_Caption" xml:space="preserve">
+    <value>จำนวนเก็บสูงสุดต่อตัวละคร</value>
+  </data>
+  <data name="ItemDefinition_IsTradable_Caption" xml:space="preserve">
+    <value>แลกเปลี่ยนได้</value>
+  </data>
+  <data name="ItemDefinition_IsTradable_Description" xml:space="preserve">
+    <value>ไอเทมนี้แลกกับผู้เล่นอื่นได้หรือไม่</value>
+  </data>
+  <data name="ItemDefinition_IsDroppable_Caption" xml:space="preserve">
+    <value>ทิ้งได้</value>
+  </data>
+  <data name="ItemDefinition_IsDroppable_Description" xml:space="preserve">
+    <value>ไอเทมนี้ทิ้งลงพื้นได้หรือไม่ ไม่เกี่ยวกับการดรอปจากมอนสเตอร์</value>
+  </data>
+  <data name="ItemDefinition_IsStorable_Caption" xml:space="preserve">
+    <value>เก็บในโกดังได้</value>
+  </data>
+  <data name="ItemDefinition_IsStorable_Description" xml:space="preserve">
+    <value>ไอเทมนี้เก็บในโกดังได้หรือไม่</value>
+  </data>
+  <data name="ItemDefinition_IsSellableToNpc_Caption" xml:space="preserve">
+    <value>ขายให้ NPC ได้</value>
+  </data>
+  <data name="ItemDefinition_IsSellableToNpc_Description" xml:space="preserve">
+    <value>ไอเทมนี้ขายให้ NPC พ่อค้าได้หรือไม่</value>
+  </data>
+  <data name="ItemDefinition_IsPersonalStoreSellable_Caption" xml:space="preserve">
+    <value>ขายในร้านค้าส่วนตัวได้</value>
+  </data>
+  <data name="ItemDefinition_IsPersonalStoreSellable_Description" xml:space="preserve">
+    <value>ไอเทมนี้วางขายในร้านค้าส่วนตัวได้หรือไม่</value>
+  </data>
+  <data name="ItemDefinition_IsRepairable_Caption" xml:space="preserve">
+    <value>ซ่อมได้ตามปกติ</value>
+  </data>
+  <data name="ItemDefinition_IsRepairable_Description" xml:space="preserve">
+    <value>ไอเทมนี้ซ่อมที่ NPC หรือด้วยปุ่มซ่อมในช่องเก็บของได้หรือไม่ ไม่มีผลกับวิธีฟื้นความทนทานแบบพิเศษ</value>
+  </data>
+  <data name="ItemDefinition_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="ItemDefinition_DropLevel_Caption" xml:space="preserve">
+    <value>เลเวลดรอป</value>
+  </data>
+  <data name="ItemDefinition_MaximumDropLevel_Caption" xml:space="preserve">
+    <value>เลเวลดรอปสูงสุด</value>
+  </data>
+  <data name="ItemDefinition_MaximumItemLevel_Caption" xml:space="preserve">
+    <value>เลเวลไอเทมสูงสุด</value>
+  </data>
+  <data name="ItemDefinition_Durability_Caption" xml:space="preserve">
+    <value>ความทนทาน</value>
+  </data>
+  <data name="ItemDefinition_Group_Caption" xml:space="preserve">
+    <value>กลุ่ม</value>
+  </data>
+  <data name="ItemDefinition_Value_Caption" xml:space="preserve">
+    <value>มูลค่า</value>
+  </data>
+  <data name="ItemDefinition_PetExperienceFormula_Caption" xml:space="preserve">
+    <value>สูตรค่าประสบการณ์สัตว์เลี้ยง</value>
+  </data>
+  <data name="ItemDefinition_ConsumeEffect_Caption" xml:space="preserve">
+    <value>เอฟเฟกต์เมื่อใช้</value>
+  </data>
+  <data name="ItemDefinition_MaximumSockets_Caption" xml:space="preserve">
+    <value>ซ็อกเก็ตสูงสุด</value>
+  </data>
+  <data name="ItemDefinition_Skill_Caption" xml:space="preserve">
+    <value>สกิล</value>
+  </data>
+  <data name="ItemDefinition_QualifiedCharacters_Caption" xml:space="preserve">
+    <value>คลาสที่ใช้ได้</value>
+  </data>
+  <data name="ItemDefinition_PossibleItemSetGroups_Caption" xml:space="preserve">
+    <value>กลุ่มเซ็ตที่เป็นไปได้</value>
+  </data>
+  <data name="ItemDefinition_PossibleItemOptions_Caption" xml:space="preserve">
+    <value>ออปชันที่เป็นไปได้</value>
+  </data>
+  <data name="ItemDefinition_Requirements_Caption" xml:space="preserve">
+    <value>เงื่อนไขการใช้</value>
+  </data>
+  <data name="ItemDefinition_BasePowerUpAttributes_Caption" xml:space="preserve">
+    <value>ค่าพลังพื้นฐาน</value>
+  </data>
+  <data name="ItemDefinition_DropItems_Caption" xml:space="preserve">
+    <value>ไอเทมที่ดรอป</value>
+  </data>
+  <data name="ItemDropEffect_TypeCaption" xml:space="preserve">
+    <value>เอฟเฟกต์ตอนดรอป</value>
+  </data>
+  <data name="ItemDropEffect_Undefined_Caption" xml:space="preserve">
+    <value>ไม่กำหนด</value>
+  </data>
+  <data name="ItemDropEffect_Fireworks_Caption" xml:space="preserve">
+    <value>พลุ</value>
+  </data>
+  <data name="ItemDropEffect_ChristmasFireworks_Caption" xml:space="preserve">
+    <value>พลุคริสต์มาส</value>
+  </data>
+  <data name="ItemDropEffect_FanfareSound_Caption" xml:space="preserve">
+    <value>เสียงแตร</value>
+  </data>
+  <data name="ItemDropEffect_Swirl_Caption" xml:space="preserve">
+    <value>หมุนวน</value>
+  </data>
+  <data name="ItemDropItemGroup_TypeCaption" xml:space="preserve">
+    <value>กลุ่มดรอปของไอเทม</value>
+  </data>
+  <data name="ItemDropItemGroup_TypeCaptionPlural" xml:space="preserve">
+    <value>กลุ่มดรอปของไอเทม</value>
+  </data>
+  <data name="ItemDropItemGroup_SourceItemLevel_Caption" xml:space="preserve">
+    <value>เลเวลไอเทมต้นทาง</value>
+  </data>
+  <data name="ItemDropItemGroup_MoneyAmount_Caption" xml:space="preserve">
+    <value>จำนวนเงิน</value>
+  </data>
+  <data name="ItemDropItemGroup_MinimumLevel_Caption" xml:space="preserve">
+    <value>เลเวลต่ำสุด</value>
+  </data>
+  <data name="ItemDropItemGroup_MaximumLevel_Caption" xml:space="preserve">
+    <value>เลเวลสูงสุด</value>
+  </data>
+  <data name="ItemDropItemGroup_RequiredCharacterLevel_Caption" xml:space="preserve">
+    <value>เลเวลตัวละครที่ต้องมี</value>
+  </data>
+  <data name="ItemDropItemGroup_DropEffect_Caption" xml:space="preserve">
+    <value>เอฟเฟกต์ตอนดรอป</value>
+  </data>
+  <data name="ItemExtensions_TypeCaption" xml:space="preserve">
+    <value>ส่วนขยายไอเทม</value>
+  </data>
+  <data name="ItemExtensions_TypeCaptionPlural" xml:space="preserve">
+    <value>ส่วนขยายไอเทม</value>
+  </data>
+  <data name="ItemLevelBonusTable_TypeCaption" xml:space="preserve">
+    <value>ตารางโบนัสเลเวลไอเทม</value>
+  </data>
+  <data name="ItemLevelBonusTable_TypeCaptionPlural" xml:space="preserve">
+    <value>ตารางโบนัสเลเวลไอเทม</value>
+  </data>
+  <data name="ItemLevelBonusTable_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="ItemLevelBonusTable_Description_Caption" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="ItemLevelBonusTable_BonusPerLevel_Caption" xml:space="preserve">
+    <value>โบนัสต่อเลเวล</value>
+  </data>
+  <data name="ItemOfItemSet_TypeCaption" xml:space="preserve">
+    <value>ไอเทมในเซ็ต</value>
+  </data>
+  <data name="ItemOfItemSet_TypeCaptionPlural" xml:space="preserve">
+    <value>ไอเทมในเซ็ต</value>
+  </data>
+  <data name="ItemOfItemSet_AncientSetDiscriminator_Caption" xml:space="preserve">
+    <value>ตัวแยกเซ็ต Ancient</value>
+  </data>
+  <data name="ItemOfItemSet_ItemSetGroup_Caption" xml:space="preserve">
+    <value>กลุ่มเซ็ตไอเทม</value>
+  </data>
+  <data name="ItemOfItemSet_ItemDefinition_Caption" xml:space="preserve">
+    <value>ไอเทม</value>
+  </data>
+  <data name="ItemOfItemSet_BonusOption_Caption" xml:space="preserve">
+    <value>ออปชันโบนัส</value>
+  </data>
+  <data name="ItemOfItemSet_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="ItemOption_TypeCaption" xml:space="preserve">
+    <value>ออปชันไอเทม</value>
+  </data>
+  <data name="ItemOption_TypeCaptionPlural" xml:space="preserve">
+    <value>ออปชันไอเทม</value>
+  </data>
+  <data name="ItemOption_Number_Caption" xml:space="preserve">
+    <value>หมายเลข</value>
+  </data>
+  <data name="ItemOption_SubOptionType_Caption" xml:space="preserve">
+    <value>ประเภทออปชันย่อย</value>
+  </data>
+  <data name="ItemOption_OptionType_Caption" xml:space="preserve">
+    <value>ประเภทออปชัน</value>
+  </data>
+  <data name="ItemOption_PowerUpDefinition_Caption" xml:space="preserve">
+    <value>การเพิ่มพลัง</value>
+  </data>
+  <data name="ItemOptionCombinationBonus_TypeCaption" xml:space="preserve">
+    <value>โบนัสผสมออปชันไอเทม</value>
+  </data>
+  <data name="ItemOptionCombinationBonus_TypeCaptionPlural" xml:space="preserve">
+    <value>โบนัสผสมออปชันไอเทม</value>
+  </data>
+  <data name="ItemOptionCombinationBonus_Description_Caption" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="ItemOptionCombinationBonus_Number_Caption" xml:space="preserve">
+    <value>หมายเลข</value>
+  </data>
+  <data name="ItemOptionCombinationBonus_AppliesMultipleTimes_Caption" xml:space="preserve">
+    <value>ใช้ได้หลายครั้ง</value>
+  </data>
+  <data name="ItemOptionCombinationBonus_Requirements_Caption" xml:space="preserve">
+    <value>เงื่อนไข</value>
+  </data>
+  <data name="ItemOptionCombinationBonus_Bonus_Caption" xml:space="preserve">
+    <value>โบนัส</value>
+  </data>
+  <data name="ItemOptionDefinition_TypeCaption" xml:space="preserve">
+    <value>ออปชันไอเทม</value>
+  </data>
+  <data name="ItemOptionDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>ออปชันไอเทม</value>
+  </data>
+  <data name="ItemOptionDefinition_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="ItemOptionDefinition_AddsRandomly_Caption" xml:space="preserve">
+    <value>เพิ่มแบบสุ่ม</value>
+  </data>
+  <data name="ItemOptionDefinition_AddChance_Caption" xml:space="preserve">
+    <value>โอกาสเพิ่ม</value>
+  </data>
+  <data name="ItemOptionDefinition_MaximumOptionsPerItem_Caption" xml:space="preserve">
+    <value>ออปชันสูงสุดต่อไอเทม</value>
+  </data>
+  <data name="ItemOptionDefinition_PossibleOptions_Caption" xml:space="preserve">
+    <value>ออปชันที่เป็นไปได้</value>
+  </data>
+  <data name="ItemOptionLink_TypeCaption" xml:space="preserve">
+    <value>ออปชันของไอเทม</value>
+  </data>
+  <data name="ItemOptionLink_TypeCaptionPlural" xml:space="preserve">
+    <value>ออปชันของไอเทม</value>
+  </data>
+  <data name="ItemOptionLink_ItemOption_Caption" xml:space="preserve">
+    <value>ออปชันไอเทม</value>
+  </data>
+  <data name="ItemOptionLink_Level_Caption" xml:space="preserve">
+    <value>เลเวล</value>
+  </data>
+  <data name="ItemOptionLink_Index_Caption" xml:space="preserve">
+    <value>ลำดับ</value>
+  </data>
+  <data name="ItemOptionOfLevel_TypeCaption" xml:space="preserve">
+    <value>ออปชันตามเลเวล</value>
+  </data>
+  <data name="ItemOptionOfLevel_TypeCaptionPlural" xml:space="preserve">
+    <value>ออปชันตามเลเวล</value>
+  </data>
+  <data name="ItemOptionOfLevel_Level_Caption" xml:space="preserve">
+    <value>เลเวล</value>
+  </data>
+  <data name="ItemOptionOfLevel_RequiredItemLevel_Caption" xml:space="preserve">
+    <value>เลเวลไอเทมที่ต้องมี</value>
+  </data>
+  <data name="ItemOptionOfLevel_PowerUpDefinition_Caption" xml:space="preserve">
+    <value>การเพิ่มพลัง</value>
+  </data>
+  <data name="ItemOptionType_TypeCaption" xml:space="preserve">
+    <value>ประเภทออปชันไอเทม</value>
+  </data>
+  <data name="ItemOptionType_TypeCaptionPlural" xml:space="preserve">
+    <value>ประเภทออปชันไอเทม</value>
+  </data>
+  <data name="ItemOptionType_Id_Caption" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="ItemOptionType_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="ItemOptionType_Description_Caption" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="ItemOptionType_IsVisible_Caption" xml:space="preserve">
+    <value>มองเห็นได้</value>
+  </data>
+  <data name="ItemOptionTypes_TypeCaption" xml:space="preserve">
+    <value>ประเภทออปชันไอเทม</value>
+  </data>
+  <data name="ItemOptionTypes_TypeCaptionPlural" xml:space="preserve">
+    <value>ประเภทออปชันไอเทม</value>
+  </data>
+  <data name="ItemOptionTypes_Excellent_Caption" xml:space="preserve">
+    <value>Excellent</value>
+  </data>
+  <data name="ItemOptionTypes_Wing_Caption" xml:space="preserve">
+    <value>ปีก</value>
+  </data>
+  <data name="ItemOptionTypes_Luck_Caption" xml:space="preserve">
+    <value>Luck</value>
+  </data>
+  <data name="ItemOptionTypes_Option_Caption" xml:space="preserve">
+    <value>ออปชัน</value>
+  </data>
+  <data name="ItemOptionTypes_HarmonyOption_Caption" xml:space="preserve">
+    <value>ออปชัน Harmony</value>
+  </data>
+  <data name="ItemOptionTypes_AncientOption_Caption" xml:space="preserve">
+    <value>ออปชัน Ancient</value>
+  </data>
+  <data name="ItemOptionTypes_AncientBonus_Caption" xml:space="preserve">
+    <value>โบนัส Ancient</value>
+  </data>
+  <data name="ItemOptionTypes_GuardianOption_Caption" xml:space="preserve">
+    <value>ออปชัน Guardian</value>
+  </data>
+  <data name="ItemOptionTypes_SocketOption_Caption" xml:space="preserve">
+    <value>ออปชันซ็อกเก็ต</value>
+  </data>
+  <data name="ItemOptionTypes_SocketBonusOption_Caption" xml:space="preserve">
+    <value>ออปชันโบนัสซ็อกเก็ต</value>
+  </data>
+  <data name="ItemOptionTypes_BlueFenrir_Caption" xml:space="preserve">
+    <value>Fenrir สีน้ำเงิน</value>
+  </data>
+  <data name="ItemOptionTypes_BlackFenrir_Caption" xml:space="preserve">
+    <value>Fenrir สีดำ</value>
+  </data>
+  <data name="ItemOptionTypes_GoldFenrir_Caption" xml:space="preserve">
+    <value>Fenrir สีทอง</value>
+  </data>
+  <data name="ItemOptionTypes_DarkHorse_Caption" xml:space="preserve">
+    <value>Dark Horse</value>
+  </data>
+  <data name="ItemSetGroup_TypeCaption" xml:space="preserve">
+    <value>กลุ่มเซ็ตไอเทม</value>
+  </data>
+  <data name="ItemSetGroup_TypeCaptionPlural" xml:space="preserve">
+    <value>กลุ่มเซ็ตไอเทม</value>
+  </data>
+  <data name="ItemSetGroup_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="ItemSetGroup_AlwaysApplies_Caption" xml:space="preserve">
+    <value>ใช้เสมอ</value>
+  </data>
+  <data name="ItemSetGroup_CountDistinct_Caption" xml:space="preserve">
+    <value>นับไม่ซ้ำ</value>
+  </data>
+  <data name="ItemSetGroup_MinimumItemCount_Caption" xml:space="preserve">
+    <value>จำนวนไอเทมขั้นต่ำ</value>
+  </data>
+  <data name="ItemSetGroup_SetLevel_Caption" xml:space="preserve">
+    <value>เลเวลเซ็ต</value>
+  </data>
+  <data name="ItemSetGroup_Options_Caption" xml:space="preserve">
+    <value>ออปชัน</value>
+  </data>
+  <data name="ItemSetGroup_Items_Caption" xml:space="preserve">
+    <value>ไอเทม</value>
+  </data>
+  <data name="ItemSlotType_TypeCaption" xml:space="preserve">
+    <value>ประเภทช่องไอเทม</value>
+  </data>
+  <data name="ItemSlotType_TypeCaptionPlural" xml:space="preserve">
+    <value>ประเภทช่องไอเทม</value>
+  </data>
+  <data name="ItemSlotType_Description_Caption" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="ItemSlotType_ItemSlots_Caption" xml:space="preserve">
+    <value>ช่องไอเทม</value>
+  </data>
+  <data name="ItemStorage_TypeCaption" xml:space="preserve">
+    <value>ที่เก็บไอเทม</value>
+  </data>
+  <data name="ItemStorage_TypeCaptionPlural" xml:space="preserve">
+    <value>ที่เก็บไอเทม</value>
+  </data>
+  <data name="ItemStorage_Items_Caption" xml:space="preserve">
+    <value>ไอเทม</value>
+  </data>
+  <data name="ItemStorage_Money_Caption" xml:space="preserve">
+    <value>เงิน (Zen)</value>
+  </data>
+  <data name="JewelMix_TypeCaption" xml:space="preserve">
+    <value>การรวมจิวเวล</value>
+  </data>
+  <data name="JewelMix_TypeCaptionPlural" xml:space="preserve">
+    <value>การรวมจิวเวล</value>
+  </data>
+  <data name="JewelMix_Number_Caption" xml:space="preserve">
+    <value>หมายเลข</value>
+  </data>
+  <data name="JewelMix_SingleJewel_Caption" xml:space="preserve">
+    <value>จิวเวลเดี่ยว</value>
+  </data>
+  <data name="JewelMix_MixedJewel_Caption" xml:space="preserve">
+    <value>จิวเวลที่รวมแล้ว</value>
+  </data>
+  <data name="KillTarget_TypeCaption" xml:space="preserve">
+    <value>เป้าหมายที่ต้องฆ่า</value>
+  </data>
+  <data name="KillTarget_AnyObject_Caption" xml:space="preserve">
+    <value>วัตถุใดก็ได้</value>
+  </data>
+  <data name="KillTarget_AnyMonster_Caption" xml:space="preserve">
+    <value>มอนสเตอร์ใดก็ได้</value>
+  </data>
+  <data name="KillTarget_Specific_Caption" xml:space="preserve">
+    <value>เฉพาะเจาะจง</value>
+  </data>
+  <data name="LetterBody_TypeCaption" xml:space="preserve">
+    <value>เนื้อหาจดหมาย</value>
+  </data>
+  <data name="LetterBody_TypeCaptionPlural" xml:space="preserve">
+    <value>เนื้อหาจดหมาย</value>
+  </data>
+  <data name="LetterBody_Id_Caption" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="LetterBody_Header_Caption" xml:space="preserve">
+    <value>หัวเรื่อง</value>
+  </data>
+  <data name="LetterBody_Message_Caption" xml:space="preserve">
+    <value>ข้อความ</value>
+  </data>
+  <data name="LetterBody_Rotation_Caption" xml:space="preserve">
+    <value>การหมุน</value>
+  </data>
+  <data name="LetterBody_Animation_Caption" xml:space="preserve">
+    <value>แอนิเมชัน</value>
+  </data>
+  <data name="LetterBody_SenderAppearance_Caption" xml:space="preserve">
+    <value>รูปลักษณ์ผู้ส่ง</value>
+  </data>
+  <data name="LevelBonus_TypeCaption" xml:space="preserve">
+    <value>โบนัสเลเวล</value>
+  </data>
+  <data name="LevelBonus_TypeCaptionPlural" xml:space="preserve">
+    <value>โบนัสเลเวล</value>
+  </data>
+  <data name="LevelBonus_Level_Caption" xml:space="preserve">
+    <value>เลเวล</value>
+  </data>
+  <data name="LevelBonus_AdditionalValue_Caption" xml:space="preserve">
+    <value>ค่าที่เพิ่ม</value>
+  </data>
+  <data name="LevelDependentDamage_TypeCaption" xml:space="preserve">
+    <value>ความเสียหายตามเลเวล</value>
+  </data>
+  <data name="LevelDependentDamage_TypeCaptionPlural" xml:space="preserve">
+    <value>ความเสียหายตามเลเวล</value>
+  </data>
+  <data name="LevelDependentDamage_Level_Caption" xml:space="preserve">
+    <value>เลเวล</value>
+  </data>
+  <data name="LevelDependentDamage_Damage_Caption" xml:space="preserve">
+    <value>ความเสียหาย</value>
+  </data>
+  <data name="LevelType_TypeCaption" xml:space="preserve">
+    <value>ประเภทเลเวล</value>
+  </data>
+  <data name="LevelType_OptionLevel_Caption" xml:space="preserve">
+    <value>เลเวลออปชัน</value>
+  </data>
+  <data name="LevelType_ItemLevel_Caption" xml:space="preserve">
+    <value>เลเวลไอเทม</value>
+  </data>
+  <data name="MagicEffectDefinition_TypeCaption" xml:space="preserve">
+    <value>เอฟเฟกต์เวทมนตร์</value>
+  </data>
+  <data name="MagicEffectDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>เอฟเฟกต์เวทมนตร์</value>
+  </data>
+  <data name="MagicEffectDefinition_Number_Caption" xml:space="preserve">
+    <value>หมายเลข</value>
+  </data>
+  <data name="MagicEffectDefinition_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="MagicEffectDefinition_SubType_Caption" xml:space="preserve">
+    <value>ประเภทย่อย</value>
+  </data>
+  <data name="MagicEffectDefinition_InformObservers_Caption" xml:space="preserve">
+    <value>แจ้งผู้ที่มองเห็น</value>
+  </data>
+  <data name="MagicEffectDefinition_StopByDeath_Caption" xml:space="preserve">
+    <value>หยุดเมื่อตาย</value>
+  </data>
+  <data name="MagicEffectDefinition_SendDuration_Caption" xml:space="preserve">
+    <value>ส่งระยะเวลา</value>
+  </data>
+  <data name="MagicEffectDefinition_DurationDependsOnTargetLevel_Caption" xml:space="preserve">
+    <value>ระยะเวลาขึ้นกับเลเวลเป้าหมาย</value>
+  </data>
+  <data name="MagicEffectDefinition_MonsterTargetLevelDivisor_Caption" xml:space="preserve">
+    <value>ตัวหารเลเวลมอนสเตอร์เป้าหมาย</value>
+  </data>
+  <data name="MagicEffectDefinition_PlayerTargetLevelDivisor_Caption" xml:space="preserve">
+    <value>ตัวหารเลเวลผู้เล่นเป้าหมาย</value>
+  </data>
+  <data name="MagicEffectDefinition_Chance_Caption" xml:space="preserve">
+    <value>โอกาส</value>
+  </data>
+  <data name="MagicEffectDefinition_ChancePvp_Caption" xml:space="preserve">
+    <value>โอกาส (PvP)</value>
+  </data>
+  <data name="MagicEffectDefinition_Duration_Caption" xml:space="preserve">
+    <value>ระยะเวลา</value>
+  </data>
+  <data name="MagicEffectDefinition_DurationPvp_Caption" xml:space="preserve">
+    <value>ระยะเวลา (PvP)</value>
+  </data>
+  <data name="MagicEffectDefinition_PowerUpDefinitions_Caption" xml:space="preserve">
+    <value>การเพิ่มพลัง</value>
+  </data>
+  <data name="MagicEffectDefinition_PowerUpDefinitionsPvp_Caption" xml:space="preserve">
+    <value>การเพิ่มพลัง (PvP)</value>
+  </data>
+  <data name="MasterSkillDefinition_TypeCaption" xml:space="preserve">
+    <value>สกิลมาสเตอร์</value>
+  </data>
+  <data name="MasterSkillDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>สกิลมาสเตอร์</value>
+  </data>
+  <data name="MasterSkillDefinition_Root_Caption" xml:space="preserve">
+    <value>ราก</value>
+  </data>
+  <data name="MasterSkillDefinition_RequiredMasterSkills_Caption" xml:space="preserve">
+    <value>สกิลมาสเตอร์ที่ต้องมี</value>
+  </data>
+  <data name="MasterSkillDefinition_Rank_Caption" xml:space="preserve">
+    <value>ขั้น</value>
+  </data>
+  <data name="MasterSkillDefinition_MaximumLevel_Caption" xml:space="preserve">
+    <value>เลเวลสูงสุด</value>
+  </data>
+  <data name="MasterSkillDefinition_MinimumLevel_Caption" xml:space="preserve">
+    <value>เลเวลต่ำสุด</value>
+  </data>
+  <data name="MasterSkillDefinition_ValueFormula_Caption" xml:space="preserve">
+    <value>สูตรค่า</value>
+  </data>
+  <data name="MasterSkillDefinition_DisplayValueFormula_Caption" xml:space="preserve">
+    <value>สูตรค่าที่แสดง</value>
+  </data>
+  <data name="MasterSkillDefinition_TargetAttribute_Caption" xml:space="preserve">
+    <value>ค่าสถานะเป้าหมาย</value>
+  </data>
+  <data name="MasterSkillDefinition_Aggregation_Caption" xml:space="preserve">
+    <value>วิธีรวมค่า</value>
+  </data>
+  <data name="MasterSkillDefinition_ReplacedSkill_Caption" xml:space="preserve">
+    <value>สกิลที่ถูกแทนที่</value>
+  </data>
+  <data name="MasterSkillDefinition_ExtendsDuration_Caption" xml:space="preserve">
+    <value>ยืดระยะเวลา</value>
+  </data>
+  <data name="MasterSkillRoot_TypeCaption" xml:space="preserve">
+    <value>รากสกิลมาสเตอร์</value>
+  </data>
+  <data name="MasterSkillRoot_TypeCaptionPlural" xml:space="preserve">
+    <value>รากสกิลมาสเตอร์</value>
+  </data>
+  <data name="MasterSkillRoot_Id_Caption" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="MasterSkillRoot_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="MemberOfAggregateAttribute_TypeCaption" xml:space="preserve">
+    <value>Member Of Aggregate Attribute</value>
+  </data>
+  <data name="MemberOfAggregateAttribute_TypeCaptionPlural" xml:space="preserve">
+    <value>Member Of Aggregate Attributes</value>
+  </data>
+  <data name="MiniGameChangeEvent_TypeCaption" xml:space="preserve">
+    <value>เหตุการณ์เปลี่ยนในมินิเกม</value>
+  </data>
+  <data name="MiniGameChangeEvent_TypeCaptionPlural" xml:space="preserve">
+    <value>เหตุการณ์เปลี่ยนในมินิเกม</value>
+  </data>
+  <data name="MiniGameChangeEvent_Index_Caption" xml:space="preserve">
+    <value>ลำดับ</value>
+  </data>
+  <data name="MiniGameChangeEvent_Description_Caption" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="MiniGameChangeEvent_Message_Caption" xml:space="preserve">
+    <value>ข้อความ</value>
+  </data>
+  <data name="MiniGameChangeEvent_Target_Caption" xml:space="preserve">
+    <value>เป้าหมาย</value>
+  </data>
+  <data name="MiniGameChangeEvent_MinimumTargetLevel_Caption" xml:space="preserve">
+    <value>เลเวลเป้าหมายต่ำสุด</value>
+  </data>
+  <data name="MiniGameChangeEvent_NumberOfKills_Caption" xml:space="preserve">
+    <value>จำนวนที่ต้องฆ่า</value>
+  </data>
+  <data name="MiniGameChangeEvent_MultiplyKillsByPlayers_Caption" xml:space="preserve">
+    <value>คูณจำนวนฆ่าตามผู้เล่น</value>
+  </data>
+  <data name="MiniGameChangeEvent_TargetDefinition_Caption" xml:space="preserve">
+    <value>เป้าหมาย</value>
+  </data>
+  <data name="MiniGameChangeEvent_SpawnArea_Caption" xml:space="preserve">
+    <value>พื้นที่เกิด</value>
+  </data>
+  <data name="MiniGameChangeEvent_TerrainChanges_Caption" xml:space="preserve">
+    <value>การเปลี่ยนภูมิประเทศ</value>
+  </data>
+  <data name="MiniGameDefinition_TypeCaption" xml:space="preserve">
+    <value>มินิเกม</value>
+  </data>
+  <data name="MiniGameDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>มินิเกม</value>
+  </data>
+  <data name="MiniGameDefinition_Type_Caption" xml:space="preserve">
+    <value>ประเภท</value>
+  </data>
+  <data name="MiniGameDefinition_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="MiniGameDefinition_Description_Caption" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="MiniGameDefinition_GameLevel_Caption" xml:space="preserve">
+    <value>ระดับเกม</value>
+  </data>
+  <data name="MiniGameDefinition_MapCreationPolicy_Caption" xml:space="preserve">
+    <value>วิธีสร้างแผนที่</value>
+  </data>
+  <data name="MiniGameDefinition_EnterDuration_Caption" xml:space="preserve">
+    <value>เวลาเข้า</value>
+  </data>
+  <data name="MiniGameDefinition_GameDuration_Caption" xml:space="preserve">
+    <value>เวลาเล่น</value>
+  </data>
+  <data name="MiniGameDefinition_ExitDuration_Caption" xml:space="preserve">
+    <value>เวลาออก</value>
+  </data>
+  <data name="MiniGameDefinition_MaximumPlayerCount_Caption" xml:space="preserve">
+    <value>ผู้เล่นสูงสุด</value>
+  </data>
+  <data name="MiniGameDefinition_SaveRankingStatistics_Caption" xml:space="preserve">
+    <value>บันทึกสถิติอันดับ</value>
+  </data>
+  <data name="MiniGameDefinition_RequiresMasterClass_Caption" xml:space="preserve">
+    <value>ต้องเป็นคลาสมาสเตอร์</value>
+  </data>
+  <data name="MiniGameDefinition_MinimumCharacterLevel_Caption" xml:space="preserve">
+    <value>เลเวลตัวละครต่ำสุด</value>
+  </data>
+  <data name="MiniGameDefinition_MaximumCharacterLevel_Caption" xml:space="preserve">
+    <value>เลเวลตัวละครสูงสุด</value>
+  </data>
+  <data name="MiniGameDefinition_MinimumSpecialCharacterLevel_Caption" xml:space="preserve">
+    <value>เลเวลต่ำสุด (คลาสพิเศษ)</value>
+  </data>
+  <data name="MiniGameDefinition_MaximumSpecialCharacterLevel_Caption" xml:space="preserve">
+    <value>เลเวลสูงสุด (คลาสพิเศษ)</value>
+  </data>
+  <data name="MiniGameDefinition_TicketItemLevel_Caption" xml:space="preserve">
+    <value>เลเวลบัตรเข้า</value>
+  </data>
+  <data name="MiniGameDefinition_EntranceFee_Caption" xml:space="preserve">
+    <value>ค่าเข้า</value>
+  </data>
+  <data name="MiniGameDefinition_ArePlayerKillersAllowedToEnter_Caption" xml:space="preserve">
+    <value>ให้ PK เข้าได้</value>
+  </data>
+  <data name="MiniGameDefinition_AllowParty_Caption" xml:space="preserve">
+    <value>อนุญาตปาร์ตี้</value>
+  </data>
+  <data name="MiniGameDefinition_Entrance_Caption" xml:space="preserve">
+    <value>ทางเข้า</value>
+  </data>
+  <data name="MiniGameDefinition_TicketItem_Caption" xml:space="preserve">
+    <value>บัตรเข้า</value>
+  </data>
+  <data name="MiniGameDefinition_Rewards_Caption" xml:space="preserve">
+    <value>รางวัล</value>
+  </data>
+  <data name="MiniGameDefinition_SpawnWaves_Caption" xml:space="preserve">
+    <value>รอบการเกิดมอนสเตอร์</value>
+  </data>
+  <data name="MiniGameDefinition_ChangeEvents_Caption" xml:space="preserve">
+    <value>เหตุการณ์เปลี่ยน</value>
+  </data>
+  <data name="MiniGameMapCreationPolicy_TypeCaption" xml:space="preserve">
+    <value>วิธีสร้างแผนที่มินิเกม</value>
+  </data>
+  <data name="MiniGameMapCreationPolicy_OnePerParty_Caption" xml:space="preserve">
+    <value>หนึ่งแผนที่ต่อปาร์ตี้</value>
+  </data>
+  <data name="MiniGameMapCreationPolicy_OnePerPlayer_Caption" xml:space="preserve">
+    <value>หนึ่งแผนที่ต่อผู้เล่น</value>
+  </data>
+  <data name="MiniGameMapCreationPolicy_Shared_Caption" xml:space="preserve">
+    <value>ใช้ร่วมกัน</value>
+  </data>
+  <data name="MiniGameRankingEntry_TypeCaption" xml:space="preserve">
+    <value>อันดับมินิเกม</value>
+  </data>
+  <data name="MiniGameRankingEntry_TypeCaptionPlural" xml:space="preserve">
+    <value>อันดับมินิเกม</value>
+  </data>
+  <data name="MiniGameRankingEntry_GameInstanceId_Caption" xml:space="preserve">
+    <value>Id รอบเกม</value>
+  </data>
+  <data name="MiniGameRankingEntry_Timestamp_Caption" xml:space="preserve">
+    <value>เวลา</value>
+  </data>
+  <data name="MiniGameRankingEntry_Score_Caption" xml:space="preserve">
+    <value>คะแนน</value>
+  </data>
+  <data name="MiniGameRankingEntry_Rank_Caption" xml:space="preserve">
+    <value>อันดับ</value>
+  </data>
+  <data name="MiniGameRankingEntry_Character_Caption" xml:space="preserve">
+    <value>ตัวละคร</value>
+  </data>
+  <data name="MiniGameRankingEntry_MiniGame_Caption" xml:space="preserve">
+    <value>มินิเกม</value>
+  </data>
+  <data name="MiniGameReward_TypeCaption" xml:space="preserve">
+    <value>รางวัลมินิเกม</value>
+  </data>
+  <data name="MiniGameReward_TypeCaptionPlural" xml:space="preserve">
+    <value>รางวัลมินิเกม</value>
+  </data>
+  <data name="MiniGameReward_Rank_Caption" xml:space="preserve">
+    <value>อันดับ</value>
+  </data>
+  <data name="MiniGameReward_RewardType_Caption" xml:space="preserve">
+    <value>ประเภทรางวัล</value>
+  </data>
+  <data name="MiniGameReward_RewardAmount_Caption" xml:space="preserve">
+    <value>จำนวนรางวัล</value>
+  </data>
+  <data name="MiniGameReward_RequiredSuccess_Caption" xml:space="preserve">
+    <value>ผลที่ต้องได้</value>
+  </data>
+  <data name="MiniGameReward_ItemReward_Caption" xml:space="preserve">
+    <value>รางวัลไอเทม</value>
+  </data>
+  <data name="MiniGameReward_RequiredKill_Caption" xml:space="preserve">
+    <value>ต้องฆ่า</value>
+  </data>
+  <data name="MiniGameRewardType_TypeCaption" xml:space="preserve">
+    <value>ประเภทรางวัลมินิเกม</value>
+  </data>
+  <data name="MiniGameRewardType_Undefined_Caption" xml:space="preserve">
+    <value>ไม่กำหนด</value>
+  </data>
+  <data name="MiniGameRewardType_Money_Caption" xml:space="preserve">
+    <value>เงิน</value>
+  </data>
+  <data name="MiniGameRewardType_Experience_Caption" xml:space="preserve">
+    <value>ค่าประสบการณ์</value>
+  </data>
+  <data name="MiniGameRewardType_ExperiencePerRemainingSeconds_Caption" xml:space="preserve">
+    <value>ค่าประสบการณ์ตามวินาทีที่เหลือ</value>
+  </data>
+  <data name="MiniGameRewardType_Item_Caption" xml:space="preserve">
+    <value>ไอเทม</value>
+  </data>
+  <data name="MiniGameRewardType_ItemDrop_Caption" xml:space="preserve">
+    <value>ดรอปไอเทม</value>
+  </data>
+  <data name="MiniGameRewardType_Score_Caption" xml:space="preserve">
+    <value>คะแนน</value>
+  </data>
+  <data name="MiniGameSpawnWave_TypeCaption" xml:space="preserve">
+    <value>รอบเกิดมอนสเตอร์ในมินิเกม</value>
+  </data>
+  <data name="MiniGameSpawnWave_TypeCaptionPlural" xml:space="preserve">
+    <value>รอบเกิดมอนสเตอร์ในมินิเกม</value>
+  </data>
+  <data name="MiniGameSpawnWave_WaveNumber_Caption" xml:space="preserve">
+    <value>รอบที่</value>
+  </data>
+  <data name="MiniGameSpawnWave_Description_Caption" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="MiniGameSpawnWave_Message_Caption" xml:space="preserve">
+    <value>ข้อความ</value>
+  </data>
+  <data name="MiniGameSpawnWave_StartTime_Caption" xml:space="preserve">
+    <value>เวลาเริ่ม</value>
+  </data>
+  <data name="MiniGameSpawnWave_EndTime_Caption" xml:space="preserve">
+    <value>เวลาจบ</value>
+  </data>
+  <data name="MiniGameSuccessFlags_TypeCaption" xml:space="preserve">
+    <value>เงื่อนไขความสำเร็จ</value>
+  </data>
+  <data name="MiniGameSuccessFlags_None_Caption" xml:space="preserve">
+    <value>ไม่มี</value>
+  </data>
+  <data name="MiniGameSuccessFlags_Winner_Caption" xml:space="preserve">
+    <value>ผู้ชนะ</value>
+  </data>
+  <data name="MiniGameSuccessFlags_WinningParty_Caption" xml:space="preserve">
+    <value>ปาร์ตี้ที่ชนะ</value>
+  </data>
+  <data name="MiniGameSuccessFlags_WinnerOrInWinningParty_Caption" xml:space="preserve">
+    <value>ผู้ชนะหรืออยู่ในปาร์ตี้ที่ชนะ</value>
+  </data>
+  <data name="MiniGameSuccessFlags_Loser_Caption" xml:space="preserve">
+    <value>ผู้แพ้</value>
+  </data>
+  <data name="MiniGameSuccessFlags_Alive_Caption" xml:space="preserve">
+    <value>ยังมีชีวิต</value>
+  </data>
+  <data name="MiniGameSuccessFlags_Dead_Caption" xml:space="preserve">
+    <value>ตาย</value>
+  </data>
+  <data name="MiniGameSuccessFlags_WinnerExists_Caption" xml:space="preserve">
+    <value>มีผู้ชนะ</value>
+  </data>
+  <data name="MiniGameSuccessFlags_WinnerNotExists_Caption" xml:space="preserve">
+    <value>ไม่มีผู้ชนะ</value>
+  </data>
+  <data name="MiniGameTerrainChange_TypeCaption" xml:space="preserve">
+    <value>การเปลี่ยนภูมิประเทศในมินิเกม</value>
+  </data>
+  <data name="MiniGameTerrainChange_TypeCaptionPlural" xml:space="preserve">
+    <value>การเปลี่ยนภูมิประเทศในมินิเกม</value>
+  </data>
+  <data name="MiniGameTerrainChange_TerrainAttribute_Caption" xml:space="preserve">
+    <value>คุณสมบัติภูมิประเทศ</value>
+  </data>
+  <data name="MiniGameTerrainChange_SetTerrainAttribute_Caption" xml:space="preserve">
+    <value>ตั้งคุณสมบัติภูมิประเทศ</value>
+  </data>
+  <data name="MiniGameTerrainChange_IsClientUpdateRequired_Caption" xml:space="preserve">
+    <value>ต้องอัปเดตตัวเกม</value>
+  </data>
+  <data name="MiniGameTerrainChange_StartX_Caption" xml:space="preserve">
+    <value>เริ่ม X</value>
+  </data>
+  <data name="MiniGameTerrainChange_StartY_Caption" xml:space="preserve">
+    <value>เริ่ม Y</value>
+  </data>
+  <data name="MiniGameTerrainChange_EndX_Caption" xml:space="preserve">
+    <value>จบ X</value>
+  </data>
+  <data name="MiniGameTerrainChange_EndY_Caption" xml:space="preserve">
+    <value>จบ Y</value>
+  </data>
+  <data name="MiniGameType_TypeCaption" xml:space="preserve">
+    <value>ประเภทมินิเกม</value>
+  </data>
+  <data name="MiniGameType_Undefined_Caption" xml:space="preserve">
+    <value>ไม่กำหนด</value>
+  </data>
+  <data name="MiniGameType_DevilSquare_Caption" xml:space="preserve">
+    <value>Devil Square</value>
+  </data>
+  <data name="MiniGameType_BloodCastle_Caption" xml:space="preserve">
+    <value>Blood Castle</value>
+  </data>
+  <data name="MiniGameType_ChaosCastle_Caption" xml:space="preserve">
+    <value>Chaos Castle</value>
+  </data>
+  <data name="MiniGameType_IllusionTemple_Caption" xml:space="preserve">
+    <value>Illusion Temple</value>
+  </data>
+  <data name="MiniGameType_Doppelganger_Caption" xml:space="preserve">
+    <value>Doppelganger</value>
+  </data>
+  <data name="MixResult_TypeCaption" xml:space="preserve">
+    <value>ผลการผสม</value>
+  </data>
+  <data name="MixResult_Disappear_Caption" xml:space="preserve">
+    <value>หายไป</value>
+  </data>
+  <data name="MixResult_StaysAsIs_Caption" xml:space="preserve">
+    <value>คงเดิม</value>
+  </data>
+  <data name="MixResult_ChaosWeaponAndFirstWingsDowngradedRandom_Caption" xml:space="preserve">
+    <value>อาวุธ Chaos และปีกขั้น 1 ลดระดับแบบสุ่ม</value>
+  </data>
+  <data name="MixResult_ThirdWingsDowngradedRandom_Caption" xml:space="preserve">
+    <value>ปีกขั้น 3 ลดระดับแบบสุ่ม</value>
+  </data>
+  <data name="ModelResourceProvider_TypeCaption" xml:space="preserve">
+    <value>Model Resource Provider</value>
+  </data>
+  <data name="ModelResourceProvider_TypeCaptionPlural" xml:space="preserve">
+    <value>Model Resource Providers</value>
+  </data>
+  <data name="MonsterAttribute_TypeCaption" xml:space="preserve">
+    <value>ค่าสถานะมอนสเตอร์</value>
+  </data>
+  <data name="MonsterAttribute_TypeCaptionPlural" xml:space="preserve">
+    <value>ค่าสถานะมอนสเตอร์</value>
+  </data>
+  <data name="MonsterAttribute_AttributeDefinition_Caption" xml:space="preserve">
+    <value>ค่าสถานะ</value>
+  </data>
+  <data name="MonsterAttribute_Value_Caption" xml:space="preserve">
+    <value>ค่า</value>
+  </data>
+  <data name="MonsterDefinition_TypeCaption" xml:space="preserve">
+    <value>มอนสเตอร์</value>
+  </data>
+  <data name="MonsterDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>มอนสเตอร์</value>
+  </data>
+  <data name="MonsterDefinition_Number_Caption" xml:space="preserve">
+    <value>หมายเลข</value>
+  </data>
+  <data name="MonsterDefinition_Designation_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="MonsterDefinition_MoveRange_Caption" xml:space="preserve">
+    <value>ระยะเดิน</value>
+  </data>
+  <data name="MonsterDefinition_AttackRange_Caption" xml:space="preserve">
+    <value>ระยะโจมตี</value>
+  </data>
+  <data name="MonsterDefinition_ViewRange_Caption" xml:space="preserve">
+    <value>ระยะมองเห็น</value>
+  </data>
+  <data name="MonsterDefinition_MoveDelay_Caption" xml:space="preserve">
+    <value>หน่วงเวลาเดิน</value>
+  </data>
+  <data name="MonsterDefinition_AttackDelay_Caption" xml:space="preserve">
+    <value>หน่วงเวลาโจมตี</value>
+  </data>
+  <data name="MonsterDefinition_RespawnDelay_Caption" xml:space="preserve">
+    <value>หน่วงเวลาเกิดใหม่</value>
+  </data>
+  <data name="MonsterDefinition_Attribute_Caption" xml:space="preserve">
+    <value>คุณสมบัติ</value>
+  </data>
+  <data name="MonsterDefinition_NumberOfMaximumItemDrops_Caption" xml:space="preserve">
+    <value>จำนวนไอเทมดรอปสูงสุด</value>
+  </data>
+  <data name="MonsterDefinition_NpcWindow_Caption" xml:space="preserve">
+    <value>หน้าต่าง NPC</value>
+  </data>
+  <data name="MonsterDefinition_ObjectKind_Caption" xml:space="preserve">
+    <value>ชนิดวัตถุ</value>
+  </data>
+  <data name="MonsterDefinition_IntelligenceTypeName_Caption" xml:space="preserve">
+    <value>ชื่อประเภท AI</value>
+  </data>
+  <data name="MonsterDefinition_AttackSkill_Caption" xml:space="preserve">
+    <value>สกิลโจมตี</value>
+  </data>
+  <data name="MonsterDefinition_MerchantStore_Caption" xml:space="preserve">
+    <value>ร้านค้า</value>
+  </data>
+  <data name="MonsterDefinition_ItemCraftings_Caption" xml:space="preserve">
+    <value>การผสมไอเทม</value>
+  </data>
+  <data name="MonsterDefinition_DropItemGroups_Caption" xml:space="preserve">
+    <value>กลุ่มไอเทมดรอป</value>
+  </data>
+  <data name="MonsterDefinition_Attributes_Caption" xml:space="preserve">
+    <value>ค่าสถานะ</value>
+  </data>
+  <data name="MonsterDefinition_Quests_Caption" xml:space="preserve">
+    <value>เควสต์</value>
+  </data>
+  <data name="MonsterSpawnArea_TypeCaption" xml:space="preserve">
+    <value>พื้นที่เกิดมอนสเตอร์</value>
+  </data>
+  <data name="MonsterSpawnArea_TypeCaptionPlural" xml:space="preserve">
+    <value>พื้นที่เกิดมอนสเตอร์</value>
+  </data>
+  <data name="MonsterSpawnArea_MonsterDefinition_Caption" xml:space="preserve">
+    <value>มอนสเตอร์</value>
+  </data>
+  <data name="MonsterSpawnArea_GameMap_Caption" xml:space="preserve">
+    <value>แผนที่เกม</value>
+  </data>
+  <data name="MonsterSpawnArea_X1_Caption" xml:space="preserve">
+    <value>X1</value>
+  </data>
+  <data name="MonsterSpawnArea_Y1_Caption" xml:space="preserve">
+    <value>Y1</value>
+  </data>
+  <data name="MonsterSpawnArea_X2_Caption" xml:space="preserve">
+    <value>X2</value>
+  </data>
+  <data name="MonsterSpawnArea_Y2_Caption" xml:space="preserve">
+    <value>Y2</value>
+  </data>
+  <data name="MonsterSpawnArea_Direction_Caption" xml:space="preserve">
+    <value>ทิศทาง</value>
+  </data>
+  <data name="MonsterSpawnArea_Quantity_Caption" xml:space="preserve">
+    <value>จำนวน</value>
+  </data>
+  <data name="MonsterSpawnArea_SpawnTrigger_Caption" xml:space="preserve">
+    <value>ตัวกระตุ้นการเกิด</value>
+  </data>
+  <data name="MonsterSpawnArea_WaveNumber_Caption" xml:space="preserve">
+    <value>รอบที่</value>
+  </data>
+  <data name="MonsterSpawnArea_MaximumHealthOverride_Caption" xml:space="preserve">
+    <value>กำหนดพลังชีวิตสูงสุดเอง</value>
+  </data>
+  <data name="NpcObjectKind_TypeCaption" xml:space="preserve">
+    <value>ชนิด NPC</value>
+  </data>
+  <data name="NpcObjectKind_Monster_Caption" xml:space="preserve">
+    <value>มอนสเตอร์</value>
+  </data>
+  <data name="NpcObjectKind_PassiveNpc_Caption" xml:space="preserve">
+    <value>NPC ทั่วไป</value>
+  </data>
+  <data name="NpcObjectKind_Guard_Caption" xml:space="preserve">
+    <value>ทหารยาม</value>
+  </data>
+  <data name="NpcObjectKind_Trap_Caption" xml:space="preserve">
+    <value>กับดัก</value>
+  </data>
+  <data name="NpcObjectKind_Gate_Caption" xml:space="preserve">
+    <value>ประตู</value>
+  </data>
+  <data name="NpcObjectKind_Statue_Caption" xml:space="preserve">
+    <value>รูปปั้น</value>
+  </data>
+  <data name="NpcObjectKind_SoccerBall_Caption" xml:space="preserve">
+    <value>ลูกฟุตบอล</value>
+  </data>
+  <data name="NpcObjectKind_Destructible_Caption" xml:space="preserve">
+    <value>ทำลายได้</value>
+  </data>
+  <data name="NpcWindow_TypeCaption" xml:space="preserve">
+    <value>หน้าต่าง NPC</value>
+  </data>
+  <data name="NpcWindow_Undefined_Caption" xml:space="preserve">
+    <value>ไม่กำหนด</value>
+  </data>
+  <data name="NpcWindow_Merchant_Caption" xml:space="preserve">
+    <value>พ่อค้า</value>
+  </data>
+  <data name="NpcWindow_Merchant1_Caption" xml:space="preserve">
+    <value>พ่อค้า 1</value>
+  </data>
+  <data name="NpcWindow_Storage_Caption" xml:space="preserve">
+    <value>โกดัง</value>
+  </data>
+  <data name="NpcWindow_VaultStorage_Caption" xml:space="preserve">
+    <value>โกดังเก็บของ</value>
+  </data>
+  <data name="NpcWindow_ChaosMachine_Caption" xml:space="preserve">
+    <value>เครื่อง Chaos</value>
+  </data>
+  <data name="NpcWindow_DevilSquare_Caption" xml:space="preserve">
+    <value>Devil Square</value>
+  </data>
+  <data name="NpcWindow_BloodCastle_Caption" xml:space="preserve">
+    <value>Blood Castle</value>
+  </data>
+  <data name="NpcWindow_PetTrainer_Caption" xml:space="preserve">
+    <value>ครูฝึกสัตว์เลี้ยง</value>
+  </data>
+  <data name="NpcWindow_Lahap_Caption" xml:space="preserve">
+    <value>Lahap</value>
+  </data>
+  <data name="NpcWindow_CastleSeniorNPC_Caption" xml:space="preserve">
+    <value>NPC ผู้อาวุโสปราสาท</value>
+  </data>
+  <data name="NpcWindow_ElphisRefinery_Caption" xml:space="preserve">
+    <value>โรงกลั่น Elphis</value>
+  </data>
+  <data name="NpcWindow_RefineStoneMaking_Caption" xml:space="preserve">
+    <value>ทำหินกลั่น</value>
+  </data>
+  <data name="NpcWindow_RemoveJohOption_Caption" xml:space="preserve">
+    <value>ลบออปชัน Harmony</value>
+  </data>
+  <data name="NpcWindow_IllusionTemple_Caption" xml:space="preserve">
+    <value>Illusion Temple</value>
+  </data>
+  <data name="NpcWindow_ChaosCardCombination_Caption" xml:space="preserve">
+    <value>ผสม Chaos Card</value>
+  </data>
+  <data name="NpcWindow_CherryBlossomBranchesAssembly_Caption" xml:space="preserve">
+    <value>รวมกิ่งซากุระ</value>
+  </data>
+  <data name="NpcWindow_SeedMaster_Caption" xml:space="preserve">
+    <value>Seed Master</value>
+  </data>
+  <data name="NpcWindow_SeedResearcher_Caption" xml:space="preserve">
+    <value>Seed Researcher</value>
+  </data>
+  <data name="NpcWindow_StatReInitializer_Caption" xml:space="preserve">
+    <value>รีเซ็ตสเตตัส</value>
+  </data>
+  <data name="NpcWindow_DelgadoLuckyCoinRegistration_Caption" xml:space="preserve">
+    <value>Delgado ลงทะเบียน Lucky Coin</value>
+  </data>
+  <data name="NpcWindow_DoorkeeperTitusDuelWatch_Caption" xml:space="preserve">
+    <value>ผู้เฝ้าประตู Titus ดูการดวล</value>
+  </data>
+  <data name="NpcWindow_LugardDoppelgangerEntry_Caption" xml:space="preserve">
+    <value>Lugard ทางเข้า Doppelganger</value>
+  </data>
+  <data name="NpcWindow_JerintGaionEvententry_Caption" xml:space="preserve">
+    <value>Jerint ทางเข้าอีเวนต์ Gaion</value>
+  </data>
+  <data name="NpcWindow_JuliaWarpMarketServer_Caption" xml:space="preserve">
+    <value>Julia วาร์ปเซิร์ฟเวอร์ตลาด</value>
+  </data>
+  <data name="NpcWindow_GuildMaster_Caption" xml:space="preserve">
+    <value>หัวหน้ากิลด์</value>
+  </data>
+  <data name="NpcWindow_CombineLuckyItem_Caption" xml:space="preserve">
+    <value>ผสม Lucky Item</value>
+  </data>
+  <data name="NpcWindow_NpcDialog_Caption" xml:space="preserve">
+    <value>บทสนทนา NPC</value>
+  </data>
+  <data name="NpcWindow_LegacyQuest_Caption" xml:space="preserve">
+    <value>เควสต์แบบเก่า</value>
+  </data>
+  <data name="PowerUpDefinition_TypeCaption" xml:space="preserve">
+    <value>การเพิ่มพลัง</value>
+  </data>
+  <data name="PowerUpDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>การเพิ่มพลัง</value>
+  </data>
+  <data name="PowerUpDefinition_TargetAttribute_Caption" xml:space="preserve">
+    <value>ค่าสถานะเป้าหมาย</value>
+  </data>
+  <data name="PowerUpDefinition_Boost_Caption" xml:space="preserve">
+    <value>ค่าที่เพิ่ม</value>
+  </data>
+  <data name="PowerUpDefinitionValue_TypeCaption" xml:space="preserve">
+    <value>ค่าการเพิ่มพลัง</value>
+  </data>
+  <data name="PowerUpDefinitionValue_TypeCaptionPlural" xml:space="preserve">
+    <value>ค่าการเพิ่มพลัง</value>
+  </data>
+  <data name="PowerUpDefinitionValue_ConstantValue_Caption" xml:space="preserve">
+    <value>ค่าคงที่</value>
+  </data>
+  <data name="PowerUpDefinitionValue_RelatedValues_Caption" xml:space="preserve">
+    <value>ค่าที่เกี่ยวข้อง</value>
+  </data>
+  <data name="PowerUpDefinitionValue_MaximumValue_Caption" xml:space="preserve">
+    <value>ค่าสูงสุด</value>
+  </data>
+  <data name="QuestDefinition_TypeCaption" xml:space="preserve">
+    <value>เควสต์</value>
+  </data>
+  <data name="QuestDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>เควสต์</value>
+  </data>
+  <data name="QuestDefinition_QuestGiver_Caption" xml:space="preserve">
+    <value>ผู้ให้เควสต์</value>
+  </data>
+  <data name="QuestDefinition_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="QuestDefinition_Group_Caption" xml:space="preserve">
+    <value>กลุ่ม</value>
+  </data>
+  <data name="QuestDefinition_Number_Caption" xml:space="preserve">
+    <value>หมายเลข</value>
+  </data>
+  <data name="QuestDefinition_StartingNumber_Caption" xml:space="preserve">
+    <value>หมายเลขเริ่ม</value>
+  </data>
+  <data name="QuestDefinition_RefuseNumber_Caption" xml:space="preserve">
+    <value>หมายเลขปฏิเสธ</value>
+  </data>
+  <data name="QuestDefinition_Repeatable_Caption" xml:space="preserve">
+    <value>ทำซ้ำได้</value>
+  </data>
+  <data name="QuestDefinition_RequiresClientAction_Caption" xml:space="preserve">
+    <value>ต้องทำในตัวเกม</value>
+  </data>
+  <data name="QuestDefinition_RequiredStartMoney_Caption" xml:space="preserve">
+    <value>เงินที่ต้องใช้เริ่ม</value>
+  </data>
+  <data name="QuestDefinition_MinimumCharacterLevel_Caption" xml:space="preserve">
+    <value>เลเวลตัวละครต่ำสุด</value>
+  </data>
+  <data name="QuestDefinition_MaximumCharacterLevel_Caption" xml:space="preserve">
+    <value>เลเวลตัวละครสูงสุด</value>
+  </data>
+  <data name="QuestDefinition_QualifiedCharacter_Caption" xml:space="preserve">
+    <value>คลาสที่รับได้</value>
+  </data>
+  <data name="QuestDefinition_RequiredMonsterKills_Caption" xml:space="preserve">
+    <value>มอนสเตอร์ที่ต้องฆ่า</value>
+  </data>
+  <data name="QuestDefinition_RequiredItems_Caption" xml:space="preserve">
+    <value>ไอเทมที่ต้องใช้</value>
+  </data>
+  <data name="QuestDefinition_Rewards_Caption" xml:space="preserve">
+    <value>รางวัล</value>
+  </data>
+  <data name="QuestItemRequirement_TypeCaption" xml:space="preserve">
+    <value>ไอเทมที่เควสต์ต้องการ</value>
+  </data>
+  <data name="QuestItemRequirement_TypeCaptionPlural" xml:space="preserve">
+    <value>ไอเทมที่เควสต์ต้องการ</value>
+  </data>
+  <data name="QuestItemRequirement_Item_Caption" xml:space="preserve">
+    <value>ไอเทม</value>
+  </data>
+  <data name="QuestItemRequirement_DropItemGroup_Caption" xml:space="preserve">
+    <value>กลุ่มไอเทมดรอป</value>
+  </data>
+  <data name="QuestItemRequirement_MinimumNumber_Caption" xml:space="preserve">
+    <value>จำนวนขั้นต่ำ</value>
+  </data>
+  <data name="QuestMonsterKillRequirement_TypeCaption" xml:space="preserve">
+    <value>มอนสเตอร์ที่เควสต์ต้องฆ่า</value>
+  </data>
+  <data name="QuestMonsterKillRequirement_TypeCaptionPlural" xml:space="preserve">
+    <value>มอนสเตอร์ที่เควสต์ต้องฆ่า</value>
+  </data>
+  <data name="QuestMonsterKillRequirement_Monster_Caption" xml:space="preserve">
+    <value>มอนสเตอร์</value>
+  </data>
+  <data name="QuestMonsterKillRequirement_MinimumNumber_Caption" xml:space="preserve">
+    <value>จำนวนขั้นต่ำ</value>
+  </data>
+  <data name="QuestMonsterKillRequirementState_TypeCaption" xml:space="preserve">
+    <value>สถานะการฆ่ามอนสเตอร์ของเควสต์</value>
+  </data>
+  <data name="QuestMonsterKillRequirementState_TypeCaptionPlural" xml:space="preserve">
+    <value>สถานะการฆ่ามอนสเตอร์ของเควสต์</value>
+  </data>
+  <data name="QuestMonsterKillRequirementState_Requirement_Caption" xml:space="preserve">
+    <value>เงื่อนไข</value>
+  </data>
+  <data name="QuestMonsterKillRequirementState_KillCount_Caption" xml:space="preserve">
+    <value>จำนวนที่ฆ่าแล้ว</value>
+  </data>
+  <data name="QuestReward_TypeCaption" xml:space="preserve">
+    <value>รางวัลเควสต์</value>
+  </data>
+  <data name="QuestReward_TypeCaptionPlural" xml:space="preserve">
+    <value>รางวัลเควสต์</value>
+  </data>
+  <data name="QuestReward_RewardType_Caption" xml:space="preserve">
+    <value>ประเภทรางวัล</value>
+  </data>
+  <data name="QuestReward_Value_Caption" xml:space="preserve">
+    <value>ค่า</value>
+  </data>
+  <data name="QuestReward_ItemReward_Caption" xml:space="preserve">
+    <value>รางวัลไอเทม</value>
+  </data>
+  <data name="QuestReward_AttributeReward_Caption" xml:space="preserve">
+    <value>รางวัลค่าสถานะ</value>
+  </data>
+  <data name="QuestReward_SkillReward_Caption" xml:space="preserve">
+    <value>รางวัลสกิล</value>
+  </data>
+  <data name="QuestRewardType_TypeCaption" xml:space="preserve">
+    <value>ประเภทรางวัลเควสต์</value>
+  </data>
+  <data name="QuestRewardType_Undefined_Caption" xml:space="preserve">
+    <value>ไม่กำหนด</value>
+  </data>
+  <data name="QuestRewardType_Experience_Caption" xml:space="preserve">
+    <value>ค่าประสบการณ์</value>
+  </data>
+  <data name="QuestRewardType_Money_Caption" xml:space="preserve">
+    <value>เงิน</value>
+  </data>
+  <data name="QuestRewardType_Item_Caption" xml:space="preserve">
+    <value>ไอเทม</value>
+  </data>
+  <data name="QuestRewardType_GensAttribution_Caption" xml:space="preserve">
+    <value>เข้าสังกัด Gens</value>
+  </data>
+  <data name="QuestRewardType_LevelUpPoints_Caption" xml:space="preserve">
+    <value>แต้มอัปสเตตัส</value>
+  </data>
+  <data name="QuestRewardType_CharacterEvolutionFirstToSecond_Caption" xml:space="preserve">
+    <value>เปลี่ยนคลาสขั้น 1 เป็นขั้น 2</value>
+  </data>
+  <data name="QuestRewardType_CharacterEvolutionSecondToThird_Caption" xml:space="preserve">
+    <value>เปลี่ยนคลาสขั้น 2 เป็นขั้น 3</value>
+  </data>
+  <data name="QuestRewardType_Attribute_Caption" xml:space="preserve">
+    <value>ค่าสถานะ</value>
+  </data>
+  <data name="QuestRewardType_Skill_Caption" xml:space="preserve">
+    <value>สกิล</value>
+  </data>
+  <data name="Rectangle_TypeCaption" xml:space="preserve">
+    <value>สี่เหลี่ยม</value>
+  </data>
+  <data name="Rectangle_TypeCaptionPlural" xml:space="preserve">
+    <value>สี่เหลี่ยม</value>
+  </data>
+  <data name="Rectangle_X1_Caption" xml:space="preserve">
+    <value>X1</value>
+  </data>
+  <data name="Rectangle_Y1_Caption" xml:space="preserve">
+    <value>Y1</value>
+  </data>
+  <data name="Rectangle_X2_Caption" xml:space="preserve">
+    <value>X2</value>
+  </data>
+  <data name="Rectangle_Y2_Caption" xml:space="preserve">
+    <value>Y2</value>
+  </data>
+  <data name="ResultItemSelection_TypeCaption" xml:space="preserve">
+    <value>การเลือกไอเทมผลลัพธ์</value>
+  </data>
+  <data name="ResultItemSelection_Any_Caption" xml:space="preserve">
+    <value>อย่างใดอย่างหนึ่ง</value>
+  </data>
+  <data name="ResultItemSelection_All_Caption" xml:space="preserve">
+    <value>ทั้งหมด</value>
+  </data>
+  <data name="ServerEndpoint_TypeCaption" xml:space="preserve">
+    <value>ปลายทางเซิร์ฟเวอร์</value>
+  </data>
+  <data name="ServerEndpoint_TypeCaptionPlural" xml:space="preserve">
+    <value>ปลายทางเซิร์ฟเวอร์</value>
+  </data>
+  <data name="ServerEndpoint_NetworkPort_Caption" xml:space="preserve">
+    <value>พอร์ตเครือข่าย</value>
+  </data>
+  <data name="ServerEndpoint_Client_Caption" xml:space="preserve">
+    <value>ตัวเกม</value>
+  </data>
+  <data name="SimpleCraftingSettings_TypeCaption" xml:space="preserve">
+    <value>ตั้งค่าการผสมแบบง่าย</value>
+  </data>
+  <data name="SimpleCraftingSettings_TypeCaptionPlural" xml:space="preserve">
+    <value>ตั้งค่าการผสมแบบง่าย</value>
+  </data>
+  <data name="SimpleCraftingSettings_Money_Caption" xml:space="preserve">
+    <value>เงิน</value>
+  </data>
+  <data name="SimpleCraftingSettings_MoneyPerFinalSuccessPercentage_Caption" xml:space="preserve">
+    <value>เงินต่อเปอร์เซ็นต์สำเร็จสุดท้าย</value>
+  </data>
+  <data name="SimpleCraftingSettings_NpcPriceDivisor_Caption" xml:space="preserve">
+    <value>ตัวหารราคา NPC</value>
+  </data>
+  <data name="SimpleCraftingSettings_SuccessPercent_Caption" xml:space="preserve">
+    <value>เปอร์เซ็นต์สำเร็จ</value>
+  </data>
+  <data name="SimpleCraftingSettings_MaximumSuccessPercent_Caption" xml:space="preserve">
+    <value>เปอร์เซ็นต์สำเร็จสูงสุด</value>
+  </data>
+  <data name="SimpleCraftingSettings_MultipleAllowed_Caption" xml:space="preserve">
+    <value>ผสมหลายชิ้นพร้อมกันได้</value>
+  </data>
+  <data name="SimpleCraftingSettings_RequiredItems_Caption" xml:space="preserve">
+    <value>ไอเทมที่ต้องใช้</value>
+  </data>
+  <data name="SimpleCraftingSettings_ResultItems_Caption" xml:space="preserve">
+    <value>ไอเทมผลลัพธ์</value>
+  </data>
+  <data name="SimpleCraftingSettings_ResultItemSelect_Caption" xml:space="preserve">
+    <value>การเลือกไอเทมผลลัพธ์</value>
+  </data>
+  <data name="SimpleCraftingSettings_SuccessPercentageAdditionForLuck_Caption" xml:space="preserve">
+    <value>เพิ่มเปอร์เซ็นต์สำเร็จเมื่อมี Luck</value>
+  </data>
+  <data name="SimpleCraftingSettings_SuccessPercentageAdditionForExcellentItem_Caption" xml:space="preserve">
+    <value>เพิ่มเปอร์เซ็นต์สำเร็จสำหรับไอเทม Excellent</value>
+  </data>
+  <data name="SimpleCraftingSettings_SuccessPercentageAdditionForAncientItem_Caption" xml:space="preserve">
+    <value>เพิ่มเปอร์เซ็นต์สำเร็จสำหรับไอเทม Ancient</value>
+  </data>
+  <data name="SimpleCraftingSettings_SuccessPercentageAdditionForGuardianItem_Caption" xml:space="preserve">
+    <value>เพิ่มเปอร์เซ็นต์สำเร็จสำหรับไอเทม Guardian</value>
+  </data>
+  <data name="SimpleCraftingSettings_SuccessPercentageAdditionForSocketItem_Caption" xml:space="preserve">
+    <value>เพิ่มเปอร์เซ็นต์สำเร็จสำหรับไอเทมซ็อกเก็ต</value>
+  </data>
+  <data name="SimpleCraftingSettings_ResultItemLuckOptionChance_Caption" xml:space="preserve">
+    <value>โอกาสได้ Luck ของไอเทมผลลัพธ์</value>
+  </data>
+  <data name="SimpleCraftingSettings_ResultItemSkillChance_Caption" xml:space="preserve">
+    <value>โอกาสได้สกิลของไอเทมผลลัพธ์</value>
+  </data>
+  <data name="SimpleCraftingSettings_ResultItemExcellentOptionChance_Caption" xml:space="preserve">
+    <value>โอกาสได้ออปชัน Excellent ของไอเทมผลลัพธ์</value>
+  </data>
+  <data name="SimpleCraftingSettings_ResultItemMaxExcOptionCount_Caption" xml:space="preserve">
+    <value>จำนวนออปชัน Excellent สูงสุดของไอเทมผลลัพธ์</value>
+  </data>
+  <data name="Skill_TypeCaption" xml:space="preserve">
+    <value>สกิล</value>
+  </data>
+  <data name="Skill_TypeCaptionPlural" xml:space="preserve">
+    <value>สกิล</value>
+  </data>
+  <data name="Skill_Number_Caption" xml:space="preserve">
+    <value>หมายเลข</value>
+  </data>
+  <data name="Skill_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="Skill_AttackDamage_Caption" xml:space="preserve">
+    <value>พลังโจมตี</value>
+  </data>
+  <data name="Skill_Requirements_Caption" xml:space="preserve">
+    <value>เงื่อนไข</value>
+  </data>
+  <data name="Skill_ConsumeRequirements_Caption" xml:space="preserve">
+    <value>ค่าที่ใช้</value>
+  </data>
+  <data name="Skill_AttributeRelationships_Caption" xml:space="preserve">
+    <value>ความสัมพันธ์ค่าสถานะ</value>
+  </data>
+  <data name="Skill_Range_Caption" xml:space="preserve">
+    <value>ระยะ</value>
+  </data>
+  <data name="Skill_DamageType_Caption" xml:space="preserve">
+    <value>ประเภทความเสียหาย</value>
+  </data>
+  <data name="Skill_SkillType_Caption" xml:space="preserve">
+    <value>ประเภทสกิล</value>
+  </data>
+  <data name="Skill_Target_Caption" xml:space="preserve">
+    <value>เป้าหมาย</value>
+  </data>
+  <data name="Skill_ImplicitTargetRange_Caption" xml:space="preserve">
+    <value>ระยะเป้าหมายอัตโนมัติ</value>
+  </data>
+  <data name="Skill_TargetRestriction_Caption" xml:space="preserve">
+    <value>ข้อจำกัดเป้าหมาย</value>
+  </data>
+  <data name="Skill_MovesToTarget_Caption" xml:space="preserve">
+    <value>เคลื่อนไปหาเป้าหมาย</value>
+  </data>
+  <data name="Skill_MovesTarget_Caption" xml:space="preserve">
+    <value>ผลักเป้าหมาย</value>
+  </data>
+  <data name="Skill_ElementalModifierTarget_Caption" xml:space="preserve">
+    <value>ธาตุที่มีผล</value>
+  </data>
+  <data name="Skill_MagicEffectDef_Caption" xml:space="preserve">
+    <value>เอฟเฟกต์เวทมนตร์</value>
+  </data>
+  <data name="Skill_QualifiedCharacters_Caption" xml:space="preserve">
+    <value>คลาสที่ใช้ได้</value>
+  </data>
+  <data name="Skill_MasterDefinition_Caption" xml:space="preserve">
+    <value>มาสเตอร์</value>
+  </data>
+  <data name="Skill_AreaSkillSettings_Caption" xml:space="preserve">
+    <value>ตั้งค่าสกิลวงกว้าง</value>
+  </data>
+  <data name="SkillComboDefinition_TypeCaption" xml:space="preserve">
+    <value>คอมโบสกิล</value>
+  </data>
+  <data name="SkillComboDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>คอมโบสกิล</value>
+  </data>
+  <data name="SkillComboDefinition_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="SkillComboDefinition_MaximumCompletionTime_Caption" xml:space="preserve">
+    <value>เวลาสูงสุดที่ต้องทำให้ครบ</value>
+  </data>
+  <data name="SkillComboDefinition_Steps_Caption" xml:space="preserve">
+    <value>ขั้นตอน</value>
+  </data>
+  <data name="SkillComboStep_TypeCaption" xml:space="preserve">
+    <value>ขั้นคอมโบสกิล</value>
+  </data>
+  <data name="SkillComboStep_TypeCaptionPlural" xml:space="preserve">
+    <value>ขั้นคอมโบสกิล</value>
+  </data>
+  <data name="SkillComboStep_Order_Caption" xml:space="preserve">
+    <value>ลำดับ</value>
+  </data>
+  <data name="SkillComboStep_IsFinalStep_Caption" xml:space="preserve">
+    <value>เป็นขั้นสุดท้าย</value>
+  </data>
+  <data name="SkillComboStep_Skill_Caption" xml:space="preserve">
+    <value>สกิล</value>
+  </data>
+  <data name="SkillEntry_TypeCaption" xml:space="preserve">
+    <value>สกิลที่เรียน</value>
+  </data>
+  <data name="SkillEntry_TypeCaptionPlural" xml:space="preserve">
+    <value>สกิลที่เรียน</value>
+  </data>
+  <data name="SkillEntry_Skill_Caption" xml:space="preserve">
+    <value>สกิล</value>
+  </data>
+  <data name="SkillEntry_Level_Caption" xml:space="preserve">
+    <value>เลเวล</value>
+  </data>
+  <data name="SkillEntry_PowerUps_Caption" xml:space="preserve">
+    <value>การเพิ่มพลัง</value>
+  </data>
+  <data name="SkillEntry_PowerUpsPvp_Caption" xml:space="preserve">
+    <value>การเพิ่มพลัง (PvP)</value>
+  </data>
+  <data name="SkillEntry_PowerUpDuration_Caption" xml:space="preserve">
+    <value>ระยะเวลาเพิ่มพลัง</value>
+  </data>
+  <data name="SkillEntry_PowerUpDurationPvp_Caption" xml:space="preserve">
+    <value>ระยะเวลาเพิ่มพลัง (PvP)</value>
+  </data>
+  <data name="SkillEntry_PowerUpChance_Caption" xml:space="preserve">
+    <value>โอกาสเพิ่มพลัง</value>
+  </data>
+  <data name="SkillEntry_PowerUpChancePvp_Caption" xml:space="preserve">
+    <value>โอกาสเพิ่มพลัง (PvP)</value>
+  </data>
+  <data name="SkillEntry_Attributes_Caption" xml:space="preserve">
+    <value>ค่าสถานะ</value>
+  </data>
+  <data name="SkillTarget_TypeCaption" xml:space="preserve">
+    <value>เป้าหมายสกิล</value>
+  </data>
+  <data name="SkillTarget_Undefined_Caption" xml:space="preserve">
+    <value>ไม่กำหนด</value>
+  </data>
+  <data name="SkillTarget_Explicit_Caption" xml:space="preserve">
+    <value>เลือกเป้าหมาย</value>
+  </data>
+  <data name="SkillTarget_ImplicitParty_Caption" xml:space="preserve">
+    <value>ปาร์ตี้อัตโนมัติ</value>
+  </data>
+  <data name="SkillTarget_ImplicitPlayersInRange_Caption" xml:space="preserve">
+    <value>ผู้เล่นในระยะอัตโนมัติ</value>
+  </data>
+  <data name="SkillTarget_ImplicitNpcsInRange_Caption" xml:space="preserve">
+    <value>NPC ในระยะอัตโนมัติ</value>
+  </data>
+  <data name="SkillTarget_ImplicitAllInRange_Caption" xml:space="preserve">
+    <value>ทุกตัวในระยะอัตโนมัติ</value>
+  </data>
+  <data name="SkillTarget_ExplicitWithImplicitInRange_Caption" xml:space="preserve">
+    <value>เลือกเป้าหมายพร้อมรอบข้าง</value>
+  </data>
+  <data name="SkillTarget_ImplicitPlayer_Caption" xml:space="preserve">
+    <value>ผู้เล่นอัตโนมัติ</value>
+  </data>
+  <data name="SkillTargetRestriction_TypeCaption" xml:space="preserve">
+    <value>ข้อจำกัดเป้าหมายสกิล</value>
+  </data>
+  <data name="SkillTargetRestriction_Undefined_Caption" xml:space="preserve">
+    <value>ไม่กำหนด</value>
+  </data>
+  <data name="SkillTargetRestriction_Self_Caption" xml:space="preserve">
+    <value>ตัวเอง</value>
+  </data>
+  <data name="SkillTargetRestriction_Party_Caption" xml:space="preserve">
+    <value>ปาร์ตี้</value>
+  </data>
+  <data name="SkillTargetRestriction_Player_Caption" xml:space="preserve">
+    <value>ผู้เล่น</value>
+  </data>
+  <data name="SkillType_TypeCaption" xml:space="preserve">
+    <value>ประเภทสกิล</value>
+  </data>
+  <data name="SkillType_DirectHit_Caption" xml:space="preserve">
+    <value>โจมตีตรง</value>
+  </data>
+  <data name="SkillType_CastleSiegeSpecial_Caption" xml:space="preserve">
+    <value>พิเศษ Castle Siege</value>
+  </data>
+  <data name="SkillType_CastleSiegeSkill_Caption" xml:space="preserve">
+    <value>สกิล Castle Siege</value>
+  </data>
+  <data name="SkillType_AreaSkillAutomaticHits_Caption" xml:space="preserve">
+    <value>สกิลวงกว้างโดนอัตโนมัติ</value>
+  </data>
+  <data name="SkillType_AreaSkillExplicitHits_Caption" xml:space="preserve">
+    <value>สกิลวงกว้างโดนตามที่ส่ง</value>
+  </data>
+  <data name="SkillType_AreaSkillExplicitTarget_Caption" xml:space="preserve">
+    <value>สกิลวงกว้างมีเป้าหมาย</value>
+  </data>
+  <data name="SkillType_Buff_Caption" xml:space="preserve">
+    <value>บัฟ</value>
+  </data>
+  <data name="SkillType_Regeneration_Caption" xml:space="preserve">
+    <value>ฟื้นฟู</value>
+  </data>
+  <data name="SkillType_PassiveBoost_Caption" xml:space="preserve">
+    <value>เพิ่มพลังติดตัว</value>
+  </data>
+  <data name="SkillType_SummonMonster_Caption" xml:space="preserve">
+    <value>อัญเชิญมอนสเตอร์</value>
+  </data>
+  <data name="SkillType_Other_Caption" xml:space="preserve">
+    <value>อื่นๆ</value>
+  </data>
+  <data name="SpawnTrigger_TypeCaption" xml:space="preserve">
+    <value>ตัวกระตุ้นการเกิด</value>
+  </data>
+  <data name="SpawnTrigger_Automatic_Caption" xml:space="preserve">
+    <value>อัตโนมัติ</value>
+  </data>
+  <data name="SpawnTrigger_AutomaticDuringEvent_Caption" xml:space="preserve">
+    <value>อัตโนมัติระหว่างอีเวนต์</value>
+  </data>
+  <data name="SpawnTrigger_OnceAtEventStart_Caption" xml:space="preserve">
+    <value>ครั้งเดียวตอนเริ่มอีเวนต์</value>
+  </data>
+  <data name="SpawnTrigger_AutomaticDuringWave_Caption" xml:space="preserve">
+    <value>อัตโนมัติระหว่างรอบ</value>
+  </data>
+  <data name="SpawnTrigger_OnceAtWaveStart_Caption" xml:space="preserve">
+    <value>ครั้งเดียวตอนเริ่มรอบ</value>
+  </data>
+  <data name="SpawnTrigger_ManuallyForEvent_Caption" xml:space="preserve">
+    <value>สั่งเองสำหรับอีเวนต์</value>
+  </data>
+  <data name="SpawnTrigger_Wandering_Caption" xml:space="preserve">
+    <value>เดินเร่ร่อน</value>
+  </data>
+  <data name="SpecialItemType_TypeCaption" xml:space="preserve">
+    <value>ประเภทไอเทมพิเศษ</value>
+  </data>
+  <data name="SpecialItemType_None_Caption" xml:space="preserve">
+    <value>ไม่มี</value>
+  </data>
+  <data name="SpecialItemType_Ancient_Caption" xml:space="preserve">
+    <value>Ancient</value>
+  </data>
+  <data name="SpecialItemType_Excellent_Caption" xml:space="preserve">
+    <value>Excellent</value>
+  </data>
+  <data name="SpecialItemType_RandomItem_Caption" xml:space="preserve">
+    <value>ไอเทมสุ่ม</value>
+  </data>
+  <data name="SpecialItemType_SocketItem_Caption" xml:space="preserve">
+    <value>ไอเทมซ็อกเก็ต</value>
+  </data>
+  <data name="SpecialItemType_Money_Caption" xml:space="preserve">
+    <value>เงิน</value>
+  </data>
+  <data name="StatAttributeDefinition_TypeCaption" xml:space="preserve">
+    <value>ค่าสเตตัส</value>
+  </data>
+  <data name="StatAttributeDefinition_TypeCaptionPlural" xml:space="preserve">
+    <value>ค่าสเตตัส</value>
+  </data>
+  <data name="StatAttributeDefinition_Attribute_Caption" xml:space="preserve">
+    <value>ค่าสถานะ</value>
+  </data>
+  <data name="StatAttributeDefinition_BaseValue_Caption" xml:space="preserve">
+    <value>ค่าพื้นฐาน</value>
+  </data>
+  <data name="StatAttributeDefinition_IncreasableByPlayer_Caption" xml:space="preserve">
+    <value>ผู้เล่นเพิ่มเองได้</value>
+  </data>
+  <data name="SystemConfiguration_TypeCaption" xml:space="preserve">
+    <value>การตั้งค่าระบบ</value>
+  </data>
+  <data name="SystemConfiguration_TypeCaptionPlural" xml:space="preserve">
+    <value>การตั้งค่าระบบ</value>
+  </data>
+  <data name="SystemConfiguration_IpResolver_Caption" xml:space="preserve">
+    <value>วิธีหา IP</value>
+  </data>
+  <data name="SystemConfiguration_IpResolverParameter_Caption" xml:space="preserve">
+    <value>ค่าพารามิเตอร์หา IP</value>
+  </data>
+  <data name="SystemConfiguration_AutoStart_Caption" xml:space="preserve">
+    <value>เริ่มอัตโนมัติ</value>
+  </data>
+  <data name="SystemConfiguration_AutoUpdateSchema_Caption" xml:space="preserve">
+    <value>อัปเดตโครงสร้างฐานข้อมูลอัตโนมัติ</value>
+  </data>
+  <data name="SystemConfiguration_ReadConsoleInput_Caption" xml:space="preserve">
+    <value>อ่านคำสั่งจากคอนโซล</value>
+  </data>
+  <data name="TerrainAttributeType_TypeCaption" xml:space="preserve">
+    <value>ประเภทคุณสมบัติภูมิประเทศ</value>
+  </data>
+  <data name="TerrainAttributeType_Safezone_Caption" xml:space="preserve">
+    <value>เขตปลอดภัย</value>
+  </data>
+  <data name="TerrainAttributeType_Character_Caption" xml:space="preserve">
+    <value>ตัวละคร</value>
+  </data>
+  <data name="TerrainAttributeType_Blocked_Caption" xml:space="preserve">
+    <value>ทางตัน</value>
+  </data>
+  <data name="TerrainAttributeType_NoGround_Caption" xml:space="preserve">
+    <value>ไม่มีพื้น</value>
+  </data>
+  <data name="TerrainAttributeType_Water_Caption" xml:space="preserve">
+    <value>น้ำ</value>
+  </data>
+  <data name="TransientAttribute_TypeCaption" xml:space="preserve">
+    <value>Transient Attribute</value>
+  </data>
+  <data name="TransientAttribute_TypeCaptionPlural" xml:space="preserve">
+    <value>Transient Attributes</value>
+  </data>
+  <data name="WarpInfo_TypeCaption" xml:space="preserve">
+    <value>ข้อมูลวาร์ป</value>
+  </data>
+  <data name="WarpInfo_TypeCaptionPlural" xml:space="preserve">
+    <value>ข้อมูลวาร์ป</value>
+  </data>
+  <data name="WarpInfo_Index_Caption" xml:space="preserve">
+    <value>ลำดับ</value>
+  </data>
+  <data name="WarpInfo_Name_Caption" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="WarpInfo_Costs_Caption" xml:space="preserve">
+    <value>ค่าวาร์ป</value>
+  </data>
+  <data name="WarpInfo_LevelRequirement_Caption" xml:space="preserve">
+    <value>เลเวลที่ต้องมี</value>
+  </data>
+  <data name="WarpInfo_Gate_Caption" xml:space="preserve">
+    <value>ประตู</value>
+  </data>
+  <data name="GameMapTerrainVariant_TypeCaption" xml:space="preserve">
+    <value>ภูมิประเทศแบบอื่น</value>
+  </data>
+  <data name="GameMapTerrainVariant_TypeCaptionPlural" xml:space="preserve">
+    <value>ภูมิประเทศแบบอื่น</value>
+  </data>
+  <data name="GameMapTerrainVariant_TypeDescription" xml:space="preserve">
+    <value>ภูมิประเทศอีกแบบของแผนที่ ซึ่งใช้แทนภูมิประเทศปกติในบางสถานะ</value>
+  </data>
+  <data name="GameMapTerrainVariant_Number_Caption" xml:space="preserve">
+    <value>หมายเลข</value>
+  </data>
+  <data name="GameMapTerrainVariant_Number_Description" xml:space="preserve">
+    <value>หมายเลขที่ใช้ระบุแบบภูมิประเทศในแผนที่ เช่น สถานะที่ใช้แบบนี้</value>
+  </data>
+  <data name="GameMapTerrainVariant_Description_Caption" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="GameMapTerrainVariant_TerrainData_Caption" xml:space="preserve">
+    <value>ข้อมูลภูมิประเทศ</value>
+  </data>
+  <data name="GameMapTerrainVariant_TerrainData_Description" xml:space="preserve">
+    <value>เนื้อหาของไฟล์ *.att ของเซิร์ฟเวอร์ดั้งเดิม</value>
+  </data>
+  <data name="GameMapDefinition_TerrainVariants_Caption" xml:space="preserve">
+    <value>ภูมิประเทศแบบอื่น</value>
+  </data>
+  <data name="GameMapDefinition_TerrainVariants_Description" xml:space="preserve">
+    <value>ภูมิประเทศแบบอื่นของแผนที่ ซึ่งใช้แทนภูมิประเทศปกติในบางสถานะ เช่น ตอนป้อม Crywolf ถูกยึด</value>
+  </data>
+  <data name="AttributeRequirement_MinimumItemLevel_Caption" xml:space="preserve">
+    <value>เลเวลไอเทมต่ำสุด</value>
+  </data>
+  <data name="AttributeRequirement_MinimumItemLevel_Description" xml:space="preserve">
+    <value>เลเวลไอเทมที่เงื่อนไขนี้เริ่มมีผล เว้นว่างไว้เพื่อให้มีผลเสมอ</value>
+  </data>
+</root>

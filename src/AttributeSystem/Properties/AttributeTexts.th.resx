@@ -1,0 +1,554 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <data name="Name_Level" xml:space="preserve">
+    <value>เลเวล</value>
+  </data>
+  <data name="Name_MasterLevel" xml:space="preserve">
+    <value>มาสเตอร์เลเวล</value>
+  </data>
+  <data name="Name_Resets" xml:space="preserve">
+    <value>จำนวนรีเซ็ต</value>
+  </data>
+  <data name="Name_PointsperLevelup" xml:space="preserve">
+    <value>แต้มต่อเลเวลอัป</value>
+  </data>
+  <data name="Name_BaseStrength" xml:space="preserve">
+    <value>พลัง (พื้นฐาน)</value>
+  </data>
+  <data name="Description_BaseStrength" xml:space="preserve">
+    <value>ค่าพลังพื้นฐานของตัวละคร</value>
+  </data>
+  <data name="Name_BaseAgility" xml:space="preserve">
+    <value>ความว่องไว (พื้นฐาน)</value>
+  </data>
+  <data name="Description_BaseAgility" xml:space="preserve">
+    <value>ค่าความว่องไวพื้นฐานของตัวละคร</value>
+  </data>
+  <data name="Name_BaseVitality" xml:space="preserve">
+    <value>พลังชีวิต (พื้นฐาน)</value>
+  </data>
+  <data name="Name_BaseEnergy" xml:space="preserve">
+    <value>พลังเวท (พื้นฐาน)</value>
+  </data>
+  <data name="Name_BaseLeadership" xml:space="preserve">
+    <value>ความเป็นผู้นำ (พื้นฐาน)</value>
+  </data>
+  <data name="Name_TotalStrength" xml:space="preserve">
+    <value>พลัง (รวม)</value>
+  </data>
+  <data name="Name_TotalAgility" xml:space="preserve">
+    <value>ความว่องไว (รวม)</value>
+  </data>
+  <data name="Name_TotalVitality" xml:space="preserve">
+    <value>พลังชีวิต (รวม)</value>
+  </data>
+  <data name="Name_TotalEnergy" xml:space="preserve">
+    <value>พลังเวท (รวม)</value>
+  </data>
+  <data name="Name_TotalLeadership" xml:space="preserve">
+    <value>ความเป็นผู้นำ (รวม)</value>
+  </data>
+  <data name="Name_CurrentHealth" xml:space="preserve">
+    <value>HP ปัจจุบัน</value>
+  </data>
+  <data name="Name_CurrentMana" xml:space="preserve">
+    <value>MP ปัจจุบัน</value>
+  </data>
+  <data name="Name_CurrentShield" xml:space="preserve">
+    <value>SD ปัจจุบัน</value>
+  </data>
+  <data name="Name_CurrentAbility" xml:space="preserve">
+    <value>AG ปัจจุบัน</value>
+  </data>
+  <data name="Name_MaximumHealth" xml:space="preserve">
+    <value>HP สูงสุด</value>
+  </data>
+  <data name="Name_MaximumMana" xml:space="preserve">
+    <value>MP สูงสุด</value>
+  </data>
+  <data name="Name_MaximumShield" xml:space="preserve">
+    <value>SD สูงสุด</value>
+  </data>
+  <data name="Name_MaximumAbility" xml:space="preserve">
+    <value>AG สูงสุด</value>
+  </data>
+  <data name="Name_Nearbypartymembercount" xml:space="preserve">
+    <value>จำนวนสมาชิกปาร์ตี้ใกล้เคียง</value>
+  </data>
+  <data name="Name_Flagifthecharacterislocatedinasafezoneofagamemap" xml:space="preserve">
+    <value>อยู่ในเขตปลอดภัย</value>
+  </data>
+  <data name="Description_Flagifthecharacterislocatedinasafezoneofagamemap" xml:space="preserve">
+    <value>ตัวละครในเขตปลอดภัยจะฟื้น HP และ SD เพิ่ม</value>
+  </data>
+  <data name="Name_Flagifthecharacterislocatedonanunderwatergamemap" xml:space="preserve">
+    <value>อยู่ในแผนที่ใต้น้ำ</value>
+  </data>
+  <data name="Description_Flagifthecharacterislocatedonanunderwatergamemap" xml:space="preserve">
+    <value>ตัวละครในแผนที่ใต้น้ำใช้ความเร็วเคลื่อนที่แบบใต้น้ำ</value>
+  </data>
+  <data name="Name_Flagifthecharacterisrestingsittingleaningorhanging" xml:space="preserve">
+    <value>กำลังพัก (นั่ง พิง หรือห้อย)</value>
+  </data>
+  <data name="Description_Flagifthecharacterisrestingsittingleaningorhanging" xml:space="preserve">
+    <value>ตัวละครที่กำลังพักจะฟื้น HP และ MP เพิ่ม</value>
+  </data>
+  <data name="Name_ExperienceRate" xml:space="preserve">
+    <value>อัตราค่าประสบการณ์</value>
+  </data>
+  <data name="Description_ExperienceRate" xml:space="preserve">
+    <value>ตัวคูณค่าประสบการณ์ของตัวละคร ค่าเริ่มต้นคือ 1.0 และอาจถูกปรับด้วยตราประทับหรือไอเทมอื่น</value>
+  </data>
+  <data name="Name_AttackSpeed" xml:space="preserve">
+    <value>ความเร็วโจมตี</value>
+  </data>
+  <data name="Name_DefensePvM" xml:space="preserve">
+    <value>พลังป้องกัน (PvM)</value>
+  </data>
+  <data name="Name_DefensePvP" xml:space="preserve">
+    <value>พลังป้องกัน (PvP)</value>
+  </data>
+  <data name="Name_AttackRatePvM" xml:space="preserve">
+    <value>อัตราโจมตีโดน (PvM)</value>
+  </data>
+  <data name="Name_AttackRatePvP" xml:space="preserve">
+    <value>อัตราโจมตีโดน (PvP)</value>
+  </data>
+  <data name="Name_DefenseRatePvM" xml:space="preserve">
+    <value>อัตราป้องกัน (PvM)</value>
+  </data>
+  <data name="Name_DefenseRatePvP" xml:space="preserve">
+    <value>อัตราป้องกัน (PvP)</value>
+  </data>
+  <data name="Name_CriticalDamageChance" xml:space="preserve">
+    <value>โอกาสคริติคอล</value>
+  </data>
+  <data name="Name_ExcellentDamageChance" xml:space="preserve">
+    <value>โอกาส Excellent Damage</value>
+  </data>
+</root>
