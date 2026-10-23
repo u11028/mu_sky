@@ -1,0 +1,857 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema
+
+    Version 2.0
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+
+    Example:
+
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <data name="Loading" xml:space="preserve">
+    <value>กำลังโหลด ...</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>ทั้งหมด</value>
+  </data>
+  <data name="TargetMap" xml:space="preserve">
+    <value>แผนที่เป้าหมาย</value>
+  </data>
+  <data name="Target" xml:space="preserve">
+    <value>เป้าหมาย</value>
+  </data>
+  <data name="SelectedMap" xml:space="preserve">
+    <value>แผนที่ที่เลือก</value>
+  </data>
+  <data name="Map" xml:space="preserve">
+    <value>แผนที่</value>
+  </data>
+  <data name="Toolbar" xml:space="preserve">
+    <value>แถบเครื่องมือ</value>
+  </data>
+  <data name="CreationGroup" xml:space="preserve">
+    <value>กลุ่มการสร้าง</value>
+  </data>
+  <data name="ControlGroup" xml:space="preserve">
+    <value>กลุ่มการควบคุม</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>ลบออก</value>
+  </data>
+  <data name="TerrainOf" xml:space="preserve">
+    <value>ภูมิประเทศของ {0}</value>
+  </data>
+  <data name="SelectedObject" xml:space="preserve">
+    <value>วัตถุที่เลือก</value>
+  </data>
+  <data name="AncientOptionLevel" xml:space="preserve">
+    <value>ระดับออปชัน Ancient</value>
+  </data>
+  <data name="Bonus" xml:space="preserve">
+    <value>โบนัส</value>
+  </data>
+  <data name="OptionLevel" xml:space="preserve">
+    <value>ระดับออปชัน</value>
+  </data>
+  <data name="HasGuardianOption" xml:space="preserve">
+    <value>มีออปชัน Guardian (เลเวล 380 PvP)</value>
+  </data>
+  <data name="SocketNumber" xml:space="preserve">
+    <value>ซ็อกเก็ต {0}</value>
+  </data>
+  <data name="AccountCreationParameters_LoginName_Name" xml:space="preserve">
+    <value>ชื่อล็อกอิน</value>
+  </data>
+  <data name="AccountCreationParameters_Password_Name" xml:space="preserve">
+    <value>รหัสผ่าน</value>
+  </data>
+  <data name="AccountCreationParameters_SecurityCode_Name" xml:space="preserve">
+    <value>รหัสความปลอดภัย</value>
+  </data>
+  <data name="AccountCreationParameters_EMail_Name" xml:space="preserve">
+    <value>อีเมล</value>
+  </data>
+  <data name="AccountCreationParameters_State_Name" xml:space="preserve">
+    <value>สถานะ</value>
+  </data>
+  <data name="UserCreationParameters_LoginName_Name" xml:space="preserve">
+    <value>ชื่อผู้ใช้</value>
+  </data>
+  <data name="UserCreationParameters_Password_Name" xml:space="preserve">
+    <value>รหัสผ่าน</value>
+  </data>
+  <data name="TheValueMustNotContain" xml:space="preserve">
+    <value>{0}: ค่านี้ต้องไม่มี "{1}"</value>
+  </data>
+  <data name="PleaseSelectItemDefinition" xml:space="preserve">
+    <value>&lt;กรุณาเลือกนิยาม&gt;</value>
+  </data>
+  <data name="Duplicate" xml:space="preserve">
+    <value>ทำสำเนา</value>
+  </data>
+  <data name="Filter" xml:space="preserve">
+    <value>ตัวกรอง</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>ค้นหา</value>
+  </data>
+  <data name="NoResultsFound" xml:space="preserve">
+    <value>ไม่พบผลลัพธ์</value>
+  </data>
+  <data name="Monster" xml:space="preserve">
+    <value>มอนสเตอร์</value>
+  </data>
+  <data name="TargetMaps" xml:space="preserve">
+    <value>แผนที่เป้าหมาย</value>
+  </data>
+  <data name="Quantity" xml:space="preserve">
+    <value>จำนวน</value>
+  </data>
+  <data name="SpawnRules" xml:space="preserve">
+    <value>กฎการเกิด</value>
+  </data>
+  <data name="SpawnOnAllSelectedMaps" xml:space="preserve">
+    <value>เกิดในทุกแผนที่ที่เลือก</value>
+  </data>
+  <data name="SpawnOnAllSelectedMapsTooltip" xml:space="preserve">
+    <value>ถ้าเปิด มอนสเตอร์จะเกิดในทุกแผนที่ที่เลือก ถ้าปิด จะสุ่มเลือกแผนที่เดียว</value>
+  </data>
+  <data name="AnnounceDeath" xml:space="preserve">
+    <value>ประกาศเมื่อตาย</value>
+  </data>
+  <data name="AnnounceDeathTooltip" xml:space="preserve">
+    <value>ประกาศข้อความทั้งเซิร์ฟเวอร์เมื่อมอนสเตอร์ประเภทนี้ถูกกำจัด</value>
+  </data>
+  <data name="AddValue" xml:space="preserve">
+    <value>เพิ่มค่า</value>
+  </data>
+  <data name="ResetZoom" xml:space="preserve">
+    <value>รีเซ็ตการซูม (100%)</value>
+  </data>
+  <data name="ToggleGrid" xml:space="preserve">
+    <value>เปิด/ปิดเส้นตาราง</value>
+  </data>
+  <data name="NoSelection" xml:space="preserve">
+    <value>ไม่ได้เลือก</value>
+  </data>
+  <data name="Undo" xml:space="preserve">
+    <value>เลิกทำ</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>บันทึก</value>
+  </data>
+  <data name="TypeFilter" xml:space="preserve">
+    <value>กรองตามประเภท</value>
+  </data>
+  <data name="Monsters" xml:space="preserve">
+    <value>มอนสเตอร์</value>
+  </data>
+  <data name="Npcs" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="Gates" xml:space="preserve">
+    <value>ประตู</value>
+  </data>
+  <data name="Others" xml:space="preserve">
+    <value>อื่นๆ</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>ส่ง</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>ยกเลิก</value>
+  </data>
+  <data name="DiscardEntryTitle" xml:space="preserve">
+    <value>ทิ้งรายการปัจจุบันไหม?</value>
+  </data>
+  <data name="DiscardEntryQuestion" xml:space="preserve">
+    <value>คุณกำลังสร้าง '{0}' อยู่ ต้องการทิ้งแล้วเริ่มรายการใหม่หรือไม่?</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>รีเฟรช</value>
+  </data>
+  <data name="ToggleTheme" xml:space="preserve">
+    <value>สลับธีม</value>
+  </data>
+  <data name="SwitchToDarkMode" xml:space="preserve">
+    <value>เปลี่ยนเป็นโหมดมืด</value>
+  </data>
+  <data name="SwitchToLightMode" xml:space="preserve">
+    <value>เปลี่ยนเป็นโหมดสว่าง</value>
+  </data>
+  <data name="MapEditorShortcutPan" xml:space="preserve">
+    <value>คลิกที่พื้นที่ว่างแล้วลากเพื่อเลื่อนแผนที่</value>
+  </data>
+  <data name="MapEditorShortcutDrag" xml:space="preserve">
+    <value>CTRL + คลิกที่วัตถุเพื่อลากย้าย</value>
+  </data>
+  <data name="MapEditorShortcutCycle" xml:space="preserve">
+    <value>SHIFT + คลิกเพื่อสลับวัตถุที่ซ้อนกัน</value>
+  </data>
+  <data name="MapEditorShortcutDelete" xml:space="preserve">
+    <value>DELETE เพื่อลบวัตถุที่เลือก</value>
+  </data>
+  <data name="ExportMap" xml:space="preserve">
+    <value>ส่งออกแผนที่</value>
+  </data>
+  <data name="ImportMap" xml:space="preserve">
+    <value>นำเข้าแผนที่</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>ใช่</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>ไม่</value>
+  </data>
+  <data name="UnknownSkill" xml:space="preserve">
+    <value>สกิลที่ไม่รู้จัก</value>
+  </data>
+  <data name="AddSkill" xml:space="preserve">
+    <value>เพิ่มสกิล</value>
+  </data>
+  <data name="MasterSkillTree" xml:space="preserve">
+    <value>ต้นไม้สกิลมาสเตอร์</value>
+  </data>
+  <data name="SpentMasterPoints" xml:space="preserve">
+    <value>แต้มที่ใช้ไป: {0}</value>
+  </data>
+  <data name="ResetMasterSkillTree" xml:space="preserve">
+    <value>รีเซ็ตต้นไม้สกิลมาสเตอร์</value>
+  </data>
+  <data name="ResetMasterSkillTreeQuestion" xml:space="preserve">
+    <value>ต้องการลบสกิลมาสเตอร์ทั้งหมดของตัวละครนี้จริงหรือไม่?</value>
+  </data>
+  <data name="ResetMasterSkillTreeAndRefundQuestion" xml:space="preserve">
+    <value>ต้องการลบสกิลมาสเตอร์ทั้งหมดของตัวละครนี้จริงหรือไม่? แต้มที่ใช้ไป {0} แต้มจะถูกคืนเป็นแต้มอัปมาสเตอร์เลเวล</value>
+  </data>
+  <data name="MasterSkillTooltip" xml:space="preserve">
+    <value>{0} (#{1})
+เลเวล: {2} - {3}</value>
+  </data>
+  <data name="MasterSkillRequirementsNotFulfilled" xml:space="preserve">
+    <value>คำเตือน: ยังไม่ผ่านเงื่อนไขการเรียนสกิลนี้ สกิลที่ต้องมีและสกิลของขั้นก่อนหน้าต้องมีเลเวลอย่างน้อย {0}</value>
+  </data>
+  <data name="MasterSkillRequirementsNotYetFulfilled" xml:space="preserve">
+    <value>ต้องมีสกิลที่กำหนดและสกิลของขั้นก่อนหน้าที่เลเวลอย่างน้อย {0}</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>สร้าง</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>แก้ไข</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>เพิ่ม</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>ลบ</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>เปลี่ยน</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>ตกลง</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>ปิด</value>
+  </data>
+  <data name="Collapse" xml:space="preserve">
+    <value>ย่อ</value>
+  </data>
+  <data name="ExpandItems" xml:space="preserve">
+    <value>ขยาย ({0} รายการ)</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>ก่อนหน้า</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>ถัดไป</value>
+  </data>
+  <data name="Navigation" xml:space="preserve">
+    <value>เมนูนำทาง</value>
+  </data>
+  <data name="Breadcrumb" xml:space="preserve">
+    <value>เส้นทาง</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>หน้าแรก</value>
+  </data>
+  <data name="PageNumber" xml:space="preserve">
+    <value>หน้า {0}</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>ดาวน์โหลด</value>
+  </data>
+  <data name="LoadFile" xml:space="preserve">
+    <value>โหลดไฟล์</value>
+  </data>
+  <data name="CurrentByteSize" xml:space="preserve">
+    <value>ขนาดปัจจุบัน: {0} ไบต์</value>
+  </data>
+  <data name="EmptyBinaryValue" xml:space="preserve">
+    <value>ตอนนี้ยังว่างอยู่ พิมพ์ค่าเป็นเลขฐานสิบหก หรืออัปโหลดไฟล์</value>
+  </data>
+  <data name="NewPasswordPlaceholder" xml:space="preserve">
+    <value>รหัสผ่านใหม่ ...</value>
+  </data>
+  <data name="RepeatPasswordPlaceholder" xml:space="preserve">
+    <value>ยืนยันรหัสผ่าน ...</value>
+  </data>
+  <data name="PasswordMinimumLength" xml:space="preserve">
+    <value>กรอกอย่างน้อย 3 ตัวอักษร</value>
+  </data>
+  <data name="PasswordsDoNotMatch" xml:space="preserve">
+    <value>รหัสผ่านไม่ตรงกัน</value>
+  </data>
+  <data name="ExtensionNumber" xml:space="preserve">
+    <value>ส่วนขยาย {0}</value>
+  </data>
+  <data name="PersonalStore" xml:space="preserve">
+    <value>ร้านค้าส่วนตัว</value>
+  </data>
+  <data name="SelectType" xml:space="preserve">
+    <value>เลือก {0}</value>
+  </data>
+  <data name="CreateType" xml:space="preserve">
+    <value>สร้าง {0}</value>
+  </data>
+  <data name="NoMoreAvailable" xml:space="preserve">
+    <value>ไม่มีให้เลือกเพิ่มแล้ว</value>
+  </data>
+  <data name="AddPlaceholder" xml:space="preserve">
+    <value>เพิ่ม ...</value>
+  </data>
+  <data name="Object" xml:space="preserve">
+    <value>วัตถุ</value>
+  </data>
+  <data name="ExitGateSelector" xml:space="preserve">
+    <value>ปิดตัวเลือกประตู</value>
+  </data>
+  <data name="NumberRangeError" xml:space="preserve">
+    <value>ช่อง {0} ต้องเป็นตัวเลขระหว่าง {1} ถึง {2}</value>
+  </data>
+  <data name="InvalidField" xml:space="preserve">
+    <value>ช่อง {0} ไม่ถูกต้อง</value>
+  </data>
+  <data name="ItemBonusAtLevel" xml:space="preserve">
+    <value>+{0} {1} (เลเวล {2})</value>
+  </data>
+  <data name="ItemEdit_ItemSlot" xml:space="preserve">
+    <value>ช่องไอเทม</value>
+  </data>
+  <data name="ItemEdit_Definition" xml:space="preserve">
+    <value>นิยาม</value>
+  </data>
+  <data name="ItemEdit_Level" xml:space="preserve">
+    <value>เลเวล</value>
+  </data>
+  <data name="ItemEdit_Durability" xml:space="preserve">
+    <value>ความทนทาน</value>
+  </data>
+  <data name="ItemEdit_Amount" xml:space="preserve">
+    <value>จำนวน</value>
+  </data>
+  <data name="ItemEdit_PetExperience" xml:space="preserve">
+    <value>ค่าประสบการณ์สัตว์เลี้ยง</value>
+  </data>
+  <data name="ItemEdit_HasSkill" xml:space="preserve">
+    <value>มีสกิล</value>
+  </data>
+  <data name="ItemEdit_HasLuck" xml:space="preserve">
+    <value>มี Luck</value>
+  </data>
+  <data name="ItemEdit_AncientSet" xml:space="preserve">
+    <value>เซ็ต Ancient</value>
+  </data>
+  <data name="ItemEdit_ExcellentOptions" xml:space="preserve">
+    <value>ออปชัน Excellent</value>
+  </data>
+  <data name="ItemEdit_WingOptions" xml:space="preserve">
+    <value>ออปชันปีก</value>
+  </data>
+  <data name="ItemEdit_NormalOption" xml:space="preserve">
+    <value>ออปชันเพิ่มเติม</value>
+  </data>
+  <data name="ItemEdit_HasOption" xml:space="preserve">
+    <value>มีออปชันเพิ่มเติม</value>
+  </data>
+  <data name="ItemEdit_HarmonyOption" xml:space="preserve">
+    <value>ออปชัน Harmony</value>
+  </data>
+  <data name="ItemEdit_SocketCount" xml:space="preserve">
+    <value>จำนวนซ็อกเก็ต</value>
+  </data>
+  <data name="ItemEdit_SocketBonusOption" xml:space="preserve">
+    <value>ออปชันโบนัสซ็อกเก็ต</value>
+  </data>
+  <data name="ItemEdit_FenrirOption" xml:space="preserve">
+    <value>ออปชัน Fenrir</value>
+  </data>
+  <data name="ItemEdit_HasGuardianOption" xml:space="preserve">
+    <value>มีออปชัน Guardian</value>
+  </data>
+  <data name="WrongFormat" xml:space="preserve">
+    <value>รูปแบบไม่ถูกต้อง</value>
+  </data>
+  <data name="HexFormatError" xml:space="preserve">
+    <value>รูปแบบไม่ถูกต้อง ตัวอย่างที่ถูก: AB 03 DC</value>
+  </data>
+  <data name="IntegerListFormatError" xml:space="preserve">
+    <value>รูปแบบไม่ถูกต้อง ตัวอย่างที่ถูก: 1;2;3</value>
+  </data>
+  <data name="UnknownTimeZone" xml:space="preserve">
+    <value>ไม่รู้จักเขตเวลา '{0}' เว้นว่างไว้เพื่อใช้ UTC หรือเลือกจากรายการ เช่น Asia/Bangkok</value>
+  </data>
+  <data name="MillisecondsHint" xml:space="preserve">
+    <value>{0} หน่วยเป็นมิลลิวินาที</value>
+  </data>
+  <data name="FileLoaded" xml:space="preserve">
+    <value>โหลด {0} แล้ว ขนาด {1} ไบต์</value>
+  </data>
+  <data name="PaginationItems" xml:space="preserve">
+    <value>{0} รายการ</value>
+  </data>
+  <data name="PaginationPage" xml:space="preserve">
+    <value>หน้า {0} จาก {1}</value>
+  </data>
+  <data name="FirstPage" xml:space="preserve">
+    <value>หน้าแรก</value>
+  </data>
+  <data name="LastPage" xml:space="preserve">
+    <value>หน้าสุดท้าย</value>
+  </data>
+  <data name="InvalidNumber" xml:space="preserve">
+    <value>ช่อง {0} ต้องเป็นตัวเลข</value>
+  </data>
+  <data name="MonsterLabel" xml:space="preserve">
+    <value>มอนสเตอร์</value>
+  </data>
+  <data name="MapsLabel" xml:space="preserve">
+    <value>แผนที่</value>
+  </data>
+  <data name="CharacterCreationHint" xml:space="preserve">
+    <value>ตัวละครจะได้ค่าสถานะเริ่มต้นตามคลาส เริ่มที่แผนที่บ้านของคลาส ได้ช่องเก็บของว่างและปุ่มลัดเริ่มต้น จากนั้นปลั๊กอิน "สร้างตัวละคร" ที่เปิดอยู่จะทำงาน เช่น ให้ไอเทมและสกิลเริ่มต้น เหมือนสร้างในเกม</value>
+  </data>
+  <data name="CharacterNameRequired" xml:space="preserve">
+    <value>กรุณากรอกชื่อ</value>
+  </data>
+  <data name="CharacterNameInvalid" xml:space="preserve">
+    <value>ชื่อไม่ตรงกับรูปแบบที่ตั้งไว้: {0}</value>
+  </data>
+  <data name="CharacterClassRequired" xml:space="preserve">
+    <value>กรุณาเลือกคลาสตัวละคร</value>
+  </data>
+  <data name="CharacterClassWithoutHomeMap" xml:space="preserve">
+    <value>คลาสนี้ไม่มีแผนที่บ้าน ตัวละครจะไม่มีจุดเริ่มต้น</value>
+  </data>
+  <data name="NoFreeCharacterSlot" xml:space="preserve">
+    <value>ไอดีนี้ไม่มีช่องตัวละครว่างแล้ว หนึ่งไอดีมีตัวละครได้สูงสุด {0} ตัว</value>
+  </data>
+  <data name="CharacterCreatedPlugInsFailed" xml:space="preserve">
+    <value>สร้างตัวละครแล้ว แต่ปลั๊กอิน "สร้างตัวละคร" ทำงานล้มเหลว ตัวละครอาจไม่ได้ไอเทมหรือสกิลเริ่มต้น: {0}</value>
+  </data>
+  <data name="GameServerSelection_AllServersHint" xml:space="preserve">
+    <value>ถ้าไม่เลือก อีเวนต์จะทำงานในทุกเกมเซิร์ฟเวอร์ รวมถึงที่เพิ่มภายหลัง กด "เลือกทั้งหมด" เพื่อล็อกไว้เฉพาะเซิร์ฟเวอร์ที่มีตอนนี้</value>
+  </data>
+  <data name="GameServerSelection_SelectAll" xml:space="preserve">
+    <value>เลือกทั้งหมด</value>
+  </data>
+  <data name="GameServerSelection_Clear" xml:space="preserve">
+    <value>ล้าง</value>
+  </data>
+  <data name="GameServerSelection_NoServers" xml:space="preserve">
+    <value>ไม่พบเกมเซิร์ฟเวอร์</value>
+  </data>
+  <data name="GameServerSelection_PvpBadge" xml:space="preserve">
+    <value>PvP</value>
+  </data>
+  <data name="GameServerSelection_PveBadge" xml:space="preserve">
+    <value>PvE</value>
+  </data>
+  <data name="GameServerSelection_UnknownServer" xml:space="preserve">
+    <value>เซิร์ฟเวอร์ {0} (ไม่มีแล้ว)</value>
+  </data>
+  <data name="GameServerSelection_LoadFailed" xml:space="preserve">
+    <value>โหลดรายการเกมเซิร์ฟเวอร์ไม่ได้ ปิดหน้าต่างแล้วลองใหม่</value>
+  </data>
+  <data name="TerrainEditorTerrain" xml:space="preserve">
+    <value>ภูมิประเทศ</value>
+  </data>
+  <data name="DefaultTerrain" xml:space="preserve">
+    <value>ภูมิประเทศเริ่มต้น</value>
+  </data>
+  <data name="TerrainTool" xml:space="preserve">
+    <value>เครื่องมือ</value>
+  </data>
+  <data name="TerrainToolBrush" xml:space="preserve">
+    <value>แปรง</value>
+  </data>
+  <data name="TerrainToolRectangle" xml:space="preserve">
+    <value>สี่เหลี่ยม</value>
+  </data>
+  <data name="TerrainToolFill" xml:space="preserve">
+    <value>เติมพื้นที่</value>
+  </data>
+  <data name="TerrainBrushSize" xml:space="preserve">
+    <value>ขนาดแปรง</value>
+  </data>
+  <data name="TerrainEditMode" xml:space="preserve">
+    <value>โหมด</value>
+  </data>
+  <data name="TerrainEditModeAdd" xml:space="preserve">
+    <value>เพิ่มคุณสมบัติ</value>
+  </data>
+  <data name="TerrainEditModeRemove" xml:space="preserve">
+    <value>ลบคุณสมบัติ</value>
+  </data>
+  <data name="TerrainEditModeReplace" xml:space="preserve">
+    <value>แทนที่คุณสมบัติทั้งหมด</value>
+  </data>
+  <data name="TerrainAttributes" xml:space="preserve">
+    <value>คุณสมบัติ</value>
+  </data>
+  <data name="TerrainWalkable" xml:space="preserve">
+    <value>เดินได้</value>
+  </data>
+  <data name="TerrainOtherAttributes" xml:space="preserve">
+    <value>คุณสมบัติอื่น</value>
+  </data>
+  <data name="TerrainLegend" xml:space="preserve">
+    <value>คำอธิบายสัญลักษณ์</value>
+  </data>
+  <data name="Redo" xml:space="preserve">
+    <value>ทำซ้ำ</value>
+  </data>
+  <data name="ImportTerrain" xml:space="preserve">
+    <value>นำเข้าไฟล์ภูมิประเทศ</value>
+  </data>
+  <data name="ImportTerrainHint" xml:space="preserve">
+    <value>รองรับไฟล์ *.att ของเซิร์ฟเวอร์ และไฟล์ EncTerrain*.att ของตัวเกม</value>
+  </data>
+  <data name="DownloadServerTerrain" xml:space="preserve">
+    <value>ไฟล์ภูมิประเทศของเซิร์ฟเวอร์</value>
+  </data>
+  <data name="DownloadServerTerrainHint" xml:space="preserve">
+    <value>ดาวน์โหลดภูมิประเทศเป็นไฟล์ *.att แบบเซิร์ฟเวอร์ดั้งเดิม</value>
+  </data>
+  <data name="DownloadClientTerrain" xml:space="preserve">
+    <value>ไฟล์ภูมิประเทศของตัวเกม</value>
+  </data>
+  <data name="DownloadClientTerrainHint" xml:space="preserve">
+    <value>ดาวน์โหลดไฟล์ภูมิประเทศแบบเข้ารหัสของตัวเกม วางไว้ที่ Data\World{0}\EncTerrain{0}.att ในโฟลเดอร์ตัวเกม</value>
+  </data>
+  <data name="InvalidTerrainFile" xml:space="preserve">
+    <value>ไฟล์นี้ไม่ใช่ไฟล์ภูมิประเทศของเซิร์ฟเวอร์หรือของตัวเกม</value>
+  </data>
+  <data name="TerrainImported" xml:space="preserve">
+    <value>นำเข้าไฟล์ภูมิประเทศแล้ว กดบันทึกเพื่อใช้งาน</value>
+  </data>
+  <data name="TerrainEditorShortcutPaint" xml:space="preserve">
+    <value>คลิกซ้ายเพื่อแก้ไขช่องด้วยเครื่องมือที่เลือก</value>
+  </data>
+  <data name="TerrainEditorShortcutPan" xml:space="preserve">
+    <value>คลิกขวาแล้วลากเพื่อเลื่อนภูมิประเทศ</value>
+  </data>
+  <data name="TerrainEditorShortcutZoom" xml:space="preserve">
+    <value>ล้อเมาส์เพื่อซูม</value>
+  </data>
+  <data name="TerrainEditorRestartHint" xml:space="preserve">
+    <value>ภูมิประเทศที่แก้จะมีผลในเกมหลังรีสตาร์ทเกมเซิร์ฟเวอร์ ผู้เล่นต้องมีไฟล์ภูมิประเทศของตัวเกมด้วยจึงจะเห็นการเปลี่ยนแปลง</value>
+  </data>
+  <data name="TerrainTransferFailed" xml:space="preserve">
+    <value>ส่งภูมิประเทศที่แก้ไม่สำเร็จ: {0}</value>
+  </data>
+  <data name="ZoomIn" xml:space="preserve">
+    <value>ซูมเข้า</value>
+  </data>
+  <data name="ZoomOut" xml:space="preserve">
+    <value>ซูมออก</value>
+  </data>
+</root>

@@ -1,0 +1,3329 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema
+
+    Version 2.0
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+
+    Example:
+
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <data name="Create" xml:space="preserve">
+    <value>สร้าง</value>
+  </data>
+  <data name="Reload" xml:space="preserve">
+    <value>โหลดใหม่</value>
+  </data>
+  <data name="AdminUsers" xml:space="preserve">
+    <value>ผู้ดูแลระบบ</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>การดำเนินการ</value>
+  </data>
+  <data name="ChangePassword" xml:space="preserve">
+    <value>เปลี่ยนรหัสผ่าน</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>ลบ</value>
+  </data>
+  <data name="Duplicate" xml:space="preserve">
+    <value>ทำสำเนา</value>
+  </data>
+  <data name="DuplicatedSuccessfully" xml:space="preserve">
+    <value>ทำสำเนา '{0}' สำเร็จ</value>
+  </data>
+  <data name="CouldNotFindToDuplicate" xml:space="preserve">
+    <value>ไม่พบ '{0}' ที่จะทำสำเนา</value>
+  </data>
+  <data name="TypeDoesNotSupportCloning" xml:space="preserve">
+    <value>ประเภท '{0}' ไม่รองรับการทำสำเนา</value>
+  </data>
+  <data name="FailedToClone" xml:space="preserve">
+    <value>ทำสำเนา '{0}' ไม่สำเร็จ</value>
+  </data>
+  <data name="ErrorDuplicating" xml:space="preserve">
+    <value>เกิดข้อผิดพลาดขณะทำสำเนา '{0}': {1}</value>
+  </data>
+  <data name="CreateUser" xml:space="preserve">
+    <value>สร้างผู้ใช้</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>กำลังโหลด ...</value>
+  </data>
+  <data name="CreateConnectServer" xml:space="preserve">
+    <value>สร้าง Connect Server</value>
+  </data>
+  <data name="CreateGameServer" xml:space="preserve">
+    <value>สร้างเกมเซิร์ฟเวอร์</value>
+  </data>
+  <data name="ServerWithIdAlreadyExists" xml:space="preserve">
+    <value>มีเซิร์ฟเวอร์ Id {0} อยู่แล้ว กรุณาใช้ค่าอื่น</value>
+  </data>
+  <data name="ServerWithPortAlreadyExists" xml:space="preserve">
+    <value>มีเซิร์ฟเวอร์ที่ใช้พอร์ต TCP {0} อยู่แล้ว กรุณาใช้พอร์ตอื่น</value>
+  </data>
+  <data name="CreatingConfigurationInfo" xml:space="preserve">
+    <value>กำลังสร้างการตั้งค่า ...</value>
+  </data>
+  <data name="SavingConfigurationInfo" xml:space="preserve">
+    <value>กำลังบันทึกการตั้งค่า ...</value>
+  </data>
+  <data name="ConnectionServerConfigurationSaved" xml:space="preserve">
+    <value>บันทึกการตั้งค่า Connect Server แล้ว กำลังเริ่ม Connect Server ...</value>
+  </data>
+  <data name="InitializingConnectServerInfo" xml:space="preserve">
+    <value>กำลังเริ่ม Connect Server ...</value>
+  </data>
+  <data name="NoChangesSaved" xml:space="preserve">
+    <value>ไม่มีการบันทึกการเปลี่ยนแปลง</value>
+  </data>
+  <data name="UnexpectedErrorOccurred" xml:space="preserve">
+    <value>เกิดข้อผิดพลาดที่ไม่คาดคิด: {0}</value>
+  </data>
+  <data name="GameServerConfigurationSavedInfo" xml:space="preserve">
+    <value>บันทึกการตั้งค่าเกมเซิร์ฟเวอร์แล้ว กำลังเริ่มเกมเซิร์ฟเวอร์ ...</value>
+  </data>
+  <data name="InitializingGameServerInfo" xml:space="preserve">
+    <value>กำลังเริ่มเกมเซิร์ฟเวอร์ ...</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>แก้ไข</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>รีเฟรช</value>
+  </data>
+  <data name="SavedChanges" xml:space="preserve">
+    <value>บันทึกการเปลี่ยนแปลงแล้ว</value>
+  </data>
+  <data name="NoChangesToSave" xml:space="preserve">
+    <value>ไม่มีการเปลี่ยนแปลงให้บันทึก</value>
+  </data>
+  <data name="FailedByUninitializedContext" xml:space="preserve">
+    <value>ล้มเหลว ยังไม่ได้เตรียม context</value>
+  </data>
+  <data name="UnsavedChangesQuestion" xml:space="preserve">
+    <value>มีการเปลี่ยนแปลงที่ยังไม่บันทึก ต้องการทิ้งการเปลี่ยนแปลงเหล่านี้จริงหรือไม่?</value>
+  </data>
+  <data name="DownloadAsJson" xml:space="preserve">
+    <value>ดาวน์โหลดเป็น JSON</value>
+  </data>
+  <data name="LoadingErrorCheckLog" xml:space="preserve">
+    <value>โหลดข้อมูลไม่ได้ ดูรายละเอียดใน log</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>ข้อผิดพลาด</value>
+  </data>
+  <data name="MapEditor" xml:space="preserve">
+    <value>ตัวแก้ไขแผนที่</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>ค้นหา</value>
+  </data>
+  <data name="AddNew" xml:space="preserve">
+    <value>เพิ่มใหม่</value>
+  </data>
+  <data name="CouldNotLoadMapDataCheckTheLogs" xml:space="preserve">
+    <value>โหลดข้อมูลแผนที่ไม่ได้ ดูรายละเอียดใน log</value>
+  </data>
+  <data name="UnexpectedErrorCheckLogs" xml:space="preserve">
+    <value>เกิดข้อผิดพลาดที่ไม่คาดคิด: {0} ดูรายละเอียดเพิ่มเติมใน log</value>
+  </data>
+  <data name="UnhandledErrorOccurred" xml:space="preserve">
+    <value>เกิดข้อผิดพลาดที่ไม่ได้จัดการ</value>
+  </data>
+  <data name="DevelopmentEnvironmentWarning" xml:space="preserve">
+    <value>&lt;strong&gt;ไม่ควรเปิดสภาพแวดล้อม Development บนระบบที่ใช้งานจริง&lt;/strong&gt;
+    อาจทำให้ข้อมูลสำคัญจาก exception แสดงให้ผู้ใช้เห็น
+    ถ้าจะดีบักในเครื่อง ให้เปิดสภาพแวดล้อม &lt;strong&gt;Development&lt;/strong&gt; โดยตั้งตัวแปร &lt;strong&gt;ASPNETCORE_ENVIRONMENT&lt;/strong&gt; เป็น &lt;strong&gt;Development&lt;/strong&gt;
+    แล้วรีสตาร์ทแอป</value>
+  </data>
+  <data name="SwappingToDevForMoreInformation" xml:space="preserve">
+    <value>การเปลี่ยนเป็นสภาพแวดล้อม &lt;strong&gt;Development&lt;/strong&gt; จะแสดงรายละเอียดของข้อผิดพลาดมากขึ้น</value>
+  </data>
+  <data name="AnErrorOccurredWhileProcessingYourRequest" xml:space="preserve">
+    <value>เกิดข้อผิดพลาดขณะประมวลผลคำขอของคุณ</value>
+  </data>
+  <data name="DevelopmentMode" xml:space="preserve">
+    <value>โหมด Development</value>
+  </data>
+  <data name="GameServer" xml:space="preserve">
+    <value>เกมเซิร์ฟเวอร์</value>
+  </data>
+  <data name="WelcomeMessage" xml:space="preserve">
+    <value>ยินดีต้อนรับสู่หน้าผู้ดูแลระบบของ OpenMU</value>
+  </data>
+  <data name="OpenMUAdminPanel" xml:space="preserve">
+    <value>OpenMU AdminPanel</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>เกี่ยวกับ</value>
+  </data>
+  <data name="LogFiles" xml:space="preserve">
+    <value>ไฟล์ log</value>
+  </data>
+  <data name="Logs" xml:space="preserve">
+    <value>Log</value>
+  </data>
+  <data name="Metrics" xml:space="preserve">
+    <value>ค่าวัดผล</value>
+  </data>
+  <data name="Tracing" xml:space="preserve">
+    <value>การติดตาม</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>ชื่อไฟล์</value>
+  </data>
+  <data name="LastUpdate" xml:space="preserve">
+    <value>อัปเดตล่าสุด</value>
+  </data>
+  <data name="Size" xml:space="preserve">
+    <value>ขนาด</value>
+  </data>
+  <data name="ServerID" xml:space="preserve">
+    <value>Server-ID</value>
+  </data>
+  <data name="Disconnect" xml:space="preserve">
+    <value>ตัดการเชื่อมต่อ</value>
+  </data>
+  <data name="LiveMap" xml:space="preserve">
+    <value>แผนที่สด</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>ทั้งหมด</value>
+  </data>
+  <data name="Merchants" xml:space="preserve">
+    <value>พ่อค้า</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>ย้อนกลับ</value>
+  </data>
+  <data name="DiscardChanges" xml:space="preserve">
+    <value>ทิ้งการเปลี่ยนแปลง</value>
+  </data>
+  <data name="SaveChanges" xml:space="preserve">
+    <value>บันทึกการเปลี่ยนแปลง</value>
+  </data>
+  <data name="ExtensionPoint" xml:space="preserve">
+    <value>จุดเชื่อมต่อ</value>
+  </data>
+  <data name="PluginName" xml:space="preserve">
+    <value>ชื่อปลั๊กอิน</value>
+  </data>
+  <data name="PluginType" xml:space="preserve">
+    <value>ประเภทปลั๊กอิน</value>
+  </data>
+  <data name="Plugins" xml:space="preserve">
+    <value>ปลั๊กอิน</value>
+  </data>
+  <data name="Deactivate" xml:space="preserve">
+    <value>ปิดใช้งาน</value>
+  </data>
+  <data name="Activate" xml:space="preserve">
+    <value>เปิดใช้งาน</value>
+  </data>
+  <data name="Servers" xml:space="preserve">
+    <value>เซิร์ฟเวอร์</value>
+  </data>
+  <data name="ServerName" xml:space="preserve">
+    <value>ชื่อเซิร์ฟเวอร์</value>
+  </data>
+  <data name="PlayerCount" xml:space="preserve">
+    <value>ผู้เล่น</value>
+  </data>
+  <data name="CurrentState" xml:space="preserve">
+    <value>สถานะปัจจุบัน</value>
+  </data>
+  <data name="ConnectServer" xml:space="preserve">
+    <value>Connect Server</value>
+  </data>
+  <data name="ReloadConfigurationAndRestartAllGameServers" xml:space="preserve">
+    <value>โหลดการตั้งค่าใหม่และรีสตาร์ทเกมเซิร์ฟเวอร์ทั้งหมด</value>
+  </data>
+  <data name="DatabaseStatus" xml:space="preserve">
+    <value>สถานะฐานข้อมูล</value>
+  </data>
+  <data name="CantConnectToTheDatabaseProbablyNotCreatedYet" xml:space="preserve">
+    <value>เชื่อมต่อฐานข้อมูลไม่ได้ อาจยังไม่ได้สร้าง</value>
+  </data>
+  <data name="InitializedGameVersion" xml:space="preserve">
+    <value>เวอร์ชันเกมที่ติดตั้ง</value>
+  </data>
+  <data name="NoInitializedDataFound" xml:space="preserve">
+    <value>ไม่พบข้อมูลที่ติดตั้งไว้!</value>
+  </data>
+  <data name="ReInstall" xml:space="preserve">
+    <value>ติดตั้งใหม่</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>อัปเดต</value>
+  </data>
+  <data name="UpToDate" xml:space="preserve">
+    <value>เป็นปัจจุบันแล้ว</value>
+  </data>
+  <data name="NotCreated" xml:space="preserve">
+    <value>ยังไม่ได้สร้าง</value>
+  </data>
+  <data name="UpdateRequired" xml:space="preserve">
+    <value>ต้องอัปเดต</value>
+  </data>
+  <data name="Setup" xml:space="preserve">
+    <value>ตั้งค่าระบบ</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>หน้าแรก</value>
+  </data>
+  <data name="Accounts" xml:space="preserve">
+    <value>ไอดีผู้เล่น</value>
+  </data>
+  <data name="OnlineAccounts" xml:space="preserve">
+    <value>ไอดีที่ออนไลน์</value>
+  </data>
+  <data name="Updates" xml:space="preserve">
+    <value>อัปเดต</value>
+  </data>
+  <data name="AvailableUpdates" xml:space="preserve">
+    <value>อัปเดตที่มี</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>ผู้ใช้</value>
+  </data>
+  <data name="System" xml:space="preserve">
+    <value>ระบบ</value>
+  </data>
+  <data name="GameClients" xml:space="preserve">
+    <value>ตัวเกม</value>
+  </data>
+  <data name="Monsters" xml:space="preserve">
+    <value>มอนสเตอร์</value>
+  </data>
+  <data name="MerchantStores" xml:space="preserve">
+    <value>ร้านค้า NPC</value>
+  </data>
+  <data name="CharacterClasses" xml:space="preserve">
+    <value>คลาสตัวละคร</value>
+  </data>
+  <data name="Skills" xml:space="preserve">
+    <value>สกิล</value>
+  </data>
+  <data name="Items" xml:space="preserve">
+    <value>ไอเทม</value>
+  </data>
+  <data name="DropItemGroups" xml:space="preserve">
+    <value>กลุ่มไอเทมดรอป</value>
+  </data>
+  <data name="GameMaps" xml:space="preserve">
+    <value>แผนที่เกม</value>
+  </data>
+  <data name="MiniGames" xml:space="preserve">
+    <value>มินิเกม</value>
+  </data>
+  <data name="WarpList" xml:space="preserve">
+    <value>รายการวาร์ป</value>
+  </data>
+  <data name="JewelMixes" xml:space="preserve">
+    <value>การรวมจิวเวล</value>
+  </data>
+  <data name="General" xml:space="preserve">
+    <value>ทั่วไป</value>
+  </data>
+  <data name="FullConfiguration" xml:space="preserve">
+    <value>การตั้งค่าทั้งหมด</value>
+  </data>
+  <data name="GameConfiguration" xml:space="preserve">
+    <value>การตั้งค่าเกม</value>
+  </data>
+  <data name="ReinstallConfirmation" xml:space="preserve">
+    <value>แน่ใจหรือไม่? ข้อมูลปัจจุบันทั้งหมดจะถูกลบและติดตั้งใหม่</value>
+  </data>
+  <data name="PleaseFirstInstallTheDatabaseUpdatesOnTheSetupPage" xml:space="preserve">
+    <value>กรุณาติดตั้งอัปเดตฐานข้อมูลในหน้าตั้งค่าระบบก่อน</value>
+  </data>
+  <data name="InstalledOn" xml:space="preserve">
+    <value>ติดตั้งเมื่อ {0}</value>
+  </data>
+  <data name="NoConfigurationDataUpdateAvailable" xml:space="preserve">
+    <value>ไม่มีอัปเดตข้อมูลการตั้งค่า</value>
+  </data>
+  <data name="NewConfigurationUpdatesAvailable" xml:space="preserve">
+    <value>มีอัปเดตใหม่ของข้อมูลการตั้งค่า เลือกรายการที่ต้องการนำไปใช้ได้</value>
+  </data>
+  <data name="MandatoryUpdatesAreAlwaysAppliedAndCannotBeDeselected" xml:space="preserve">
+    <value>อัปเดตที่จำเป็นจะถูกนำไปใช้เสมอและยกเลิกการเลือกไม่ได้</value>
+  </data>
+  <data name="TheUpdatesRequireARestartOfTheServerProcessToTakeEffect" xml:space="preserve">
+    <value>ต้องรีสตาร์ทโปรเซสเซิร์ฟเวอร์เพื่อให้อัปเดตมีผล</value>
+  </data>
+  <data name="Updating" xml:space="preserve">
+    <value>กำลังอัปเดต...</value>
+  </data>
+  <data name="ApplyingUpdates" xml:space="preserve">
+    <value>กำลังนำอัปเดตไปใช้ ...</value>
+  </data>
+  <data name="UpdateFailed" xml:space="preserve">
+    <value>อัปเดตล้มเหลว!</value>
+  </data>
+  <data name="ApplySelectedUpdates" xml:space="preserve">
+    <value>นำอัปเดตที่เลือกไปใช้</value>
+  </data>
+  <data name="PatchVersion" xml:space="preserve">
+    <value>เวอร์ชันแพตช์</value>
+  </data>
+  <data name="MajorVersion" xml:space="preserve">
+    <value>Major</value>
+  </data>
+  <data name="PatchAddress" xml:space="preserve">
+    <value>ที่อยู่แพตช์</value>
+  </data>
+  <data name="Seconds" xml:space="preserve">
+    <value>วินาที</value>
+  </data>
+  <data name="MinorVersion" xml:space="preserve">
+    <value>Minor</value>
+  </data>
+  <data name="Patch" xml:space="preserve">
+    <value>Patch</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>บันทึก</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>ยกเลิก</value>
+  </data>
+  <data name="InstallingPleaseWait" xml:space="preserve">
+    <value>กำลังติดตั้ง กรุณารอสักครู่ ...</value>
+  </data>
+  <data name="PleaseRestartTheConnectAndGameServerContainers" xml:space="preserve">
+    <value>กรุณารีสตาร์ท container ของเซิร์ฟเวอร์กลางและเกมเซิร์ฟเวอร์</value>
+  </data>
+  <data name="FinishedHaveFun" xml:space="preserve">
+    <value>เสร็จแล้ว! ขอให้สนุก :)</value>
+  </data>
+  <data name="FirstCloseAllConnectionsToTheServer" xml:space="preserve">
+    <value>กรุณาปิดการเชื่อมต่อทั้งหมดกับเซิร์ฟเวอร์ก่อน</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>ตกลง</value>
+  </data>
+  <data name="SelectTheGameVersion" xml:space="preserve">
+    <value>เลือกเวอร์ชันเกม</value>
+  </data>
+  <data name="HowManyGameServersQuestion" xml:space="preserve">
+    <value>ต้องการเกมเซิร์ฟเวอร์กี่ตัว?</value>
+  </data>
+  <data name="TestAccountsQuestion" xml:space="preserve">
+    <value>ต้องการไอดีทดสอบไหม?</value>
+  </data>
+  <data name="YesCreateTestAccounts" xml:space="preserve">
+    <value>ใช่ สร้างไอดีทดสอบ</value>
+  </data>
+  <data name="StartInstall" xml:space="preserve">
+    <value>เริ่มติดตั้ง</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>ลบออก</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>ใช่</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>ไม่</value>
+  </data>
+  <data name="Start" xml:space="preserve">
+    <value>เริ่ม</value>
+  </data>
+  <data name="Stop" xml:space="preserve">
+    <value>หยุด</value>
+  </data>
+  <data name="RemoveServer" xml:space="preserve">
+    <value>ลบเซิร์ฟเวอร์</value>
+  </data>
+  <data name="ServerDeleteProceedQuestion" xml:space="preserve">
+    <value>เซิร์ฟเวอร์จะถูกลบออกจากฐานข้อมูล ต้องการดำเนินการต่อหรือไม่?</value>
+  </data>
+  <data name="ServerControl" xml:space="preserve">
+    <value>ควบคุมเซิร์ฟเวอร์</value>
+  </data>
+  <data name="TotalPlayers" xml:space="preserve">
+    <value>ผู้เล่นทั้งหมด</value>
+  </data>
+  <data name="SocketNumber" xml:space="preserve">
+    <value>ซ็อกเก็ต {0}</value>
+  </data>
+  <data name="Action" xml:space="preserve">
+    <value>การดำเนินการ</value>
+  </data>
+  <data name="GameServerCount" xml:space="preserve">
+    <value>จำนวนเกมเซิร์ฟเวอร์</value>
+  </data>
+  <data name="JsonBackup" xml:space="preserve">
+    <value>สำรองข้อมูล JSON (ช้า!)</value>
+  </data>
+  <data name="ExportJsonBackup" xml:space="preserve">
+    <value>ส่งออกไฟล์สำรอง JSON</value>
+  </data>
+  <data name="ImportJsonBackup" xml:space="preserve">
+    <value>นำเข้าไฟล์สำรอง JSON</value>
+  </data>
+  <data name="ImportingBackupPleaseWait" xml:space="preserve">
+    <value>กำลังนำเข้าไฟล์สำรอง กรุณารอสักครู่ ...</value>
+  </data>
+  <data name="BackupImportSucceeded" xml:space="preserve">
+    <value>นำเข้าไฟล์สำรองสำเร็จ กรุณารีสตาร์ทโปรเซสเซิร์ฟเวอร์เพื่อให้มีผล</value>
+  </data>
+  <data name="BackupImportFailed" xml:space="preserve">
+    <value>นำเข้าไฟล์สำรองล้มเหลว</value>
+  </data>
+  <data name="SelectZipFileToRestore" xml:space="preserve">
+    <value>เลือกไฟล์สำรอง .zip ที่จะกู้คืน</value>
+  </data>
+  <data name="SelectedFileIsNoBackup" xml:space="preserve">
+    <value>ไฟล์ที่เลือกไม่ใช่ไฟล์สำรอง ฐานข้อมูลไม่ถูกแก้ไข</value>
+  </data>
+  <data name="DatabaseSnapshot" xml:space="preserve">
+    <value>สแนปช็อตฐานข้อมูล</value>
+  </data>
+  <data name="DatabaseSnapshotDescription" xml:space="preserve">
+    <value>สแนปช็อตเก็บข้อมูลทั้งหมดของฐานข้อมูล สร้างและกู้คืนได้เร็วกว่ามาก กู้คืนได้ด้วยเซิร์ฟเวอร์เวอร์ชันนี้หรือใหม่กว่า ซึ่งจะอัปเดตฐานข้อมูลให้ข้อมูลที่กู้คืนเอง ถ้าจะย้ายข้อมูลไปเวอร์ชันเก่ากว่า ให้ใช้การสำรองข้อมูลด้านบน</value>
+  </data>
+  <data name="ExportSnapshot" xml:space="preserve">
+    <value>ส่งออกสแนปช็อต</value>
+  </data>
+  <data name="SelectZipFileToRestoreSnapshot" xml:space="preserve">
+    <value>เลือกไฟล์สแนปช็อต .zip ที่จะกู้คืน</value>
+  </data>
+  <data name="IncludeAccounts" xml:space="preserve">
+    <value>รวมไอดีผู้เล่นด้วย (ใช้เวลานานขึ้น)</value>
+  </data>
+  <data name="Character" xml:space="preserve">
+    <value>ตัวละคร</value>
+  </data>
+  <data name="StartedAt" xml:space="preserve">
+    <value>เริ่มเมื่อ</value>
+  </data>
+  <data name="ActiveOfflinePlayer" xml:space="preserve">
+    <value>ผู้เล่นออฟไลน์ที่ยังทำงานอยู่</value>
+  </data>
+  <data name="CouldNotFindToDelete" xml:space="preserve">
+    <value>ไม่พบ '{0}' ที่จะลบ</value>
+  </data>
+  <data name="DeleteFailedReferenced" xml:space="preserve">
+    <value>ลบ '{0}' ไม่ได้ อาจเพราะมีวัตถุอื่นอ้างอิงอยู่ ดูรายละเอียดใน log</value>
+  </data>
+  <data name="CreatedSuccessfully" xml:space="preserve">
+    <value>สร้างวัตถุใหม่สำเร็จ</value>
+  </data>
+  <data name="ShowEntryForm" xml:space="preserve">
+    <value>แสดงฟอร์มกรอกข้อมูล</value>
+  </data>
+  <data name="HideEntryForm" xml:space="preserve">
+    <value>ซ่อนฟอร์มกรอกข้อมูล</value>
+  </data>
+  <data name="AllGameServers" xml:space="preserve">
+    <value>เกมเซิร์ฟเวอร์ทั้งหมด</value>
+  </data>
+  <data name="GlobalMessage" xml:space="preserve">
+    <value>ประกาศทั้งเซิร์ฟเวอร์</value>
+  </data>
+  <data name="GlobalMessageNoTarget" xml:space="preserve">
+    <value>ไม่มีเกมเซิร์ฟเวอร์ที่ทำงานอยู่ให้ส่งข้อความ</value>
+  </data>
+  <data name="GlobalMessageSendFailed" xml:space="preserve">
+    <value>ส่งข้อความไปที่ {0} ไม่สำเร็จ: {1}</value>
+  </data>
+  <data name="GlobalMessageSent" xml:space="preserve">
+    <value>ส่งข้อความแล้ว</value>
+  </data>
+  <data name="MessagePlaceholder" xml:space="preserve">
+    <value>พิมพ์ข้อความ...</value>
+  </data>
+  <data name="MessageType" xml:space="preserve">
+    <value>ประเภทข้อความ</value>
+  </data>
+  <data name="MessageTypeGolden" xml:space="preserve">
+    <value>สีทอง (กลางจอ)</value>
+  </data>
+  <data name="MessageTypeBlue" xml:space="preserve">
+    <value>สีน้ำเงิน (ระบบ)</value>
+  </data>
+  <data name="MessageTypeSlide" xml:space="preserve">
+    <value>เลื่อน (แถบด้านบน)</value>
+  </data>
+  <data name="OnlineCount" xml:space="preserve">
+    <value>ออนไลน์ {0}</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>ส่ง</value>
+  </data>
+  <data name="Target" xml:space="preserve">
+    <value>เป้าหมาย</value>
+  </data>
+  <data name="LogViewer" xml:space="preserve">
+    <value>ดู Log</value>
+  </data>
+  <data name="Live" xml:space="preserve">
+    <value>สด</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>ปิด</value>
+  </data>
+  <data name="FilterLogEntries" xml:space="preserve">
+    <value>กรองรายการ log...</value>
+  </data>
+  <data name="NoLogEntriesFound" xml:space="preserve">
+    <value>ไม่พบรายการ log</value>
+  </data>
+  <data name="NoLogEntriesMatchFilter" xml:space="preserve">
+    <value>ไม่มีรายการ log ที่ตรงกับตัวกรอง</value>
+  </data>
+  <data name="ShowingXOfYLines" xml:space="preserve">
+    <value>แสดง {0} จาก {1} บรรทัด (โหลด {2} บรรทัดล่าสุด)</value>
+  </data>
+  <data name="ScrollToBottom" xml:space="preserve">
+    <value>เลื่อนลงล่างสุด</value>
+  </data>
+  <data name="ReloadFileList" xml:space="preserve">
+    <value>โหลดรายการไฟล์ใหม่</value>
+  </data>
+  <data name="DownloadFile" xml:space="preserve">
+    <value>ดาวน์โหลดไฟล์</value>
+  </data>
+  <data name="ChatCommands" xml:space="preserve">
+    <value>คำสั่งแชท</value>
+  </data>
+  <data name="CommandColumn" xml:space="preserve">
+    <value>คำสั่ง</value>
+  </data>
+  <data name="CommandDescription" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="CommandUsage" xml:space="preserve">
+    <value>วิธีใช้</value>
+  </data>
+  <data name="MinimumCharacterStatus" xml:space="preserve">
+    <value>สถานะที่ต้องมี</value>
+  </data>
+  <data name="NoParameters" xml:space="preserve">
+    <value>คำสั่งนี้ไม่มีพารามิเตอร์</value>
+  </data>
+  <data name="ParameterName" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="ParameterShortName" xml:space="preserve">
+    <value>ชื่อย่อ</value>
+  </data>
+  <data name="ParameterType" xml:space="preserve">
+    <value>ประเภท</value>
+  </data>
+  <data name="ParameterValidValues" xml:space="preserve">
+    <value>ค่าที่ใช้ได้</value>
+  </data>
+  <data name="ParametersOf" xml:space="preserve">
+    <value>พารามิเตอร์ของ {0}</value>
+  </data>
+  <data name="Required" xml:space="preserve">
+    <value>จำเป็น</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>เข้าสู่ระบบ</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>ออกจากระบบ</value>
+  </data>
+  <data name="LoginName" xml:space="preserve">
+    <value>ชื่อล็อกอิน</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>รหัสผ่าน</value>
+  </data>
+  <data name="SignIn" xml:space="preserve">
+    <value>เข้าสู่ระบบ</value>
+  </data>
+  <data name="SignedInAs" xml:space="preserve">
+    <value>เข้าสู่ระบบในชื่อ</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>จดจำการเข้าสู่ระบบ</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>ชื่อล็อกอินหรือรหัสผ่านไม่ถูกต้อง</value>
+  </data>
+  <data name="AccountLockedOut" xml:space="preserve">
+    <value>ลองผิดหลายครั้งเกินไป กรุณาลองใหม่ภายหลัง</value>
+  </data>
+  <data name="TwoFactorTitle" xml:space="preserve">
+    <value>การยืนยันตัวตนสองขั้นตอน</value>
+  </data>
+  <data name="TwoFactorPrompt" xml:space="preserve">
+    <value>กรอกรหัสจากแอปยืนยันตัวตนของคุณ</value>
+  </data>
+  <data name="AuthenticatorCode" xml:space="preserve">
+    <value>รหัสจากแอปยืนยันตัวตน</value>
+  </data>
+  <data name="RecoveryCode" xml:space="preserve">
+    <value>รหัสกู้คืน</value>
+  </data>
+  <data name="UseRecoveryCode" xml:space="preserve">
+    <value>ใช้รหัสกู้คืนแทน</value>
+  </data>
+  <data name="UseAuthenticatorCode" xml:space="preserve">
+    <value>ใช้รหัสจากแอปยืนยันตัวตนแทน</value>
+  </data>
+  <data name="InvalidTwoFactorCode" xml:space="preserve">
+    <value>รหัสไม่ถูกต้อง</value>
+  </data>
+  <data name="Verify" xml:space="preserve">
+    <value>ยืนยัน</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>ไม่มีสิทธิ์เข้าถึง</value>
+  </data>
+  <data name="AccessDeniedDescription" xml:space="preserve">
+    <value>บัญชีของคุณไม่มีสิทธิ์เปิดหน้านี้</value>
+  </data>
+  <data name="AccountSecurity" xml:space="preserve">
+    <value>ความปลอดภัยของบัญชี</value>
+  </data>
+  <data name="TwoFactorAuthentication" xml:space="preserve">
+    <value>การยืนยันตัวตนสองขั้นตอน</value>
+  </data>
+  <data name="TwoFactorEnabled" xml:space="preserve">
+    <value>เปิดการยืนยันตัวตนสองขั้นตอนแล้ว</value>
+  </data>
+  <data name="TwoFactorDisabled" xml:space="preserve">
+    <value>ยังไม่ได้ตั้งค่าการยืนยันตัวตนสองขั้นตอน</value>
+  </data>
+  <data name="SetUpAuthenticator" xml:space="preserve">
+    <value>ตั้งค่าแอปยืนยันตัวตน</value>
+  </data>
+  <data name="DisableTwoFactor" xml:space="preserve">
+    <value>ปิดการยืนยันตัวตนสองขั้นตอน</value>
+  </data>
+  <data name="ScanQrCode" xml:space="preserve">
+    <value>สแกน QR code นี้ด้วยแอปยืนยันตัวตน เช่น Microsoft Authenticator</value>
+  </data>
+  <data name="ManualKeyHint" xml:space="preserve">
+    <value>สแกนไม่ได้? กรอกคีย์นี้เอง:</value>
+  </data>
+  <data name="ConfirmSetupHint" xml:space="preserve">
+    <value>กรอกรหัสที่แอปแสดงตอนนี้เพื่อตั้งค่าให้เสร็จ</value>
+  </data>
+  <data name="RecoveryCodes" xml:space="preserve">
+    <value>รหัสกู้คืน</value>
+  </data>
+  <data name="RecoveryCodesHint" xml:space="preserve">
+    <value>เก็บรหัสเหล่านี้ไว้ในที่ปลอดภัย แต่ละรหัสใช้เข้าสู่ระบบได้หนึ่งครั้งเมื่อไม่มีแอปยืนยันตัวตน รหัสจะแสดงแค่ครั้งนี้เท่านั้น</value>
+  </data>
+  <data name="RemainingRecoveryCodes" xml:space="preserve">
+    <value>รหัสกู้คืนที่เหลือ</value>
+  </data>
+  <data name="GenerateNewRecoveryCodes" xml:space="preserve">
+    <value>สร้างรหัสกู้คืนใหม่</value>
+  </data>
+  <data name="TwoFactorRequiredTitle" xml:space="preserve">
+    <value>ต้องใช้การยืนยันตัวตนสองขั้นตอน</value>
+  </data>
+  <data name="TwoFactorRequiredDescription" xml:space="preserve">
+    <value>การตั้งค่าเซิร์ฟเวอร์กำหนดให้ผู้ใช้หน้าผู้ดูแลทุกคนต้องยืนยันตัวตนขั้นที่สอง กรุณาตั้งค่าแอปยืนยันตัวตนเพื่อดำเนินการต่อ</value>
+  </data>
+  <data name="Roles" xml:space="preserve">
+    <value>บทบาท</value>
+  </data>
+  <data name="Role" xml:space="preserve">
+    <value>บทบาท</value>
+  </data>
+  <data name="TwoFactor" xml:space="preserve">
+    <value>ยืนยันขั้นที่สอง</value>
+  </data>
+  <data name="LastLogin" xml:space="preserve">
+    <value>เข้าสู่ระบบล่าสุด</value>
+  </data>
+  <data name="Enabled" xml:space="preserve">
+    <value>เปิด</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>ปิด</value>
+  </data>
+  <data name="NoAdminUserWarning" xml:space="preserve">
+    <value>ยังไม่มีผู้ใช้หน้าผู้ดูแล ตอนนี้จึงเข้าหน้านี้ได้โดยไม่ต้องล็อกอิน สร้างผู้ใช้คนแรกทันทีที่ตั้งค่าฐานข้อมูลเสร็จ หรือตั้งค่าผู้ใช้เริ่มต้น (bootstrap)</value>
+  </data>
+  <data name="CreateFirstUser" xml:space="preserve">
+    <value>สร้างผู้ใช้คนแรก</value>
+  </data>
+  <data name="UserCreated" xml:space="preserve">
+    <value>สร้างผู้ใช้แล้ว</value>
+  </data>
+  <data name="UserDeleted" xml:space="preserve">
+    <value>ลบผู้ใช้แล้ว</value>
+  </data>
+  <data name="PasswordChanged" xml:space="preserve">
+    <value>เปลี่ยนรหัสผ่านแล้ว</value>
+  </data>
+  <data name="TwoFactorResetForUser" xml:space="preserve">
+    <value>รีเซ็ตการยืนยันขั้นที่สองของผู้ใช้แล้ว</value>
+  </data>
+  <data name="ResetTwoFactor" xml:space="preserve">
+    <value>รีเซ็ตการยืนยันขั้นที่สอง</value>
+  </data>
+  <data name="CannotDeleteLastUser" xml:space="preserve">
+    <value>ลบผู้ใช้คนสุดท้ายไม่ได้</value>
+  </data>
+  <data name="CannotModifyBootstrapUser" xml:space="preserve">
+    <value>ผู้ใช้เริ่มต้น (bootstrap) กำหนดจากไฟล์ตั้งค่า แก้ไขที่นี่ไม่ได้</value>
+  </data>
+  <data name="ApiKeys" xml:space="preserve">
+    <value>คีย์ API</value>
+  </data>
+  <data name="ApiKeysDescription" xml:space="preserve">
+    <value>แอปภายนอก เช่น ตัวเปิดเกมหรือเว็บไซต์ ใช้คีย์เหล่านี้ยืนยันตัวตนกับ API สาธารณะที่ /api ให้แต่ละแอปมีคีย์ของตัวเอง จะได้ยกเลิกทีละคีย์ได้</value>
+  </data>
+  <data name="ApiKeyName" xml:space="preserve">
+    <value>แอปพลิเคชัน</value>
+  </data>
+  <data name="ApiKeyPrefix" xml:space="preserve">
+    <value>คีย์</value>
+  </data>
+  <data name="CreateApiKey" xml:space="preserve">
+    <value>สร้างคีย์ API</value>
+  </data>
+  <data name="DeleteApiKey" xml:space="preserve">
+    <value>ลบคีย์ API</value>
+  </data>
+  <data name="DeleteApiKeyQuestion" xml:space="preserve">
+    <value>ต้องการลบคีย์ API ของ '{0}' จริงหรือไม่? แอปที่ใช้คีย์นี้จะหยุดทำงานทันที</value>
+  </data>
+  <data name="ApiKeyCreated" xml:space="preserve">
+    <value>สร้างคีย์ API แล้ว</value>
+  </data>
+  <data name="ApiKeyDeleted" xml:space="preserve">
+    <value>ลบคีย์ API แล้ว</value>
+  </data>
+  <data name="ApiKeyEnabled" xml:space="preserve">
+    <value>เปิดใช้คีย์ API แล้ว</value>
+  </data>
+  <data name="ApiKeyDisabled" xml:space="preserve">
+    <value>ปิดใช้คีย์ API แล้ว</value>
+  </data>
+  <data name="ApiKeyShownOnce" xml:space="preserve">
+    <value>คัดลอกคีย์นี้ตอนนี้เลย</value>
+  </data>
+  <data name="ApiKeyShownOnceDescription" xml:space="preserve">
+    <value>ระบบเก็บเฉพาะค่าแฮชของคีย์ คีย์จึงแสดงแค่ครั้งนี้ ถ้าทำหาย ให้ลบคีย์แล้วสร้างใหม่</value>
+  </data>
+  <data name="NoApiKeys" xml:space="preserve">
+    <value>ยังไม่ได้สร้างคีย์ API</value>
+  </data>
+  <data name="Enable" xml:space="preserve">
+    <value>เปิดใช้</value>
+  </data>
+  <data name="Disable" xml:space="preserve">
+    <value>ปิดใช้</value>
+  </data>
+  <data name="CopyToClipboard" xml:space="preserve">
+    <value>คัดลอก</value>
+  </data>
+  <data name="CopiedToClipboard" xml:space="preserve">
+    <value>คัดลอกคีย์ API แล้ว</value>
+  </data>
+  <data name="CopyToClipboardFailed" xml:space="preserve">
+    <value>คัดลอกคีย์ API ไม่ได้ กรุณาเลือกแล้วคัดลอกเอง</value>
+  </data>
+  <data name="NetworkAnalyzer" xml:space="preserve">
+    <value>ตัววิเคราะห์เครือข่าย</value>
+  </data>
+  <data name="ChatServer" xml:space="preserve">
+    <value>Chat Server</value>
+  </data>
+  <data name="Connections" xml:space="preserve">
+    <value>การเชื่อมต่อ</value>
+  </data>
+  <data name="NoConnectionsFound" xml:space="preserve">
+    <value>ไม่พบการเชื่อมต่อ</value>
+  </data>
+  <data name="SelectAConnection" xml:space="preserve">
+    <value>เลือกการเชื่อมต่อเพื่อดูทราฟฟิกเครือข่าย</value>
+  </data>
+  <data name="NetworkAnalyzerNotAvailable" xml:space="preserve">
+    <value>ตัววิเคราะห์เครือข่ายใช้ได้เฉพาะแบบติดตั้ง all-in-one เพราะต้องให้เซิร์ฟเวอร์ทำงานในโปรเซสเดียวกัน</value>
+  </data>
+  <data name="CapturedPackets" xml:space="preserve">
+    <value>แพ็กเก็ตที่ดักจับ</value>
+  </data>
+  <data name="Timestamp" xml:space="preserve">
+    <value>เวลา</value>
+  </data>
+  <data name="Direction" xml:space="preserve">
+    <value>ทิศทาง</value>
+  </data>
+  <data name="PacketCode" xml:space="preserve">
+    <value>รหัส</value>
+  </data>
+  <data name="PacketMessage" xml:space="preserve">
+    <value>ข้อความ</value>
+  </data>
+  <data name="PacketDetails" xml:space="preserve">
+    <value>รายละเอียดแพ็กเก็ต</value>
+  </data>
+  <data name="ExtractedInformation" xml:space="preserve">
+    <value>ข้อมูลที่แยกออกมา</value>
+  </data>
+  <data name="RawData" xml:space="preserve">
+    <value>ข้อมูลดิบ</value>
+  </data>
+  <data name="ClearPackets" xml:space="preserve">
+    <value>ล้าง</value>
+  </data>
+  <data name="ToServer" xml:space="preserve">
+    <value>ไปเซิร์ฟเวอร์</value>
+  </data>
+  <data name="ToClient" xml:space="preserve">
+    <value>ไปตัวเกม</value>
+  </data>
+  <data name="FilterPackets" xml:space="preserve">
+    <value>กรองตามรหัสหรือข้อความ</value>
+  </data>
+  <data name="NoPacketsCaptured" xml:space="preserve">
+    <value>ยังไม่มีแพ็กเก็ตที่ดักจับ</value>
+  </data>
+  <data name="SelectAPacket" xml:space="preserve">
+    <value>เลือกแพ็กเก็ตเพื่อดูเนื้อหา</value>
+  </data>
+  <data name="FollowNewPackets" xml:space="preserve">
+    <value>ติดตาม</value>
+  </data>
+  <data name="AnalyzeTraffic" xml:space="preserve">
+    <value>วิเคราะห์ทราฟฟิกเครือข่าย</value>
+  </data>
+  <data name="ConnectionNotFound" xml:space="preserve">
+    <value>ไม่มีการเชื่อมต่อที่ขอ (แล้ว) กรุณาเลือกจากรายการ</value>
+  </data>
+  <data name="FollowNewPacketsHint" xml:space="preserve">
+    <value>แสดงแพ็กเก็ตล่าสุดและเลื่อนไปหา จะหยุดชั่วคราวเมื่อคุณเลื่อนขึ้น เพื่อไม่ให้หน้าจอเลื่อนหนี</value>
+  </data>
+  <data name="CastleSiege" xml:space="preserve">
+    <value>Castle Siege</value>
+  </data>
+  <data name="CastleSiegeAllInOneHint" xml:space="preserve">
+    <value>การจัดการ Castle Siege ใช้ได้เฉพาะเมื่อหน้าผู้ดูแลและเกมเซิร์ฟเวอร์ทำงานในโปรเซสเดียวกัน</value>
+  </data>
+  <data name="CastleSiegeManualRefreshHint" xml:space="preserve">
+    <value>หน้านี้แสดงข้อมูล ณ ขณะหนึ่ง กดรีเฟรชเพื่อโหลดสถานะ Castle Siege ล่าสุด</value>
+  </data>
+  <data name="CastleSiegeStatus" xml:space="preserve">
+    <value>สถานะ</value>
+  </data>
+  <data name="CastleSiegeState" xml:space="preserve">
+    <value>ช่วง</value>
+  </data>
+  <data name="CastleSiegeStartedUtc" xml:space="preserve">
+    <value>เริ่ม (UTC)</value>
+  </data>
+  <data name="CastleSiegeEndsUtc" xml:space="preserve">
+    <value>สิ้นสุด (UTC)</value>
+  </data>
+  <data name="CastleSiegeOwner" xml:space="preserve">
+    <value>เจ้าของ</value>
+  </data>
+  <data name="CastleSiegeUnoccupied" xml:space="preserve">
+    <value>ไม่มีเจ้าของ</value>
+  </data>
+  <data name="CastleSiegeRegistrations" xml:space="preserve">
+    <value>การลงทะเบียน</value>
+  </data>
+  <data name="CastleSiegeEconomy" xml:space="preserve">
+    <value>เศรษฐกิจ</value>
+  </data>
+  <data name="CastleSiegeChaosMachineTax" xml:space="preserve">
+    <value>ภาษีเครื่อง Chaos</value>
+  </data>
+  <data name="CastleSiegePersonalStoreTax" xml:space="preserve">
+    <value>ภาษีร้านค้าส่วนตัว</value>
+  </data>
+  <data name="CastleSiegeLandOfTrialsFee" xml:space="preserve">
+    <value>ค่าเข้า Land of Trials</value>
+  </data>
+  <data name="CastleSiegeTribute" xml:space="preserve">
+    <value>ส่วยสะสม</value>
+  </data>
+  <data name="CastleSiegeStateAndOwner" xml:space="preserve">
+    <value>ช่วงและเจ้าของ</value>
+  </data>
+  <data name="CastleSiegeForceState" xml:space="preserve">
+    <value>บังคับเปลี่ยนช่วง</value>
+  </data>
+  <data name="CastleSiegeForce" xml:space="preserve">
+    <value>บังคับ</value>
+  </data>
+  <data name="CastleSiegeForceStateHint" xml:space="preserve">
+    <value>การเปลี่ยนช่วงจะทำในรอบตัวจับเวลา Castle Siege ถัดไป</value>
+  </data>
+  <data name="CastleSiegeChangeOwner" xml:space="preserve">
+    <value>เปลี่ยนเจ้าของ</value>
+  </data>
+  <data name="CastleSiegeGuildName" xml:space="preserve">
+    <value>ชื่อกิลด์</value>
+  </data>
+  <data name="CastleSiegeChangeOwnerHint" xml:space="preserve">
+    <value>การเปลี่ยนเจ้าของจะเริ่มวาระใหม่ และล้างภาษี ส่วย และสิทธิ์เข้า Land of Trials เดิม</value>
+  </data>
+  <data name="CastleSiegeResetCycle" xml:space="preserve">
+    <value>ล้างการลงทะเบียนและรีเซ็ตเป็น Idle1</value>
+  </data>
+  <data name="CastleSiegeTaxesAndTribute" xml:space="preserve">
+    <value>ภาษีและส่วย</value>
+  </data>
+  <data name="CastleSiegeChaosTaxPercent" xml:space="preserve">
+    <value>ภาษี Chaos (%)</value>
+  </data>
+  <data name="CastleSiegeStoreTaxPercent" xml:space="preserve">
+    <value>ภาษีร้านค้า (%)</value>
+  </data>
+  <data name="CastleSiegeHuntFee" xml:space="preserve">
+    <value>ค่าล่า</value>
+  </data>
+  <data name="CastleSiegeSaveTaxes" xml:space="preserve">
+    <value>บันทึกภาษี</value>
+  </data>
+  <data name="CastleSiegeClearTribute" xml:space="preserve">
+    <value>ล้างส่วย</value>
+  </data>
+  <data name="CastleSiegeRegisteredGuilds" xml:space="preserve">
+    <value>กิลด์ที่ลงทะเบียน</value>
+  </data>
+  <data name="CastleSiegeNoRegisteredGuilds" xml:space="preserve">
+    <value>ไม่มีกิลด์ลงทะเบียน</value>
+  </data>
+  <data name="CastleSiegeName" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="CastleSiegeGuildDeleted" xml:space="preserve">
+    <value>กิลด์ถูกลบแล้ว</value>
+  </data>
+  <data name="CastleSiegeMarks" xml:space="preserve">
+    <value>เครื่องหมาย</value>
+  </data>
+  <data name="CastleSiegeRegistrationOrder" xml:space="preserve">
+    <value>ลำดับการลงทะเบียน</value>
+  </data>
+  <data name="CastleSiegeNpcStatus" xml:space="preserve">
+    <value>สถานะ NPC</value>
+  </data>
+  <data name="CastleSiegeMonster" xml:space="preserve">
+    <value>มอนสเตอร์</value>
+  </data>
+  <data name="CastleSiegeInstance" xml:space="preserve">
+    <value>อินสแตนซ์</value>
+  </data>
+  <data name="CastleSiegeDefense" xml:space="preserve">
+    <value>พลังป้องกัน</value>
+  </data>
+  <data name="CastleSiegeRegeneration" xml:space="preserve">
+    <value>การฟื้นฟู</value>
+  </data>
+  <data name="CastleSiegeLife" xml:space="preserve">
+    <value>พลังชีวิต</value>
+  </data>
+  <data name="CastleSiegeHitPoints" xml:space="preserve">
+    <value>HP</value>
+  </data>
+  <data name="CastleSiegeAlive" xml:space="preserve">
+    <value>ยังอยู่</value>
+  </data>
+  <data name="CastleSiegePersistent" xml:space="preserve">
+    <value>ถาวร</value>
+  </data>
+  <data name="CastleSiegeConfirmOwnerTitle" xml:space="preserve">
+    <value>เปลี่ยนเจ้าของ Castle Siege ไหม?</value>
+  </data>
+  <data name="CastleSiegeConfirmOwner" xml:space="preserve">
+    <value>มอบปราสาทให้ '{0}' ไหม? จะล้างภาษี ส่วย และสิทธิ์เข้า Land of Trials เดิม</value>
+  </data>
+  <data name="CastleSiegeConfirmResetTitle" xml:space="preserve">
+    <value>รีเซ็ตรอบ Castle Siege ไหม?</value>
+  </data>
+  <data name="CastleSiegeConfirmReset" xml:space="preserve">
+    <value>ล้างการลงทะเบียนและกิลด์ที่เลือกทั้งหมด เอา NPC ของ Castle Siege ออก แล้วตั้งเวลาเป็น Idle1 ไหม?</value>
+  </data>
+  <data name="CastleSiegeConfirmClearTributeTitle" xml:space="preserve">
+    <value>ล้างส่วย Castle Siege ไหม?</value>
+  </data>
+  <data name="CastleSiegeConfirmClearTribute" xml:space="preserve">
+    <value>ล้างส่วย Castle Siege ที่สะสมทั้งหมดอย่างถาวรไหม?</value>
+  </data>
+  <data name="CastleSiegeConfirmRemoveRegistrationTitle" xml:space="preserve">
+    <value>ลบการลงทะเบียนกิลด์ไหม?</value>
+  </data>
+  <data name="CastleSiegeConfirmRemoveRegistration" xml:space="preserve">
+    <value>ลบการลงทะเบียน Castle Siege ของ '{0}' ไหม?</value>
+  </data>
+  <data name="CastleSiegeStateScheduled" xml:space="preserve">
+    <value>ตั้งเวลาเปลี่ยนช่วง Castle Siege แล้ว</value>
+  </data>
+  <data name="CastleSiegeOwnerUpdated" xml:space="preserve">
+    <value>อัปเดตเจ้าของ Castle Siege แล้ว</value>
+  </data>
+  <data name="CastleSiegeCycleReset" xml:space="preserve">
+    <value>ล้างการลงทะเบียน Castle Siege และตั้งเวลา Idle1 แล้ว</value>
+  </data>
+  <data name="CastleSiegeTaxesUpdated" xml:space="preserve">
+    <value>อัปเดตภาษี Castle Siege แล้ว</value>
+  </data>
+  <data name="CastleSiegeTributeCleared" xml:space="preserve">
+    <value>ล้างส่วย Castle Siege แล้ว</value>
+  </data>
+  <data name="CastleSiegeRegistrationRemoved" xml:space="preserve">
+    <value>ลบการลงทะเบียนกิลด์แล้ว</value>
+  </data>
+  <data name="CastleSiegeErrorInvalidState" xml:space="preserve">
+    <value>ช่วง Castle Siege ที่เลือกไม่ถูกต้อง</value>
+  </data>
+  <data name="CastleSiegeErrorNotInitialized" xml:space="preserve">
+    <value>Castle Siege ยังไม่ได้เริ่มบนเกมเซิร์ฟเวอร์นี้</value>
+  </data>
+  <data name="CastleSiegeErrorGuildNameRequired" xml:space="preserve">
+    <value>กรอกชื่อกิลด์</value>
+  </data>
+  <data name="CastleSiegeErrorGameServerContextRequired" xml:space="preserve">
+    <value>การเปลี่ยนเจ้าของต้องทำผ่านเกมเซิร์ฟเวอร์</value>
+  </data>
+  <data name="CastleSiegeErrorGuildNotFound" xml:space="preserve">
+    <value>ไม่พบกิลด์</value>
+  </data>
+  <data name="CastleSiegeErrorOwnerChangeDuringBattle" xml:space="preserve">
+    <value>เปลี่ยนเจ้าของระหว่างกำลังรบไม่ได้</value>
+  </data>
+  <data name="CastleSiegeErrorResetDuringActiveSiege" xml:space="preserve">
+    <value>รีเซ็ตรอบ Castle Siege ไม่ได้ขณะอยู่ในช่วงเตรียมรบ กำลังรบ หรือกำลังสรุปผล</value>
+  </data>
+  <data name="CastleSiegeErrorTaxOutOfRange" xml:space="preserve">
+    <value>มีค่าภาษีอย่างน้อยหนึ่งค่าอยู่นอกช่วงที่รองรับ</value>
+  </data>
+  <data name="CastleSiegeErrorTaxChangeDuringBattle" xml:space="preserve">
+    <value>เปลี่ยนภาษีระหว่างกำลังรบไม่ได้</value>
+  </data>
+  <data name="CastleSiegeErrorTributeClearDuringBattle" xml:space="preserve">
+    <value>ล้างส่วยระหว่างกำลังรบไม่ได้</value>
+  </data>
+  <data name="CastleSiegeErrorRegistrationChangeOutsideRegistration" xml:space="preserve">
+    <value>เปลี่ยนการลงทะเบียนกิลด์ได้เฉพาะช่วงเปิดลงทะเบียน</value>
+  </data>
+  <data name="CastleSiegeErrorRegistrationMissing" xml:space="preserve">
+    <value>การลงทะเบียนนี้ไม่มีแล้ว</value>
+  </data>
+  <data name="CastleSiegeErrorGameServerUnavailable" xml:space="preserve">
+    <value>เกมเซิร์ฟเวอร์ที่เลือกไม่มีแล้ว</value>
+  </data>
+  <data name="CastleSiegeErrorAllInOneDeploymentRequired" xml:space="preserve">
+    <value>การจัดการ Castle Siege ต้องติดตั้งเกมเซิร์ฟเวอร์แบบ all-in-one</value>
+  </data>
+  <data name="CastleSiegeErrorPlugInInactive" xml:space="preserve">
+    <value>ปลั๊กอิน Castle Siege ไม่ได้เปิดบนเกมเซิร์ฟเวอร์นี้</value>
+  </data>
+  <data name="CastleSiegeErrorUnexpected" xml:space="preserve">
+    <value>การทำงานของ Castle Siege ล้มเหลวโดยไม่คาดคิด ดูรายละเอียดใน log ของเซิร์ฟเวอร์</value>
+  </data>
+  <data name="ArchivedSessions" xml:space="preserve">
+    <value>เซสชันที่เก็บไว้</value>
+  </data>
+  <data name="NoArchivedSessions" xml:space="preserve">
+    <value>ไม่มีเซสชันที่เก็บไว้</value>
+  </data>
+  <data name="ArchivedSession" xml:space="preserve">
+    <value>ที่เก็บ</value>
+  </data>
+  <data name="SessionIsRunning" xml:space="preserve">
+    <value>กำลังทำงาน</value>
+  </data>
+  <data name="ObserveAccount" xml:space="preserve">
+    <value>เฝ้าดู</value>
+  </data>
+  <data name="ObserveAccountHint" xml:space="preserve">
+    <value>เก็บทราฟฟิกของไอดีนี้ทุกเซสชันจนกว่าจะปิด</value>
+  </data>
+  <data name="DeleteArchivedSession" xml:space="preserve">
+    <value>ลบเซสชันที่เก็บไว้</value>
+  </data>
+  <data name="DeleteArchivedSessionQuestion" xml:space="preserve">
+    <value>คุณกำลังจะลบเซสชันที่เก็บไว้ '{0}' แน่ใจหรือไม่?</value>
+  </data>
+  <data name="DownloadArchivedSession" xml:space="preserve">
+    <value>ดาวน์โหลดเซสชันที่เก็บไว้</value>
+  </data>
+  <data name="Players" xml:space="preserve">
+    <value>ผู้เล่น</value>
+  </data>
+  <data name="OffLevelPlayers" xml:space="preserve">
+    <value>ผู้เล่นออฟเลเวล</value>
+  </data>
+  <data name="BotPlayers" xml:space="preserve">
+    <value>ผู้เล่นบอต</value>
+  </data>
+  <data name="Party" xml:space="preserve">
+    <value>ปาร์ตี้</value>
+  </data>
+  <data name="CreateGameServer_ServerId" xml:space="preserve">
+    <value>Server ID</value>
+  </data>
+  <data name="CreateGameServer_Description" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="CreateGameServer_ExperienceRate" xml:space="preserve">
+    <value>อัตราค่าประสบการณ์</value>
+  </data>
+  <data name="CreateGameServer_PvpEnabled" xml:space="preserve">
+    <value>เปิด PvP</value>
+  </data>
+  <data name="CreateGameServer_ServerConfiguration" xml:space="preserve">
+    <value>การตั้งค่าเซิร์ฟเวอร์</value>
+  </data>
+  <data name="CreateGameServer_Client" xml:space="preserve">
+    <value>ตัวเกม</value>
+  </data>
+  <data name="CreateGameServer_NetworkPort" xml:space="preserve">
+    <value>พอร์ตที่รอรับ</value>
+  </data>
+  <data name="CreateConnectServer_ServerId" xml:space="preserve">
+    <value>Server ID</value>
+  </data>
+  <data name="CreateConnectServer_Description" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="CreateConnectServer_Client" xml:space="preserve">
+    <value>ตัวเกม</value>
+  </data>
+  <data name="CreateConnectServer_NetworkPort" xml:space="preserve">
+    <value>พอร์ตที่รอรับ</value>
+  </data>
+  <data name="PageNotFound" xml:space="preserve">
+    <value>ไม่พบหน้า</value>
+  </data>
+  <data name="PageNotFoundDescription" xml:space="preserve">
+    <value>ขออภัย ไม่พบเนื้อหาที่คุณต้องการ</value>
+  </data>
+  <data name="PartySummary" xml:space="preserve">
+    <value>ปาร์ตี้ของ {0}: สมาชิก {1} คน</value>
+  </data>
+  <data name="DeletedSuccessfully" xml:space="preserve">
+    <value>ลบ '{0}' สำเร็จ</value>
+  </data>
+  <data name="InvalidCloneMethod" xml:space="preserve">
+    <value>ประเภท '{0}' ต้องมีเมธอด Clone ที่รับ '{1}' และคืนค่า '{0}'</value>
+  </data>
+  <data name="ConfigurationEntryName" xml:space="preserve">
+    <value>ชื่อ</value>
+  </data>
+  <data name="LogReadError" xml:space="preserve">
+    <value>อ่านไฟล์ log ไม่ได้: {0}</value>
+  </data>
+  <data name="CouldNotSaveEntry" xml:space="preserve">
+    <value>บันทึกรายการใหม่ไม่ได้: {0}</value>
+  </data>
+  <data name="ConfirmDelete" xml:space="preserve">
+    <value>ยืนยันการลบ</value>
+  </data>
+  <data name="ConfirmDeleteEntry" xml:space="preserve">
+    <value>คุณกำลังจะลบ '{0}' แน่ใจหรือไม่?</value>
+  </data>
+  <data name="CreateEntry" xml:space="preserve">
+    <value>สร้าง {0}</value>
+  </data>
+  <data name="DuplicateEntry" xml:space="preserve">
+    <value>ทำสำเนา '{0}'</value>
+  </data>
+  <data name="ReconnectJoining" xml:space="preserve">
+    <value>กำลังเชื่อมต่อเซิร์ฟเวอร์ใหม่...</value>
+  </data>
+  <data name="ReconnectRetryBefore" xml:space="preserve">
+    <value>เชื่อมต่อใหม่ไม่สำเร็จ... จะลองอีกครั้งใน</value>
+  </data>
+  <data name="ReconnectRetryAfter" xml:space="preserve">
+    <value> วินาที</value>
+  </data>
+  <data name="ReconnectFailed" xml:space="preserve">
+    <value>เชื่อมต่อใหม่ไม่สำเร็จ กรุณาลองใหม่หรือโหลดหน้าใหม่</value>
+  </data>
+  <data name="ReconnectRetry" xml:space="preserve">
+    <value>ลองใหม่</value>
+  </data>
+  <data name="ReconnectPaused" xml:space="preserve">
+    <value>เซิร์ฟเวอร์หยุดเซสชันชั่วคราว</value>
+  </data>
+  <data name="ReconnectResume" xml:space="preserve">
+    <value>ทำต่อ</value>
+  </data>
+  <data name="ReconnectResumeFailed" xml:space="preserve">
+    <value>ทำเซสชันต่อไม่ได้ กรุณาโหลดหน้าใหม่</value>
+  </data>
+  <data name="RoleAdministrator" xml:space="preserve">
+    <value>ผู้ดูแลระบบ</value>
+  </data>
+  <data name="RoleOperator" xml:space="preserve">
+    <value>ผู้ปฏิบัติงาน</value>
+  </data>
+  <data name="RoleViewer" xml:space="preserve">
+    <value>อ่านอย่างเดียว</value>
+  </data>
+  <data name="RoleCashShop" xml:space="preserve">
+    <value>เฉพาะเหรียญ Cash shop</value>
+  </data>
+  <data name="Guilds" xml:space="preserve">
+    <value>กิลด์</value>
+  </data>
+  <data name="Guild" xml:space="preserve">
+    <value>กิลด์</value>
+  </data>
+  <data name="Alliance" xml:space="preserve">
+    <value>พันธมิตร</value>
+  </data>
+  <data name="Members" xml:space="preserve">
+    <value>สมาชิก</value>
+  </data>
+  <data name="Score" xml:space="preserve">
+    <value>คะแนน</value>
+  </data>
+  <data name="Notice" xml:space="preserve">
+    <value>ประกาศ</value>
+  </data>
+  <data name="Position" xml:space="preserve">
+    <value>ตำแหน่ง</value>
+  </data>
+  <data name="CharacterClass" xml:space="preserve">
+    <value>คลาสตัวละคร</value>
+  </data>
+  <data name="Level" xml:space="preserve">
+    <value>เลเวล</value>
+  </data>
+  <data name="MasterLevel" xml:space="preserve">
+    <value>มาสเตอร์เลเวล</value>
+  </data>
+  <data name="Account" xml:space="preserve">
+    <value>ไอดี</value>
+  </data>
+  <data name="GuildNotFound" xml:space="preserve">
+    <value>ไม่พบกิลด์ อาจถูกลบไปแล้ว</value>
+  </data>
+  <data name="EmptyValue" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="PartyBadgeTitle" xml:space="preserve">
+    <value>ปาร์ตี้ของ {0}: สมาชิก {1} คน</value>
+  </data>
+  <data name="AddChancePercent" xml:space="preserve">
+    <value>โอกาสเพิ่ม (%)</value>
+  </data>
+  <data name="AddDropItemGroup" xml:space="preserve">
+    <value>เพิ่มกลุ่มไอเทมดรอป</value>
+  </data>
+  <data name="AddDropsForItem" xml:space="preserve">
+    <value>เพิ่มของดรอปสำหรับไอเทมอื่น (เช่น กล่อง)</value>
+  </data>
+  <data name="AddDropsForMonster" xml:space="preserve">
+    <value>เพิ่มของดรอปสำหรับมอนสเตอร์อื่น</value>
+  </data>
+  <data name="AddsRandomly" xml:space="preserve">
+    <value>เพิ่มแบบสุ่ม</value>
+  </data>
+  <data name="AreYouSure" xml:space="preserve">
+    <value>แน่ใจหรือไม่?</value>
+  </data>
+  <data name="AssignToAllMaps" xml:space="preserve">
+    <value>กำหนดให้ทุกแผนที่</value>
+  </data>
+  <data name="AssignedMaps" xml:space="preserve">
+    <value>แผนที่ที่กำหนด</value>
+  </data>
+  <data name="ChanceHint" xml:space="preserve">
+    <value>โอกาสที่กลุ่มนี้จะถูกเลือกให้ดรอป ตั้งแต่ 0 ถึง 100 % ถ้าเป็น 100 % กลุ่มนี้จะดรอปเสมอ นอกเหนือจากกลุ่มที่ใช้โอกาส</value>
+  </data>
+  <data name="ChancePercent" xml:space="preserve">
+    <value>โอกาส (%)</value>
+  </data>
+  <data name="DeleteDropItemGroupQuestion" xml:space="preserve">
+    <value>คุณกำลังจะลบกลุ่มไอเทมดรอป '{0}' แน่ใจหรือไม่?</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>คำอธิบาย</value>
+  </data>
+  <data name="DropEffect" xml:space="preserve">
+    <value>เอฟเฟกต์ตอนดรอป</value>
+  </data>
+  <data name="DropItemGroupStillUsed" xml:space="preserve">
+    <value>ลบกลุ่มไอเทมดรอป '{0}' ไม่ได้ เพราะยังถูกใช้โดย: {1}</value>
+  </data>
+  <data name="DropLevel" xml:space="preserve">
+    <value>เลเวลดรอป</value>
+  </data>
+  <data name="DropLevelHint" xml:space="preserve">
+    <value>เลเวลมอนสเตอร์ขั้นต่ำที่ไอเทมนี้จะสุ่มดรอปได้</value>
+  </data>
+  <data name="DropsFromMonsters" xml:space="preserve">
+    <value>ดรอปจากมอนสเตอร์</value>
+  </data>
+  <data name="EditDetails" xml:space="preserve">
+    <value>แก้ไขรายละเอียด</value>
+  </data>
+  <data name="ExcellentItemDropLevelDelta" xml:space="preserve">
+    <value>ส่วนต่างเลเวลดรอปไอเทม Excellent</value>
+  </data>
+  <data name="ExcellentItemDropLevelDeltaHint" xml:space="preserve">
+    <value>มอนสเตอร์ต้องมีเลเวลสูงกว่าเลเวลดรอปของไอเทมอย่างน้อยเท่านี้ ไอเทมจึงจะดรอปเป็น Excellent ได้</value>
+  </data>
+  <data name="GameMap" xml:space="preserve">
+    <value>แผนที่</value>
+  </data>
+  <data name="GeneralDropSettings" xml:space="preserve">
+    <value>ตั้งค่าทั่วไป</value>
+  </data>
+  <data name="GuaranteedDrops" xml:space="preserve">
+    <value>ดรอปแน่นอน</value>
+  </data>
+  <data name="Item" xml:space="preserve">
+    <value>ไอเทม</value>
+  </data>
+  <data name="ItemBoxDrops" xml:space="preserve">
+    <value>ของดรอปจากกล่องไอเทม</value>
+  </data>
+  <data name="ItemBoxDropsDescription" xml:space="preserve">
+    <value>กำหนดของที่ออกเมื่อผู้เล่นทิ้งไอเทมประเภทกล่อง (เช่น Box of Luck, Box of Kundun) ระบบจะเลือกหนึ่งกลุ่มตามโอกาส จากกลุ่มที่ตรงกับเลเวลของไอเทมต้นทาง</value>
+  </data>
+  <data name="ItemDropDurationSeconds" xml:space="preserve">
+    <value>เวลาที่ไอเทมดรอปอยู่บนพื้น (วินาที)</value>
+  </data>
+  <data name="ItemDrops" xml:space="preserve">
+    <value>ไอเทมดรอป</value>
+  </data>
+  <data name="ItemDropsPageDescription" xml:space="preserve">
+    <value>ตั้งค่าไอเทมดรอปทั้งหมดในหน้าเดียว การเปลี่ยนแปลงจะมีผลหลังบันทึกเท่านั้น</value>
+  </data>
+  <data name="ItemLevel" xml:space="preserve">
+    <value>เลเวลไอเทม</value>
+  </data>
+  <data name="ItemLevelHint" xml:space="preserve">
+    <value>เลเวลที่ให้กับไอเทมที่ดรอป ถ้าเว้นว่าง ไอเทมสุ่มจะได้เลเวลตามเลเวลมอนสเตอร์</value>
+  </data>
+  <data name="ItemOption" xml:space="preserve">
+    <value>ออปชันไอเทม</value>
+  </data>
+  <data name="ItemOptionDropChances" xml:space="preserve">
+    <value>โอกาสออปชันไอเทม</value>
+  </data>
+  <data name="ItemOptionDropChancesDescription" xml:space="preserve">
+    <value>โอกาสที่ออปชันจะถูกสุ่มใส่ให้ไอเทมที่ดรอป</value>
+  </data>
+  <data name="ItemType" xml:space="preserve">
+    <value>ประเภท</value>
+  </data>
+  <data name="MapDropItemGroups" xml:space="preserve">
+    <value>กลุ่มดรอปตามแผนที่</value>
+  </data>
+  <data name="MapDropItemGroupsDescription" xml:space="preserve">
+    <value>กลุ่มดรอปที่ใช้กับมอนสเตอร์ในแผนที่ที่กำหนด กลุ่มที่ไม่ได้กำหนดให้แผนที่ใดจะไม่ดรอป</value>
+  </data>
+  <data name="MaximumDropLevel" xml:space="preserve">
+    <value>เลเวลดรอปสูงสุด</value>
+  </data>
+  <data name="MaximumDropLevelHint" xml:space="preserve">
+    <value>เลเวลมอนสเตอร์สูงสุดที่ไอเทมนี้จะสุ่มดรอปได้ ถ้าเว้นว่างจะไม่มีขีดจำกัด</value>
+  </data>
+  <data name="MaximumItemLevel" xml:space="preserve">
+    <value>เลเวลไอเทมสูงสุด</value>
+  </data>
+  <data name="MaximumItemOptionLevelDrop" xml:space="preserve">
+    <value>เลเวลออปชันไอเทมสูงสุด</value>
+  </data>
+  <data name="MaximumItemOptionLevelDropHint" xml:space="preserve">
+    <value>เลเวลสูงสุดของออปชันไอเทม (เช่น +4, +8, +12, +16) ที่ใส่ให้ไอเทมที่ดรอปได้</value>
+  </data>
+  <data name="MaximumMonsterLevel" xml:space="preserve">
+    <value>เลเวลมอนสเตอร์สูงสุด</value>
+  </data>
+  <data name="MaximumOptionsPerItem" xml:space="preserve">
+    <value>จำนวนออปชันสูงสุดต่อไอเทม</value>
+  </data>
+  <data name="MiniGameUsage" xml:space="preserve">
+    <value>มินิเกม '{0}'</value>
+  </data>
+  <data name="MinimumItemLevel" xml:space="preserve">
+    <value>เลเวลไอเทมต่ำสุด</value>
+  </data>
+  <data name="MinimumMonsterLevel" xml:space="preserve">
+    <value>เลเวลมอนสเตอร์ต่ำสุด</value>
+  </data>
+  <data name="Money" xml:space="preserve">
+    <value>เงิน</value>
+  </data>
+  <data name="MoneyAmount" xml:space="preserve">
+    <value>จำนวนเงิน</value>
+  </data>
+  <data name="MonsterDrops" xml:space="preserve">
+    <value>ของดรอปจากมอนสเตอร์</value>
+  </data>
+  <data name="MonsterDropsDescription" xml:space="preserve">
+    <value>กลุ่มดรอปของมอนสเตอร์เฉพาะตัว ใช้เพิ่มจากกลุ่มดรอปตามแผนที่เมื่อมอนสเตอร์ถูกฆ่า</value>
+  </data>
+  <data name="NewDropItemGroup" xml:space="preserve">
+    <value>กลุ่มไอเทมดรอปใหม่</value>
+  </data>
+  <data name="NewDropItemGroupOf" xml:space="preserve">
+    <value>ของดรอปของ {0}</value>
+  </data>
+  <data name="NoDropChance" xml:space="preserve">
+    <value>ไม่ดรอป</value>
+  </data>
+  <data name="NoDropItemGroups" xml:space="preserve">
+    <value>ไม่มีกลุ่มไอเทมดรอป</value>
+  </data>
+  <data name="NoItems" xml:space="preserve">
+    <value>ไม่มีไอเทม</value>
+  </data>
+  <data name="NumberOfMaximumItemDrops" xml:space="preserve">
+    <value>จำนวนไอเทมดรอปสูงสุด</value>
+  </data>
+  <data name="NumberOfMaximumItemDropsHint" xml:space="preserve">
+    <value>จำนวนไอเทมสูงสุดที่มอนสเตอร์นี้ดรอปเมื่อถูกฆ่า</value>
+  </data>
+  <data name="OnlyForMonster" xml:space="preserve">
+    <value>เฉพาะมอนสเตอร์</value>
+  </data>
+  <data name="PossibleItems" xml:space="preserve">
+    <value>ไอเทมที่อาจได้</value>
+  </data>
+  <data name="PossibleItemsHint" xml:space="preserve">
+    <value>ถ้าไม่เลือกไอเทม จะดรอปไอเทมสุ่มตามประเภทและเลเวลมอนสเตอร์</value>
+  </data>
+  <data name="QuestAndEventDropItemGroups" xml:space="preserve">
+    <value>กลุ่มดรอปของเควสต์และอีเวนต์</value>
+  </data>
+  <data name="QuestAndEventDropItemGroupsDescription" xml:space="preserve">
+    <value>กลุ่มดรอปที่ใช้เป็นรางวัลเควสต์หรือมินิเกม</value>
+  </data>
+  <data name="QuestUsage" xml:space="preserve">
+    <value>เควสต์ '{0}'</value>
+  </data>
+  <data name="RandomAncientItems" xml:space="preserve">
+    <value>ไอเทม Ancient แบบสุ่ม</value>
+  </data>
+  <data name="RandomItemsByMonsterLevel" xml:space="preserve">
+    <value>ไอเทมสุ่มตามเลเวลมอนสเตอร์</value>
+  </data>
+  <data name="RandomlyDroppedItems" xml:space="preserve">
+    <value>ไอเทมที่ดรอปแบบสุ่ม</value>
+  </data>
+  <data name="RandomlyDroppedItemsDescription" xml:space="preserve">
+    <value>กำหนดว่าไอเทมไหนดรอปแบบสุ่มได้ (เช่น จากกลุ่มดรอปทั่วไปและกลุ่ม Excellent) และดรอปที่เลเวลมอนสเตอร์เท่าไร</value>
+  </data>
+  <data name="RemoveFromAllMaps" xml:space="preserve">
+    <value>ลบออกจากทุกแผนที่</value>
+  </data>
+  <data name="RemoveFromMonster" xml:space="preserve">
+    <value>ลบออกจากมอนสเตอร์</value>
+  </data>
+  <data name="RequiredCharacterLevel" xml:space="preserve">
+    <value>เลเวลตัวละครที่ต้องมี</value>
+  </data>
+  <data name="ShouldDropMoney" xml:space="preserve">
+    <value>ดรอปเงินลงพื้น (แทนการใส่เข้าช่องเก็บของทันที)</value>
+  </data>
+  <data name="ShowOnlyDroppableItems" xml:space="preserve">
+    <value>แสดงเฉพาะไอเทมที่ดรอปจากมอนสเตอร์</value>
+  </data>
+  <data name="SourceItemLevel" xml:space="preserve">
+    <value>เลเวลไอเทมต้นทาง</value>
+  </data>
+  <data name="SourceItemLevelHint" xml:space="preserve">
+    <value>เลเวลของไอเทมที่ทิ้ง (เช่น กล่อง) ที่กลุ่มนี้ใช้</value>
+  </data>
+  <data name="TotalChance" xml:space="preserve">
+    <value>โอกาสรวม</value>
+  </data>
+  <data name="TotalChanceExceedsHint" xml:space="preserve">
+    <value>โอกาสรวมเกิน 100 % ระบบจะลดโอกาสแต่ละรายการลงตามสัดส่วน</value>
+  </data>
+  <data name="UsedBy" xml:space="preserve">
+    <value>ใช้โดย</value>
+  </data>
+  <data name="Monster" xml:space="preserve">
+    <value>มอนสเตอร์</value>
+  </data>
+  <data name="MonsterLevel" xml:space="preserve">
+    <value>เลเวล</value>
+  </data>
+  <data name="MonsterDropChanceOverview" xml:space="preserve">
+    <value>ภาพรวมโอกาสดรอปของมอนสเตอร์แต่ละตัว</value>
+  </data>
+  <data name="MonsterDropChanceOverviewDescription" xml:space="preserve">
+    <value>โอกาสดรอปของมอนสเตอร์แต่ละตัวที่เกิดในแผนที่ โดยคิดเงื่อนไขเลเวลมอนสเตอร์ของกลุ่มดรอปตามแผนที่และกลุ่มดรอปเฉพาะมอนสเตอร์ โอกาสนี้ใช้กับการสุ่มดรอปแต่ละครั้ง และมอนสเตอร์สุ่มได้สูงสุดเท่าจำนวนไอเทมดรอปสูงสุด ไม่รวมไอเทมเควสต์ ถ้าโอกาสรวมเกิน 100 % ระบบจะลดโอกาสลงตามสัดส่วน และจะไม่มีโอกาสไม่ดรอปเลย</value>
+  </data>
+  <data name="Captions" xml:space="preserve">
+    <value>ข้อความแสดงผล</value>
+  </data>
+  <data name="CaptionsDescription" xml:space="preserve">
+    <value>เปรียบเทียบข้อความแสดงผลในการตั้งค่า เช่น ชื่อแผนที่และมอนสเตอร์ กับต้นฉบับในตัวโปรแกรม คำแปลใหม่และที่อัปเดตจะถูกเลือกไว้ให้ ส่วนข้อความที่คุณแก้เองจะถูกเปลี่ยนเฉพาะเมื่อคุณเลือก</value>
+  </data>
+  <data name="AllLocalizationsInPlace" xml:space="preserve">
+    <value>มีคำแปลที่ใช้ได้ครบทุกรายการแล้ว</value>
+  </data>
+  <data name="CaptionsLoading" xml:space="preserve">
+    <value>กำลังเปรียบเทียบข้อความแสดงผลกับต้นฉบับ ...</value>
+  </data>
+  <data name="CaptionLanguageSummary" xml:space="preserve">
+    <value>{0}: {1} รายการที่เปลี่ยน</value>
+  </data>
+  <data name="CaptionAllLanguages" xml:space="preserve">
+    <value>ทุกภาษา</value>
+  </data>
+  <data name="CaptionAllKinds" xml:space="preserve">
+    <value>การเปลี่ยนแปลงทุกประเภท</value>
+  </data>
+  <data name="CaptionNeutralText" xml:space="preserve">
+    <value>ต้นฉบับ (อังกฤษ)</value>
+  </data>
+  <data name="CaptionObject" xml:space="preserve">
+    <value>วัตถุ</value>
+  </data>
+  <data name="CaptionProperty" xml:space="preserve">
+    <value>คุณสมบัติ</value>
+  </data>
+  <data name="CaptionLanguage" xml:space="preserve">
+    <value>ภาษา</value>
+  </data>
+  <data name="CaptionChange" xml:space="preserve">
+    <value>การเปลี่ยนแปลง</value>
+  </data>
+  <data name="CaptionCurrentText" xml:space="preserve">
+    <value>ข้อความปัจจุบัน</value>
+  </data>
+  <data name="CaptionSourceText" xml:space="preserve">
+    <value>ข้อความใหม่</value>
+  </data>
+  <data name="CaptionChangeKind_Missing" xml:space="preserve">
+    <value>ใหม่</value>
+  </data>
+  <data name="CaptionChangeKind_Updated" xml:space="preserve">
+    <value>อัปเดต</value>
+  </data>
+  <data name="CaptionChangeKind_Removed" xml:space="preserve">
+    <value>ถูกลบ</value>
+  </data>
+  <data name="CaptionChangeKind_Customized" xml:space="preserve">
+    <value>แก้ไขเอง</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>เลือกทั้งหมด</value>
+  </data>
+  <data name="SelectRecommended" xml:space="preserve">
+    <value>เลือกที่แนะนำ</value>
+  </data>
+  <data name="SelectNone" xml:space="preserve">
+    <value>ไม่เลือกเลย</value>
+  </data>
+  <data name="ApplySelectedChanges" xml:space="preserve">
+    <value>นำการเปลี่ยนแปลงที่เลือกไปใช้</value>
+  </data>
+  <data name="ApplyingChanges" xml:space="preserve">
+    <value>กำลังนำการเปลี่ยนแปลงไปใช้ ...</value>
+  </data>
+  <data name="AppliedCaptionChanges" xml:space="preserve">
+    <value>นำการเปลี่ยนแปลง {0} รายการไปใช้แล้ว</value>
+  </data>
+  <data name="LinkBuiltInCaptions" xml:space="preserve">
+    <value>เชื่อมข้อความแสดงผลในตัว</value>
+  </data>
+  <data name="LinkBuiltInCaptionsDescription" xml:space="preserve">
+    <value>การตั้งค่าที่สร้างจากเวอร์ชันเก่ายังไม่รู้ต้นฉบับของข้อความในตัว จึงรับคำแปลใหม่ไม่ได้ การเชื่อมจะรันการเตรียมข้อมูลในหน่วยความจำ แล้วเชื่อมข้อความที่ตรงกันกับต้นฉบับ โดยไม่เปลี่ยนข้อความใดๆ</value>
+  </data>
+  <data name="LinkingBuiltInCaptions" xml:space="preserve">
+    <value>กำลังเชื่อมข้อความแสดงผลในตัว ...</value>
+  </data>
+  <data name="LinkedBuiltInCaptions" xml:space="preserve">
+    <value>เชื่อมข้อความ {0} รายการกับต้นฉบับแล้ว ข้าม {1} รายการเพราะข้อความต้นฉบับถูกแก้ไขเอง</value>
+  </data>
+  <data name="CaptionsUnresolvedSources" xml:space="preserve">
+    <value>ต้นฉบับของข้อความ {0} รายการไม่มีในเวอร์ชันนี้ จึงเปรียบเทียบไม่ได้ เช่น {1}</value>
+  </data>
+  <data name="CaptionsNotLinkedTitle" xml:space="preserve">
+    <value>เชื่อมข้อความแสดงผลในตัว</value>
+  </data>
+  <data name="CaptionsNotLinkedDescription" xml:space="preserve">
+    <value>ข้อความแสดงผลในการตั้งค่านี้ยังไม่รู้ต้นฉบับ ซึ่งเกิดกับการตั้งค่าที่สร้างจาก OpenMU เวอร์ชันเก่า ต้องเชื่อมหนึ่งครั้ง หลังจากนั้นหน้านี้จะแสดงคำแปลที่เพิ่มหรืออัปเดตได้</value>
+  </data>
+  <data name="CaptionsLinkedCount" xml:space="preserve">
+    <value>เชื่อมข้อความ {0} รายการกับต้นฉบับแล้ว</value>
+  </data>
+  <data name="CaptionsReviewTitle" xml:space="preserve">
+    <value>ตรวจและนำการเปลี่ยนแปลงไปใช้</value>
+  </data>
+  <data name="CaptionsReviewDescription" xml:space="preserve">
+    <value>ข้อความต่อไปนี้ต่างจากต้นฉบับ รายการที่แนะนำถูกเลือกไว้แล้ว ข้อความที่แก้เองจะถูกเปลี่ยนเฉพาะเมื่อคุณเลือก</value>
+  </data>
+  <data name="CaptionChangeKind_Missing_Description" xml:space="preserve">
+    <value>มีคำแปลแล้ว แต่ไม่มีในการตั้งค่า หรือเป็นแค่สำเนาของข้อความภาษาอังกฤษ</value>
+  </data>
+  <data name="CaptionChangeKind_Updated_Description" xml:space="preserve">
+    <value>ข้อความในตัวถูกเปลี่ยน และข้อความในการตั้งค่ายังเป็นข้อความเดิมที่รับมา</value>
+  </data>
+  <data name="CaptionChangeKind_Removed_Description" xml:space="preserve">
+    <value>คำแปลในตัวไม่มีแล้ว และข้อความในการตั้งค่ายังเป็นข้อความเดิมที่รับมา</value>
+  </data>
+  <data name="CaptionChangeKind_Customized_Description" xml:space="preserve">
+    <value>ข้อความในการตั้งค่าต่างไป เพราะถูกแก้หรือไม่รู้ที่มา จะถูกเขียนทับเฉพาะเมื่อคุณเลือก</value>
+  </data>
+  <data name="CaptionsLinkAgainTitle" xml:space="preserve">
+    <value>เชื่อมข้อความอีกครั้ง</value>
+  </data>
+  <data name="CaptionsLinkAgainDescription" xml:space="preserve">
+    <value>เชื่อมข้อความในตัวที่ยังไม่ได้เชื่อม เช่น หลังอัปเดตการตั้งค่าที่เพิ่มวัตถุใหม่ ข้อความที่เชื่อมแล้วจะไม่ถูกเปลี่ยน</value>
+  </data>
+  <data name="CaptionsNextStepReview" xml:space="preserve">
+    <value>ตรวจการเปลี่ยนแปลงด้านล่างแล้วนำรายการที่เลือกไปใช้</value>
+  </data>
+  <data name="CaptionLinkStep_LoadingConfiguration" xml:space="preserve">
+    <value>กำลังโหลดการตั้งค่า</value>
+  </data>
+  <data name="CaptionLinkStep_CreatingReferenceConfiguration" xml:space="preserve">
+    <value>กำลังสร้างการตั้งค่าอ้างอิง (รันการเตรียมข้อมูลในหน่วยความจำ)</value>
+  </data>
+  <data name="CaptionLinkStep_LinkingCaptions" xml:space="preserve">
+    <value>กำลังเชื่อมข้อความ</value>
+  </data>
+  <data name="CaptionLinkStep_Saving" xml:space="preserve">
+    <value>กำลังบันทึกการเปลี่ยนแปลง</value>
+  </data>
+  <data name="CaptionsLinkingHint" xml:space="preserve">
+    <value>การเชื่อมอาจใช้เวลาสักพัก ส่วนใหญ่เพราะต้องรันการเตรียมข้อมูลในหน่วยความจำ กรุณาเปิดหน้านี้ค้างไว้</value>
+  </data>
+  <data name="CaptionsLinkingElapsed" xml:space="preserve">
+    <value>เวลาที่ใช้: {0}</value>
+  </data>
+  <data name="CaptionsLinkableTitle" xml:space="preserve">
+    <value>เชื่อมข้อความในตัวที่เพิ่มใหม่</value>
+  </data>
+  <data name="CaptionsLinkableDescription" xml:space="preserve">
+    <value>ข้อความในตัว {0} รายการยังไม่ได้เชื่อมกับต้นฉบับ จึงตรวจคำแปลที่นี่ไม่ได้: {1} มักเกิดหลังอัปเดต OpenMU ที่เพิ่มคำแปล เช่น ชื่อไอเทม การเชื่อมไม่เปลี่ยนข้อความใดๆ</value>
+  </data>
+  <data name="CaptionsCheckingLinkable" xml:space="preserve">
+    <value>กำลังตรวจหาข้อความในตัวที่ยังไม่ได้เชื่อม ...</value>
+  </data>
+  <data name="CashShopCoinsOf" xml:space="preserve">
+    <value>เหรียญ Cash shop ของ {0}</value>
+  </data>
+  <data name="CashShopCoinsDescription" xml:space="preserve">
+    <value>ยอดคงเหลือคือค่าที่บันทึกล่าสุด เหรียญที่มอบให้จะรอดำเนินการจนกว่าเกมเซิร์ฟเวอร์จะนำไปใช้ ซึ่งจะเกิดเมื่อผู้เล่นเปิด Cash shop ครั้งถัดไป</value>
+  </data>
+  <data name="CashShopCoinsAccountNotFound" xml:space="preserve">
+    <value>ไม่มีไอดีนี้</value>
+  </data>
+  <data name="CashShopGrantCoins" xml:space="preserve">
+    <value>มอบเหรียญ</value>
+  </data>
+  <data name="CashShopCoinType" xml:space="preserve">
+    <value>เหรียญ</value>
+  </data>
+  <data name="CashShopAmount" xml:space="preserve">
+    <value>จำนวน</value>
+  </data>
+  <data name="CashShopGrants" xml:space="preserve">
+    <value>การมอบ</value>
+  </data>
+  <data name="CashShopGrantedBy" xml:space="preserve">
+    <value>มอบโดย</value>
+  </data>
+  <data name="CashShopReference" xml:space="preserve">
+    <value>อ้างอิง</value>
+  </data>
+  <data name="CashShopAppliedAt" xml:space="preserve">
+    <value>ใช้แล้ว</value>
+  </data>
+  <data name="CashShopPending" xml:space="preserve">
+    <value>รอดำเนินการ</value>
+  </data>
+  <data name="CashShopPendingAmount" xml:space="preserve">
+    <value>รอดำเนินการ {0}</value>
+  </data>
+  <data name="CashShopNoGrants" xml:space="preserve">
+    <value>ยังไม่มีการมอบเหรียญ</value>
+  </data>
+  <data name="CashShopAmountMustNotBeZero" xml:space="preserve">
+    <value>จำนวนต้องไม่เป็นศูนย์ ใช้จำนวนติดลบเพื่อหักเหรียญ</value>
+  </data>
+  <data name="CashShopCoinsGranted" xml:space="preserve">
+    <value>มอบเหรียญแล้ว</value>
+  </data>
+  <data name="CashShopCoins" xml:space="preserve">
+    <value>เหรียญ</value>
+  </data>
+  <data name="CashShopCatalog" xml:space="preserve">
+    <value>Cash shop</value>
+  </data>
+  <data name="CashShopCatalogDescription" xml:space="preserve">
+    <value>ตัวเกมแสดงแพ็กเกจ ชื่อ ราคา และระยะเวลาจากสคริปต์ Cash shop ของตัวเอง หน้านี้แก้ฝั่งเซิร์ฟเวอร์ คือแพ็กเกจไหนวางขาย ส่งไอเทมอะไร และคิดราคาเท่าไร แพ็กเกจและสินค้าอ้างอิงด้วยหมายเลขในสคริปต์ของตัวเกม จึงต้องตรงกับสคริปต์ของเวอร์ชันที่ตั้งไว้ ถ้าราคาต่างกัน ตัวเกมจะไม่แสดงราคานั้น</value>
+  </data>
+  <data name="CashShopNotConfigured" xml:space="preserve">
+    <value>ยังไม่ได้ตั้งค่า Cash shop ให้ติดตั้งอัปเดตการตั้งค่า 'Add cash shop' เพื่อเพิ่มแคตตาล็อกของตัวเกม</value>
+  </data>
+  <data name="CashShopVersions" xml:space="preserve">
+    <value>เวอร์ชันของสคริปต์ตัวเกม</value>
+  </data>
+  <data name="CashShopScriptVersion" xml:space="preserve">
+    <value>สคริปต์</value>
+  </data>
+  <data name="CashShopBannerVersion" xml:space="preserve">
+    <value>แบนเนอร์</value>
+  </data>
+  <data name="CashShopSaleZone" xml:space="preserve">
+    <value>โซนขาย</value>
+  </data>
+  <data name="CashShopYear" xml:space="preserve">
+    <value>ปี</value>
+  </data>
+  <data name="CashShopYearId" xml:space="preserve">
+    <value>Id ภายในปี</value>
+  </data>
+  <data name="CashShopPackages" xml:space="preserve">
+    <value>แพ็กเกจ</value>
+  </data>
+  <data name="CashShopOnlyForSale" xml:space="preserve">
+    <value>เฉพาะแพ็กเกจที่วางขาย</value>
+  </data>
+  <data name="CashShopPackageSequence" xml:space="preserve">
+    <value>หมายเลขแพ็กเกจ</value>
+  </data>
+  <data name="CashShopProductSequence" xml:space="preserve">
+    <value>หมายเลขสินค้า</value>
+  </data>
+  <data name="CashShopPriceSequence" xml:space="preserve">
+    <value>หมายเลขราคา</value>
+  </data>
+  <data name="CashShopPrice" xml:space="preserve">
+    <value>ราคา</value>
+  </data>
+  <data name="CashShopBundlePrice" xml:space="preserve">
+    <value>ราคาชุด</value>
+  </data>
+  <data name="CashShopForSale" xml:space="preserve">
+    <value>วางขาย</value>
+  </data>
+  <data name="CashShopGiftable" xml:space="preserve">
+    <value>ส่งเป็นของขวัญได้</value>
+  </data>
+  <data name="CashShopBundle" xml:space="preserve">
+    <value>ชุด</value>
+  </data>
+  <data name="CashShopSellable" xml:space="preserve">
+    <value>ขายต่อได้</value>
+  </data>
+  <data name="CashShopProducts" xml:space="preserve">
+    <value>สินค้า</value>
+  </data>
+  <data name="CashShopBundleProductsDescription" xml:space="preserve">
+    <value>ชุดจะส่งสินค้าทั้งหมดในราคาชุด</value>
+  </data>
+  <data name="CashShopPriceOptionsDescription" xml:space="preserve">
+    <value>สินค้าเป็นตัวเลือกราคา ผู้เล่นซื้อได้หนึ่งตัวเลือกตามราคานั้น</value>
+  </data>
+  <data name="CashShopItem" xml:space="preserve">
+    <value>ไอเทม</value>
+  </data>
+  <data name="CashShopItemLevel" xml:space="preserve">
+    <value>เลเวล</value>
+  </data>
+  <data name="CashShopQuantity" xml:space="preserve">
+    <value>จำนวน</value>
+  </data>
+  <data name="CashShopDurationHours" xml:space="preserve">
+    <value>ระยะเวลา (ชั่วโมง)</value>
+  </data>
+  <data name="CashShopAddPackage" xml:space="preserve">
+    <value>เพิ่มแพ็กเกจ</value>
+  </data>
+  <data name="CashShopAddProduct" xml:space="preserve">
+    <value>เพิ่มสินค้า</value>
+  </data>
+  <data name="CashShopDeletePackage" xml:space="preserve">
+    <value>ลบแพ็กเกจ</value>
+  </data>
+  <data name="CashShopDeletePackageQuestion" xml:space="preserve">
+    <value>ต้องการลบแพ็กเกจนี้จริงหรือไม่?</value>
+  </data>
+  <data name="CashShopIssueNoProducts" xml:space="preserve">
+    <value>แพ็กเกจนี้ไม่มีสินค้า</value>
+  </data>
+  <data name="CashShopIssueDuplicatePackageSequence" xml:space="preserve">
+    <value>มีแพ็กเกจอื่นใช้หมายเลข {0}</value>
+  </data>
+  <data name="CashShopIssueDuplicatePriceSequence" xml:space="preserve">
+    <value>มีสินค้าหลายรายการใช้หมายเลขราคา {0}</value>
+  </data>
+  <data name="CashShopIssueMissingItem" xml:space="preserve">
+    <value>สินค้า {0} ไม่มีไอเทม</value>
+  </data>
+  <data name="CashShopIssueTimeLimited" xml:space="preserve">
+    <value>สินค้า {0} มีจำกัดเวลา ซึ่งยังไม่รองรับ</value>
+  </data>
+  <data name="CashShopIssueNegativeBundlePrice" xml:space="preserve">
+    <value>ราคาชุดติดลบ</value>
+  </data>
+  <data name="CashShopIssueNegativePrice" xml:space="preserve">
+    <value>สินค้า {0} มีราคาติดลบ</value>
+  </data>
+  <data name="CashShopIssueInvalidQuantity" xml:space="preserve">
+    <value>สินค้า {0} มีจำนวนน้อยกว่า 1</value>
+  </data>
+  <data name="TerrainEditor" xml:space="preserve">
+    <value>ตัวแก้ไขภูมิประเทศ</value>
+  </data>
+  <data name="LoggingConfiguration" xml:space="preserve">
+    <value>ตั้งค่า Log</value>
+  </data>
+  <data name="LoggingConfigurationDescription" xml:space="preserve">
+    <value>การเก็บ log ของเซิร์ฟเวอร์ตั้งค่าในไฟล์ {0} เมื่อบันทึก ระดับ log ที่เปลี่ยนจะมีผลทันที ส่วนการเพิ่มหรือลบแหล่ง log และการตั้งค่าอื่นจะมีผลหลังรีสตาร์ทเซิร์ฟเวอร์</value>
+  </data>
+  <data name="LoggingConfigurationNotAvailable" xml:space="preserve">
+    <value>แก้การตั้งค่า log ได้เฉพาะเมื่อหน้าผู้ดูแลทำงานในโปรเซสเซิร์ฟเวอร์ (ติดตั้งแบบ all-in-one)</value>
+  </data>
+  <data name="LogLevels" xml:space="preserve">
+    <value>ระดับ Log</value>
+  </data>
+  <data name="DefaultLogLevel" xml:space="preserve">
+    <value>ระดับเริ่มต้น</value>
+  </data>
+  <data name="LogLevelOverrides" xml:space="preserve">
+    <value>ระดับตามแหล่ง</value>
+  </data>
+  <data name="LogLevelOverridesDescription" xml:space="preserve">
+    <value>แหล่งคือชื่อของ logger ปกติเป็นชื่อเต็มของคลาส หรือ namespace ที่ครอบคลุม logger ทั้งหมดในนั้น แหล่งที่เจาะจงที่สุดจะถูกใช้</value>
+  </data>
+  <data name="LogSource" xml:space="preserve">
+    <value>แหล่ง</value>
+  </data>
+  <data name="AdvancedJson" xml:space="preserve">
+    <value>ขั้นสูง (JSON)</value>
+  </data>
+  <data name="AdvancedLoggingJsonDescription" xml:space="preserve">
+    <value>แก้ส่วน Serilog ทั้งหมดในไฟล์ตั้งค่าได้ที่นี่ เช่น เพิ่ม sink หรือ filter ดูการตั้งค่าที่ใช้ได้ในเอกสารของ Serilog</value>
+  </data>
+  <data name="LoggingConfigurationSaved" xml:space="preserve">
+    <value>บันทึกการตั้งค่า log แล้ว</value>
+  </data>
+  <data name="LoggingConfigurationLoadError" xml:space="preserve">
+    <value>โหลดการตั้งค่า log ไม่ได้: {0}</value>
+  </data>
+  <data name="LoggingConfigurationSaveError" xml:space="preserve">
+    <value>บันทึกการตั้งค่า log ไม่ได้: {0}</value>
+  </data>
+  <data name="LoggingConfigurationInvalidJson" xml:space="preserve">
+    <value>JSON ไม่ถูกต้อง: {0}</value>
+  </data>
+  <data name="LogLevelOverridesInvalid" xml:space="preserve">
+    <value>ทุกแหล่งต้องมีชื่อ และแต่ละชื่อใช้ได้ครั้งเดียว</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>แดชบอร์ด</value>
+  </data>
+  <data name="DashboardPlayersOnline" xml:space="preserve">
+    <value>ผู้เล่นออนไลน์</value>
+  </data>
+  <data name="DashboardPlayerCapacity" xml:space="preserve">
+    <value>จาก {0} ช่องในเกมเซิร์ฟเวอร์ที่ทำงานอยู่</value>
+  </data>
+  <data name="DashboardServersRunning" xml:space="preserve">
+    <value>เซิร์ฟเวอร์ที่ทำงาน</value>
+  </data>
+  <data name="DashboardServersNotRunning" xml:space="preserve">
+    <value>ไม่ทำงาน {0}</value>
+  </data>
+  <data name="DashboardAllServersRunning" xml:space="preserve">
+    <value>เซิร์ฟเวอร์ทำงานครบทุกตัว</value>
+  </data>
+  <data name="DashboardNewAccounts" xml:space="preserve">
+    <value>+{0} สมัครใน 7 วันที่ผ่านมา</value>
+  </data>
+  <data name="DashboardBannedAccounts" xml:space="preserve">
+    <value>ถูกแบน {0}</value>
+  </data>
+  <data name="DashboardAlliances" xml:space="preserve">
+    <value>พันธมิตร {0}</value>
+  </data>
+  <data name="DashboardCharacters" xml:space="preserve">
+    <value>ตัวละคร {0}</value>
+  </data>
+  <data name="DashboardNotAvailable" xml:space="preserve">
+    <value>ไม่มีข้อมูล</value>
+  </data>
+  <data name="DashboardOnlineHistory" xml:space="preserve">
+    <value>ผู้เล่นออนไลน์ใน 24 ชั่วโมงที่ผ่านมา</value>
+  </data>
+  <data name="DashboardOnlineHistoryDescription" xml:space="preserve">
+    <value>กราฟผู้เล่นออนไลน์ใน 24 ชั่วโมงที่ผ่านมา ตอนนี้ {0} สูงสุด {1} ต่ำสุด {2}</value>
+  </data>
+  <data name="DashboardSampleInterval" xml:space="preserve">
+    <value>เก็บข้อมูลทุก {0} นาที</value>
+  </data>
+  <data name="DashboardCollectingData" xml:space="preserve">
+    <value>กำลังเก็บข้อมูล ประวัติจะเริ่มนับตั้งแต่เปิดหน้าผู้ดูแล</value>
+  </data>
+  <data name="DashboardHoursAgo" xml:space="preserve">
+    <value>{0} ชม. ที่แล้ว</value>
+  </data>
+  <data name="DashboardNow" xml:space="preserve">
+    <value>ตอนนี้</value>
+  </data>
+  <data name="DashboardCurrent" xml:space="preserve">
+    <value>ตอนนี้</value>
+  </data>
+  <data name="DashboardPeak" xml:space="preserve">
+    <value>สูงสุด</value>
+  </data>
+  <data name="DashboardLow" xml:space="preserve">
+    <value>ต่ำสุด</value>
+  </data>
+  <data name="DashboardManageServers" xml:space="preserve">
+    <value>จัดการเซิร์ฟเวอร์</value>
+  </data>
+  <data name="DashboardConnections" xml:space="preserve">
+    <value>{0} การเชื่อมต่อ</value>
+  </data>
+  <data name="DashboardAdministratorsOnly" xml:space="preserve">
+    <value>เฉพาะผู้ดูแลระบบ</value>
+  </data>
+  <data name="DashboardUptime" xml:space="preserve">
+    <value>เวลาทำงาน</value>
+  </data>
+  <data name="DashboardUptimeValue" xml:space="preserve">
+    <value>{0} วัน {1} ชม. {2} นาที</value>
+  </data>
+  <data name="DashboardMemory" xml:space="preserve">
+    <value>หน่วยความจำ</value>
+  </data>
+  <data name="DashboardMemoryValue" xml:space="preserve">
+    <value>ใช้งาน {0:N0} MB</value>
+  </data>
+  <data name="DashboardVersion" xml:space="preserve">
+    <value>เวอร์ชัน</value>
+  </data>
+  <data name="DashboardDatabase" xml:space="preserve">
+    <value>ฐานข้อมูล</value>
+  </data>
+  <data name="DashboardDatabaseConnected" xml:space="preserve">
+    <value>เชื่อมต่อแล้ว</value>
+  </data>
+  <data name="DashboardDatabaseNotReachable" xml:space="preserve">
+    <value>เชื่อมต่อไม่ได้</value>
+  </data>
+  <data name="DashboardConfigurationUpdates" xml:space="preserve">
+    <value>อัปเดตการตั้งค่า</value>
+  </data>
+  <data name="DashboardUpdatesAvailable" xml:space="preserve">
+    <value>รายการอัปเดตพร้อมใช้กับการตั้งค่าเกมของคุณ</value>
+  </data>
+  <data name="DashboardNoUpdates" xml:space="preserve">
+    <value>การตั้งค่าเกมของคุณเป็นปัจจุบันแล้ว</value>
+  </data>
+  <data name="DashboardReviewUpdates" xml:space="preserve">
+    <value>ดูอัปเดต</value>
+  </data>
+  <data name="DashboardQuickActions" xml:space="preserve">
+    <value>ทางลัด</value>
+  </data>
+  <data name="DashboardOpen" xml:space="preserve">
+    <value>เปิด</value>
+  </data>
+  <data name="ExternalLinks" xml:space="preserve">
+    <value>ลิงก์</value>
+  </data>
+  <data name="ExternalLinksOf" xml:space="preserve">
+    <value>ลิงก์ของ {0}</value>
+  </data>
+  <data name="ExternalLinksDescription" xml:space="preserve">
+    <value>ผู้ใช้ของบริการภายนอก เช่น Discord ที่เชื่อมกับไอดีนี้ ผู้เล่นเชื่อมไอดีในเกมด้วยคำสั่ง /discord link</value>
+  </data>
+  <data name="ExternalLinksAccountNotFound" xml:space="preserve">
+    <value>ไม่พบไอดี</value>
+  </data>
+  <data name="ExternalLinksNone" xml:space="preserve">
+    <value>ไอดีนี้ยังไม่ได้เชื่อม</value>
+  </data>
+  <data name="ExternalLinkService" xml:space="preserve">
+    <value>บริการ</value>
+  </data>
+  <data name="ExternalLinkUser" xml:space="preserve">
+    <value>ผู้ใช้</value>
+  </data>
+  <data name="ExternalLinkCharacter" xml:space="preserve">
+    <value>แสดงเป็น</value>
+  </data>
+  <data name="ExternalLinkLinkedAt" xml:space="preserve">
+    <value>เชื่อมเมื่อ</value>
+  </data>
+  <data name="ExternalLinkPending" xml:space="preserve">
+    <value>รหัสใช้ได้ถึง {0}</value>
+  </data>
+  <data name="ExternalLinkRemoved" xml:space="preserve">
+    <value>ลบลิงก์แล้ว</value>
+  </data>
+  <data name="Discord" xml:space="preserve">
+    <value>Discord</value>
+  </data>
+  <data name="DiscordDescription" xml:space="preserve">
+    <value>เชื่อมเกมเข้ากับเซิร์ฟเวอร์ Discord ของคุณ: แจ้งเตือนอีเวนต์ บอตพร้อมคำสั่ง slash เชื่อมไอดี และส่งแชทข้ามกัน ทำตามขั้นตอนจากบนลงล่าง การตั้งค่าบันทึกใน {0} และระบบ Discord จะรีสตาร์ทด้วยค่าใหม่ทันที</value>
+  </data>
+  <data name="DiscordNotAvailable" xml:space="preserve">
+    <value>หน้านี้ใช้ได้เฉพาะเมื่อหน้าผู้ดูแลทำงานในโปรเซสของเซิร์ฟเวอร์ ถ้าติดตั้งแบบแยกส่วน ระบบ Discord จะรันใน container ของตัวเองและตั้งค่าด้วยตัวแปรสภาพแวดล้อม ดูในเอกสาร</value>
+  </data>
+  <data name="DiscordLoadError" xml:space="preserve">
+    <value>โหลดการตั้งค่าจาก {0} ไม่ได้: {1}</value>
+  </data>
+  <data name="DiscordSaveError" xml:space="preserve">
+    <value>บันทึกการตั้งค่าไม่ได้: {0}</value>
+  </data>
+  <data name="DiscordSaved" xml:space="preserve">
+    <value>บันทึกและใช้การตั้งค่าแล้ว กดตรวจการส่งเพื่อยืนยันปลายทาง</value>
+  </data>
+  <data name="DiscordInvalidId" xml:space="preserve">
+    <value>'{0}' ไม่ใช่ ID ที่ถูกต้องของ Discord</value>
+  </data>
+  <data name="DiscordDefinedElsewhere" xml:space="preserve">
+    <value>ตั้งค่าจากตัวแปรสภาพแวดล้อมหรือแหล่งตั้งค่าอื่น ซึ่งมีลำดับความสำคัญเหนือหน้านี้</value>
+  </data>
+  <data name="DiscordSecretSet" xml:space="preserve">
+    <value>ตั้งไว้แล้ว - เว้นว่างเพื่อใช้ค่าเดิม</value>
+  </data>
+  <data name="DiscordStatus" xml:space="preserve">
+    <value>สถานะ</value>
+  </data>
+  <data name="DiscordStatusNotConfigured" xml:space="preserve">
+    <value>ยังไม่ได้ตั้งค่าบอต เริ่มจากขั้นตอนที่ 1</value>
+  </data>
+  <data name="DiscordStatusConnected" xml:space="preserve">
+    <value>บอตเชื่อมต่อแล้วในชื่อ {0} และอยู่ใน {1} เซิร์ฟเวอร์ Discord</value>
+  </data>
+  <data name="DiscordStatusConnecting" xml:space="preserve">
+    <value>บอตกำลังเชื่อมต่อ Discord...</value>
+  </data>
+  <data name="DiscordStatusStopped" xml:space="preserve">
+    <value>บอตไม่ได้ทำงาน เปิดได้ที่หน้าเซิร์ฟเวอร์</value>
+  </data>
+  <data name="DiscordProblemTokenRejected" xml:space="preserve">
+    <value>Discord ปฏิเสธ token ให้คัดลอกใหม่จาก developer portal (Bot → Reset Token)</value>
+  </data>
+  <data name="DiscordProblemIntentNotEnabled" xml:space="preserve">
+    <value>Discord ไม่อนุญาตให้บอตอ่านข้อความ ให้เปิด Message Content ที่ Bot → Privileged Gateway Intents ใน developer portal หรือปิด "อ่านข้อความ" ในขั้นตอนที่ 5</value>
+  </data>
+  <data name="DiscordProblemStartFailed" xml:space="preserve">
+    <value>เริ่มบอตไม่ได้ ดูสาเหตุในไฟล์ log</value>
+  </data>
+  <data name="DiscordSettingsError" xml:space="preserve">
+    <value>ใช้การตั้งค่าไม่ได้: {0}</value>
+  </data>
+  <data name="DiscordWebhooksOnly" xml:space="preserve">
+    <value>ถ้าไม่มีบอต การแจ้งเตือนจะโพสต์ผ่าน webhook ในขั้นตอนที่ 4</value>
+  </data>
+  <data name="DiscordPublisherInactive" xml:space="preserve">
+    <value>ปลั๊กอิน Game Event Publisher ปิดอยู่ จึงไม่มีอะไรเกิดใน Discord เมื่อมีเหตุการณ์ในเกม</value>
+  </data>
+  <data name="DiscordPublisherActive" xml:space="preserve">
+    <value>ปลั๊กอิน Game Event Publisher เปิดอยู่ เลือกว่าจะโพสต์อะไรได้ที่หน้าปลั๊กอิน</value>
+  </data>
+  <data name="DiscordStep1Title" xml:space="preserve">
+    <value>1. สร้างบอต</value>
+  </data>
+  <data name="DiscordStep1Text" xml:space="preserve">
+    <value>ใน Discord developer portal ให้สร้าง New Application ด้วยชื่อเซิร์ฟเวอร์ของคุณ ที่หัวข้อ Bot กด Reset Token แล้ววาง token ที่นี่ เก็บรักษาเหมือนรหัสผ่าน token จะถูกเก็บในไฟล์ตั้งค่าของเซิร์ฟเวอร์ ไม่ใช่ในฐานข้อมูล</value>
+  </data>
+  <data name="DiscordOpenDeveloperPortal" xml:space="preserve">
+    <value>เปิด Discord developer portal</value>
+  </data>
+  <data name="DiscordToken" xml:space="preserve">
+    <value>Token ของบอต</value>
+  </data>
+  <data name="DiscordSkipBot" xml:space="preserve">
+    <value>ข้ามการใช้บอตได้ แล้วโพสต์แจ้งเตือนผ่าน webhook อย่างเดียว ดูขั้นตอนที่ 4</value>
+  </data>
+  <data name="DiscordStep2Title" xml:space="preserve">
+    <value>2. เชิญบอต</value>
+  </data>
+  <data name="DiscordStep2Text" xml:space="preserve">
+    <value>เชิญบอตเข้าเซิร์ฟเวอร์ Discord ของคุณ ลิงก์จะขอสิทธิ์ที่บอตต้องใช้</value>
+  </data>
+  <data name="DiscordInviteBot" xml:space="preserve">
+    <value>เชิญบอต</value>
+  </data>
+  <data name="DiscordInviteNeedsToken" xml:space="preserve">
+    <value>กรอก token ก่อน</value>
+  </data>
+  <data name="DiscordStep3Title" xml:space="preserve">
+    <value>3. ตั้งค่าเซิร์ฟเวอร์ Discord</value>
+  </data>
+  <data name="DiscordStep3Text" xml:space="preserve">
+    <value>เลือกเซิร์ฟเวอร์ Discord ที่จะให้ช่องต่างๆ รับการแจ้งเตือนและสถานะ คำสั่งของบอตจะใช้ได้ในเซิร์ฟเวอร์นั้นทันที</value>
+  </data>
+  <data name="DiscordServer" xml:space="preserve">
+    <value>เซิร์ฟเวอร์ Discord</value>
+  </data>
+  <data name="DiscordServerNone" xml:space="preserve">
+    <value>(เซิร์ฟเวอร์เดียวที่บอตอยู่)</value>
+  </data>
+  <data name="DiscordServerId" xml:space="preserve">
+    <value>ID ของเซิร์ฟเวอร์ Discord</value>
+  </data>
+  <data name="DiscordServerIdHint" xml:space="preserve">
+    <value>เมื่อบอตเชื่อมต่อแล้ว เลือกเซิร์ฟเวอร์ Discord ได้ที่นี่ ถ้ายังไม่เชื่อมต่อ ให้เปิด developer mode ในการตั้งค่าขั้นสูงของ Discord แล้วคลิกขวาที่เซิร์ฟเวอร์ เลือก Copy Server ID</value>
+  </data>
+  <data name="DiscordSetUpServer" xml:space="preserve">
+    <value>สร้างช่องและบทบาท</value>
+  </data>
+  <data name="DiscordSetUpServerText" xml:space="preserve">
+    <value>สร้างบทบาท หมวดหมู่ และช่องที่บอตใช้ เหมือนคำสั่ง /openmu setup ใน Discord ของที่มีอยู่แล้วจะถูกเก็บไว้ จึงทำซ้ำได้ทุกเมื่อ บอตต้องมีสิทธิ์ Manage Channels และ Manage Roles</value>
+  </data>
+  <data name="DiscordSetUpServerNeedsBot" xml:space="preserve">
+    <value>บอตต้องเชื่อมต่อและอยู่ในเซิร์ฟเวอร์ Discord</value>
+  </data>
+  <data name="DiscordSetUpCreated" xml:space="preserve">
+    <value>สร้างแล้ว: {0}</value>
+  </data>
+  <data name="DiscordSetUpAdopted" xml:space="preserve">
+    <value>มีอยู่แล้ว: {0}</value>
+  </data>
+  <data name="DiscordSetUpFailed" xml:space="preserve">
+    <value>ล้มเหลว: {0}</value>
+  </data>
+  <data name="DiscordSetUpPublic" xml:space="preserve">
+    <value>ทุกคนมองเห็น เพราะไม่มีบทบาทที่กำหนด: {0}</value>
+  </data>
+  <data name="DiscordSetUpRoleHint" xml:space="preserve">
+    <value>ในรายการบทบาทของเซิร์ฟเวอร์ Discord ให้ย้ายบทบาทของบอตไว้เหนือ Linked Player เพื่อให้บอตมอบบทบาทนี้ให้ผู้เล่นที่เชื่อมไอดีได้</value>
+  </data>
+  <data name="DiscordStep4Title" xml:space="preserve">
+    <value>4. การแจ้งเตือน</value>
+  </data>
+  <data name="DiscordStep4Text" xml:space="preserve">
+    <value>เลือกช่องตามชื่อ ถ้าไม่เลือกจะใช้ค่าเริ่มต้นของเลย์เอาต์ ถ้าตั้งช่องของบอตไว้ ระบบจะใช้ช่องของบอตก่อน webhook ขณะบอตเชื่อมต่ออยู่</value>
+  </data>
+  <data name="DiscordCategory" xml:space="preserve">
+    <value>หมวดหมู่</value>
+  </data>
+  <data name="DiscordChannelId" xml:space="preserve">
+    <value>ช่องของบอต</value>
+  </data>
+  <data name="DiscordWebhookUrl" xml:space="preserve">
+    <value>URL ของ webhook</value>
+  </data>
+  <data name="DiscordCategory_Events" xml:space="preserve">
+    <value>มินิเกม การบุก และผู้ชนะ</value>
+  </data>
+  <data name="DiscordCategory_CastleSiege" xml:space="preserve">
+    <value>Castle Siege</value>
+  </data>
+  <data name="DiscordCategory_WorldNews" xml:space="preserve">
+    <value>การฆ่าบอส ของดรอปหายาก และเลเวลสำคัญ</value>
+  </data>
+  <data name="DiscordCategory_Notices" xml:space="preserve">
+    <value>ประกาศของ GM</value>
+  </data>
+  <data name="DiscordCategory_StaffAlerts" xml:space="preserve">
+    <value>คำสั่งที่ GM ใช้ใน Discord</value>
+  </data>
+  <data name="DiscordLanguage" xml:space="preserve">
+    <value>ภาษา</value>
+  </data>
+  <data name="DiscordEventAnnouncingServers" xml:space="preserve">
+    <value>เกมเซิร์ฟเวอร์ที่ประกาศอีเวนต์</value>
+  </data>
+  <data name="DiscordEventAnnouncingServersHint" xml:space="preserve">
+    <value>ใส่ ID คั่นด้วยจุลภาค เว้นว่าง = ทั้งหมด ถ้าหลายเกมเซิร์ฟเวอร์รันอีเวนต์เดียวกัน ให้เลือกตัวเดียวเพื่อไม่ให้ข้อความซ้ำ</value>
+  </data>
+  <data name="DiscordStep5Title" xml:space="preserve">
+    <value>5. เชื่อมแชท (ไม่บังคับ)</value>
+  </data>
+  <data name="DiscordStep5Text" xml:space="preserve">
+    <value>เลือกว่าจะเชื่อมแชทกิลด์ได้ที่ไหน และจะส่งข้อความจาก Discord เข้าเกมหรือไม่ เปิดการส่งแชทในเกมด้านล่างเพื่อส่งข้อความอีกทิศทาง</value>
+  </data>
+  <data name="DiscordBindingMode" xml:space="preserve">
+    <value>ที่ที่กิลด์เชื่อมแชทได้</value>
+  </data>
+  <data name="DiscordBindingMode_Both" xml:space="preserve">
+    <value>ในเซิร์ฟเวอร์ Discord ของคุณและของกิลด์</value>
+  </data>
+  <data name="DiscordBindingMode_HostedOnly" xml:space="preserve">
+    <value>เฉพาะเซิร์ฟเวอร์ Discord ของคุณ</value>
+  </data>
+  <data name="DiscordBindingMode_GuildOwnedOnly" xml:space="preserve">
+    <value>เฉพาะเซิร์ฟเวอร์ Discord ของกิลด์</value>
+  </data>
+  <data name="DiscordAllowedServers" xml:space="preserve">
+    <value>เซิร์ฟเวอร์ Discord ของกิลด์ที่อนุญาต</value>
+  </data>
+  <data name="DiscordAllowedServersHint" xml:space="preserve">
+    <value>ใส่ ID คั่นด้วยจุลภาค เว้นว่าง = ทั้งหมด</value>
+  </data>
+  <data name="DiscordReadMessages" xml:space="preserve">
+    <value>อ่านข้อความ</value>
+  </data>
+  <data name="DiscordReadMessagesHint" xml:space="preserve">
+    <value>ข้อความปกติในช่องที่เชื่อมไว้จะถูกส่งเข้าเกม ต้องเปิด privileged intent Message Content (developer portal → Bot → Privileged Gateway Intents) ถ้าไม่เปิด ผู้เล่นต้องพิมพ์ผ่าน /say</value>
+  </data>
+  <data name="DiscordMaximumMessageLength" xml:space="preserve">
+    <value>ความยาวสูงสุดของข้อความจาก Discord</value>
+  </data>
+  <data name="DiscordMaximumMessagesPerMinute" xml:space="preserve">
+    <value>จำนวนข้อความสูงสุดต่อนาทีของผู้ใช้ Discord</value>
+  </data>
+  <data name="DiscordStep6Title" xml:space="preserve">
+    <value>ขั้นสูง</value>
+  </data>
+  <data name="DiscordStatusChannelId" xml:space="preserve">
+    <value>ช่องของข้อความสถานะ</value>
+  </data>
+  <data name="DiscordStatusUpdateInterval" xml:space="preserve">
+    <value>รอบอัปเดตสถานะ (วินาที)</value>
+  </data>
+  <data name="DiscordLayoutFile" xml:space="preserve">
+    <value>ไฟล์เลย์เอาต์</value>
+  </data>
+  <data name="DiscordLayoutFilePlaceholder" xml:space="preserve">
+    <value>เลย์เอาต์เริ่มต้น</value>
+  </data>
+  <data name="DiscordCreateScheduledEvents" xml:space="preserve">
+    <value>สร้างอีเวนต์ Discord สำหรับ Castle Siege ครั้งถัดไป</value>
+  </data>
+  <data name="DiscordMaximumQueuedMessages" xml:space="preserve">
+    <value>จำนวนข้อความรอส่งสูงสุดต่อช่อง</value>
+  </data>
+  <data name="DiscordTest" xml:space="preserve">
+    <value>ส่งข้อความทดสอบ</value>
+  </data>
+  <data name="DiscordTestHint" xml:space="preserve">
+    <value>ปุ่มทดสอบจะโพสต์ข้อความทดสอบด้วยการตั้งค่าที่บันทึกไว้ แบบเดียวกับการแจ้งเตือนของหมวดหมู่นั้น คือบอตโพสต์ลงช่องของบอต ถ้าไม่มีจะใช้ webhook บันทึกการเปลี่ยนแปลงก่อน</value>
+  </data>
+  <data name="DiscordTest_SentByBot" xml:space="preserve">
+    <value>บอตโพสต์ลง {0} แล้ว</value>
+  </data>
+  <data name="DiscordTest_SentByWebhook" xml:space="preserve">
+    <value>โพสต์ผ่าน webhook แล้ว</value>
+  </data>
+  <data name="DiscordTest_NoChannel" xml:space="preserve">
+    <value>ไม่ได้โพสต์: ไม่มีทั้งช่องของบอตและ webhook</value>
+  </data>
+  <data name="DiscordTest_ChannelUnavailable" xml:space="preserve">
+    <value>บอตมองไม่เห็นช่อง {0} ช่องถูกลบไปหรือเปล่า?</value>
+  </data>
+  <data name="DiscordTest_MissingPermissions" xml:space="preserve">
+    <value>บอตไม่มีสิทธิ์โพสต์ลง {0} ตรวจสิทธิ์ของช่อง</value>
+  </data>
+  <data name="DiscordTest_WebhookInvalid" xml:space="preserve">
+    <value>Discord ไม่รู้จัก webhook นี้ คัดลอก URL ใหม่</value>
+  </data>
+  <data name="DiscordTest_Failed" xml:space="preserve">
+    <value>ล้มเหลว: {0}</value>
+  </data>
+  <data name="DiscordCheckServer" xml:space="preserve">
+    <value>ตรวจสิทธิ์และช่อง</value>
+  </data>
+  <data name="DiscordCheckServerText" xml:space="preserve">
+    <value>ตรวจสิทธิ์ของบอต บทบาทของผู้เล่นที่เชื่อมไอดี และช่องในเซิร์ฟเวอร์ Discord ที่เลือก ด้วยการตั้งค่าที่บันทึกไว้</value>
+  </data>
+  <data name="DiscordCheckServerNeedsServer" xml:space="preserve">
+    <value>บอตต้องเชื่อมต่อ และต้องเลือกและบันทึกเซิร์ฟเวอร์ Discord แล้ว</value>
+  </data>
+  <data name="DiscordCheckServerName" xml:space="preserve">
+    <value>เซิร์ฟเวอร์ Discord {0}:</value>
+  </data>
+  <data name="DiscordCheckPermissionsOk" xml:space="preserve">
+    <value>บอตมีสิทธิ์ที่ต้องใช้ครบ</value>
+  </data>
+  <data name="DiscordCheckPermissionsMissing" xml:space="preserve">
+    <value>บอตขาดสิทธิ์เหล่านี้: {0} เชิญบอตใหม่ด้วยลิงก์ในขั้นตอนที่ 2 หรือให้สิทธิ์กับบทบาทของบอต</value>
+  </data>
+  <data name="DiscordCheckLinkedRole_Assignable" xml:space="preserve">
+    <value>บอตมอบบทบาทของผู้เล่นที่เชื่อมไอดีได้</value>
+  </data>
+  <data name="DiscordCheckLinkedRole_Missing" xml:space="preserve">
+    <value>ไม่มีบทบาทของผู้เล่นที่เชื่อมไอดี ให้สร้างช่องและบทบาท</value>
+  </data>
+  <data name="DiscordCheckLinkedRole_AboveBot" xml:space="preserve">
+    <value>บทบาทของผู้เล่นที่เชื่อมไอดีอยู่เหนือบทบาทของบอต บอตจึงมอบให้ไม่ได้ ย้ายบทบาทของบอตไว้เหนือในรายการบทบาท</value>
+  </data>
+  <data name="DiscordCheckChannelsOk" xml:space="preserve">
+    <value>ทุกหมวดหมู่การแจ้งเตือนมีช่องของบอต</value>
+  </data>
+  <data name="DiscordCheckChannelsMissing" xml:space="preserve">
+    <value>หมวดหมู่เหล่านี้ไม่มีช่องของบอต: {0} จะโพสต์ผ่าน webhook เท่านั้น</value>
+  </data>
+  <data name="DiscordCheckStatusChannelOk" xml:space="preserve">
+    <value>บอตแสดงสถานะในช่องสถานะ</value>
+  </data>
+  <data name="DiscordCheckStatusChannelMissing" xml:space="preserve">
+    <value>ไม่มีช่องสถานะ บอตจึงไม่แสดงสถานะ</value>
+  </data>
+  <data name="DiscordPublisherActivated" xml:space="preserve">
+    <value>เปิด Game Event Publisher แล้ว เลือกว่าจะโพสต์อะไรได้ที่หน้าปลั๊กอิน</value>
+  </data>
+  <data name="DiscordPublisherSwitch" xml:space="preserve">
+    <value>โพสต์เหตุการณ์ในเกม (ปลั๊กอิน Game Event Publisher)</value>
+  </data>
+  <data name="DiscordPublisherDeactivated" xml:space="preserve">
+    <value>ปิด Game Event Publisher แล้ว จะไม่มีเหตุการณ์ในเกมถูกโพสต์ไป Discord อีก</value>
+  </data>
+  <data name="DiscordDefaultChannel" xml:space="preserve">
+    <value>ค่าเริ่มต้น: #{0}</value>
+  </data>
+  <data name="DiscordNoDefaultChannel" xml:space="preserve">
+    <value>ไม่โพสต์</value>
+  </data>
+  <data name="DiscordStep4WebhookText" xml:space="preserve">
+    <value>ถ้าไม่มีบอต แต่ละหมวดหมู่จะโพสต์ผ่าน webhook ของช่อง: ใน Discord เปิดการตั้งค่าช่อง Integrations → Webhooks สร้าง webhook แล้ววาง URL ที่นี่ เก็บรักษาเหมือนรหัสผ่าน</value>
+  </data>
+  <data name="DiscordStep4WebhookFallbackText" xml:space="preserve">
+    <value>webhook จะโพสต์เฉพาะหมวดหมู่ที่ไม่มีช่องของบอต ถ้ามีบอตก็ไม่จำเป็นและลบได้</value>
+  </data>
+  <data name="DiscordStepDone" xml:space="preserve">
+    <value>ยืนยันแล้ว</value>
+  </data>
+  <data name="DiscordStepProblem" xml:space="preserve">
+    <value>ตรวจสอบ</value>
+  </data>
+  <data name="DiscordUnsavedChanges" xml:space="preserve">
+    <value>มีการเปลี่ยนแปลงที่ยังไม่บันทึก บันทึกก่อน เพราะการทดสอบและการตั้งค่าเซิร์ฟเวอร์ Discord ใช้ค่าที่บันทึกไว้</value>
+  </data>
+  <data name="DiscordTestAll" xml:space="preserve">
+    <value>ส่งข้อความทดสอบของหมวดหมู่ที่เปิดอยู่</value>
+  </data>
+  <data name="DiscordLayoutPreview" xml:space="preserve">
+    <value>สิ่งที่จะถูกสร้าง</value>
+  </data>
+  <data name="DiscordLayoutRoles" xml:space="preserve">
+    <value>บทบาท: {0}</value>
+  </data>
+  <data name="DiscordLayoutVisibleTo" xml:space="preserve">
+    <value>มองเห็นเฉพาะ {0}</value>
+  </data>
+  <data name="DiscordChatBindings" xml:space="preserve">
+    <value>แชทที่เชื่อมไว้</value>
+  </data>
+  <data name="DiscordChatBindingsNone" xml:space="preserve">
+    <value>ยังไม่มีแชทกิลด์หรือพันธมิตรที่เชื่อมไว้</value>
+  </data>
+  <data name="DiscordChatBindingsNeedBot" xml:space="preserve">
+    <value>แชทที่เชื่อมไว้จะแสดงเมื่อบอตเชื่อมต่อ</value>
+  </data>
+  <data name="DiscordChatBindingGuild" xml:space="preserve">
+    <value>กิลด์</value>
+  </data>
+  <data name="DiscordChatBindingChannel" xml:space="preserve">
+    <value>ช่อง</value>
+  </data>
+  <data name="DiscordChatBindingBoundBy" xml:space="preserve">
+    <value>เชื่อมโดย</value>
+  </data>
+  <data name="DiscordChatBindingUnknownChannel" xml:space="preserve">
+    <value>ช่องที่ไม่รู้จัก {0}</value>
+  </data>
+  <data name="DiscordChatBindingRemoved" xml:space="preserve">
+    <value>ยกเลิกการเชื่อมแล้ว ช่องใน Discord ยังอยู่</value>
+  </data>
+  <data name="DiscordScope_Guild" xml:space="preserve">
+    <value>กิลด์</value>
+  </data>
+  <data name="DiscordScope_Alliance" xml:space="preserve">
+    <value>พันธมิตร</value>
+  </data>
+  <data name="DiscordOverview" xml:space="preserve">
+    <value>ตั้งค่าการแจ้งเตือน Discord การเชื่อมไอดี และแชท บันทึกและใช้การเปลี่ยนแปลงก่อนตรวจการส่ง</value>
+  </data>
+  <data name="DiscordConfigurationSource" xml:space="preserve">
+    <value>แหล่งการตั้งค่า</value>
+  </data>
+  <data name="DiscordConfigurationSourcesHint" xml:space="preserve">
+    <value>การตั้งค่าในไฟล์แก้ที่นี่ได้ ส่วนตัวแปรสภาพแวดล้อมและแหล่งอื่นที่มีลำดับเหนือกว่ายังจัดการจากภายนอก ค่าลับจะถูกซ่อนไว้</value>
+  </data>
+  <data name="DiscordMode" xml:space="preserve">
+    <value>โหมดการเชื่อมต่อ</value>
+  </data>
+  <data name="DiscordModeBot" xml:space="preserve">
+    <value>บอต Discord — แจ้งเตือน คำสั่ง และแชท</value>
+  </data>
+  <data name="DiscordModeWebhooks" xml:space="preserve">
+    <value>Webhook — แจ้งเตือนอย่างเดียว</value>
+  </data>
+  <data name="DiscordModeHint" xml:space="preserve">
+    <value>เลือกฟีเจอร์ที่ต้องใช้ โหมด webhook อย่างเดียวจะหยุดบอตเมื่อบันทึก และเก็บ token ไว้ใช้ภายหลัง</value>
+  </data>
+  <data name="DiscordWebhooksModeReady" xml:space="preserve">
+    <value>โหมด webhook: ไม่ต้องเชื่อมต่อบอต ตั้งค่าปลายทางด้านล่าง</value>
+  </data>
+  <data name="DiscordConfigured" xml:space="preserve">
+    <value>ตั้งค่าแล้ว · ยังไม่ได้ยืนยัน</value>
+  </data>
+  <data name="DiscordApplying" xml:space="preserve">
+    <value>กำลังใช้การเปลี่ยนแปลง…</value>
+  </data>
+  <data name="DiscordApplied" xml:space="preserve">
+    <value>ใช้การตั้งค่าแล้ว กดตรวจการส่งเพื่อยืนยันการตั้งค่านี้</value>
+  </data>
+  <data name="DiscordSaveApply" xml:space="preserve">
+    <value>บันทึกและใช้</value>
+  </data>
+  <data name="DiscordDiscardChanges" xml:space="preserve">
+    <value>ทิ้งการเปลี่ยนแปลง</value>
+  </data>
+  <data name="DiscordKeepEditing" xml:space="preserve">
+    <value>แก้ไขต่อ</value>
+  </data>
+  <data name="DiscordConfirmDiscard" xml:space="preserve">
+    <value>ทิ้งการตั้งค่าที่ยังไม่บันทึกทั้งหมดในหน้านี้ไหม?</value>
+  </data>
+  <data name="DiscordNavigationBlocked" xml:space="preserve">
+    <value>บันทึกหรือทิ้งการเปลี่ยนแปลงก่อนออกจากหน้านี้</value>
+  </data>
+  <data name="DiscordPublisherStaged" xml:space="preserve">
+    <value>การเปลี่ยนแปลงการโพสต์เหตุการณ์ในเกมจะมีผลเมื่อกด "บันทึกและใช้" เลือกเหตุการณ์ได้ข้างแต่ละหมวดหมู่การแจ้งเตือน</value>
+  </data>
+  <data name="DiscordPublisherMissing" xml:space="preserve">
+    <value>ไม่มีการตั้งค่าของ Game Event Publisher ให้ตั้งค่าที่หน้าปลั๊กอิน</value>
+  </data>
+  <data name="DiscordSecretStaged" xml:space="preserve">
+    <value>เว้นว่างเพื่อใช้ token ที่บันทึกไว้ การเปลี่ยนหรือลบจะมีผลเมื่อบันทึก</value>
+  </data>
+  <data name="DiscordProvisioningChanges" xml:space="preserve">
+    <value>ช่องและบทบาทที่มีอยู่จะถูกนำมาใช้ตามชื่อ สิทธิ์การเข้าถึงอาจถูกอัปเดต ไม่มีอะไรถูกลบ ช่องส่วนตัวของทีมงานจะถูกข้ามถ้าไม่มีบทบาทหรือสิทธิ์ที่ต้องใช้</value>
+  </data>
+  <data name="DiscordShowWebhookFallbacks" xml:space="preserve">
+    <value>แสดงปลายทาง webhook เพิ่มเติม</value>
+  </data>
+  <data name="DiscordSourceEvents" xml:space="preserve">
+    <value>เหตุการณ์ในเกมที่จะโพสต์</value>
+  </data>
+  <data name="DiscordOff" xml:space="preserve">
+    <value>ปิด</value>
+  </data>
+  <data name="DiscordRouteBot" xml:space="preserve">
+    <value>บอต → #{0}</value>
+  </data>
+  <data name="DiscordRouteWebhook" xml:space="preserve">
+    <value>ตั้งค่า webhook แล้ว</value>
+  </data>
+  <data name="DiscordRouteNone" xml:space="preserve">
+    <value>ไม่มีปลายทางที่ใช้ได้</value>
+  </data>
+  <data name="DiscordCategoryName_Events" xml:space="preserve">
+    <value>อีเวนต์</value>
+  </data>
+  <data name="DiscordCategoryName_CastleSiege" xml:space="preserve">
+    <value>Castle Siege</value>
+  </data>
+  <data name="DiscordCategoryName_WorldNews" xml:space="preserve">
+    <value>ข่าวในโลกเกม</value>
+  </data>
+  <data name="DiscordCategoryName_Notices" xml:space="preserve">
+    <value>ประกาศจาก GM</value>
+  </data>
+  <data name="DiscordCategoryName_StaffAlerts" xml:space="preserve">
+    <value>บันทึกการทำงานของทีมงาน</value>
+  </data>
+  <data name="DiscordDeliveryOnly" xml:space="preserve">
+    <value>ปุ่มนี้โพสต์ข้อความไป Discord และตรวจแค่ว่าส่งถึง ไม่ได้ยืนยันว่าการโพสต์เหตุการณ์ในเกมเปิดอยู่</value>
+  </data>
+  <data name="DiscordLastChecked" xml:space="preserve">
+    <value>ตรวจล่าสุด: {0} (UTC)</value>
+  </data>
+  <data name="DiscordEventFilters" xml:space="preserve">
+    <value>ตัวกรองบอสและเลเวลสำคัญ</value>
+  </data>
+  <data name="DiscordFilterHint" xml:space="preserve">
+    <value>ใส่ตัวเลขคั่นด้วยจุลภาค ถ้ารายการบอสว่างจะไม่ประกาศการฆ่าบอส ถ้ารายการเลเวลว่างจะไม่ประกาศเลเวลสำคัญ</value>
+  </data>
+  <data name="DiscordChatSetup" xml:space="preserve">
+    <value>เชื่อมไอดีในเกม แลกรหัสใน Discord แล้วเลือกตัวละครหัวหน้ากิลด์ด้วย /character ถ้าจำเป็น ใช้ /guildchat create ในเซิร์ฟเวอร์ Discord หลัก หรือ /guildchat bind ในช่องที่คุณจัดการในเซิร์ฟเวอร์ของกิลด์</value>
+  </data>
+  <data name="DiscordForwardNormalMessages" xml:space="preserve">
+    <value>ส่งข้อความปกติในช่องเข้าเกม (ถ้าไม่เปิดให้ใช้ /say)</value>
+  </data>
+  <data name="DiscordBindingRemovalImmediate" xml:space="preserve">
+    <value>การยกเลิกเชื่อมมีผลทันทีและหยุดส่งแชท ช่องใน Discord ยังอยู่</value>
+  </data>
+  <data name="DiscordConfirmUnbind" xml:space="preserve">
+    <value>หยุดส่งแชทของกิลด์หรือพันธมิตรนี้ตอนนี้ไหม? ช่องและข้อความจะยังอยู่</value>
+  </data>
+  <data name="DiscordUnbindChat" xml:space="preserve">
+    <value>ยกเลิกเชื่อมแชทตอนนี้</value>
+  </data>
+  <data name="DiscordManagedKey" xml:space="preserve">
+    <value>จัดการจากภายนอก คีย์การตั้งค่า: {0}</value>
+  </data>
+  <data name="DiscordMinimum" xml:space="preserve">
+    <value>กรอกค่าอย่างน้อย {0}</value>
+  </data>
+  <data name="DiscordSavedConnectionFailed" xml:space="preserve">
+    <value>บันทึกการตั้งค่าแล้ว แต่บอตเชื่อมต่อไม่ได้ แก้ปัญหาการเชื่อมต่อที่แสดงด้านบน</value>
+  </data>
+  <data name="DiscordNotConfigured" xml:space="preserve">
+    <value>ยังไม่ได้ตั้งค่า</value>
+  </data>
+  <data name="DiscordChooseServer" xml:space="preserve">
+    <value>เลือกเซิร์ฟเวอร์ Discord</value>
+  </data>
+  <data name="DiscordStaffPrivacy" xml:space="preserve">
+    <value>เลือกช่องส่วนตัวของทีมงาน ข้อความบันทึกการทำงานของ GM อาจมีข้อมูลสำคัญ</value>
+  </data>
+</root>
