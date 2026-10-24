@@ -130,6 +130,54 @@ button {
   color: var(--muted);
 }
 
+#join-skins {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+#join-skins legend {
+  width: 100%;
+  margin-bottom: 8px;
+  color: var(--muted);
+}
+
+#join-skins label {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 8px 6px 6px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+#join-skins label:has(input:checked) {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+#join-skins input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The first frame (facing down) of a 64x112 sheet, shown four times bigger. */
+.skin-preview {
+  width: 64px;
+  height: 64px;
+  background-size: 256px 448px;
+  background-position: 0 0;
+  image-rendering: pixelated;
+}
+
 #join-error {
   min-height: 1.2em;
   color: #ff8a80 !important;

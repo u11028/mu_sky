@@ -5,8 +5,8 @@ import {
   CHAT_MAX_LENGTH,
   type ChatMessage,
   NAME_MAX_LENGTH,
-  PLAYER_COLORS,
   PLAYER_SPEED,
+  SKINS,
   WORLD_HEIGHT,
   WORLD_WIDTH,
 } from "../../shared/world.ts";
@@ -88,12 +88,13 @@ export class WorldRoom extends Room<WorldState> {
     this.setSimulationInterval((deltaMs) => this.update(deltaMs), 50);
   }
 
-  onJoin(client: Client, options: { name?: unknown }) {
+  onJoin(client: Client, options: { name?: unknown; skin?: unknown }) {
     const player = new Player();
     player.name = cleanText(options?.name, NAME_MAX_LENGTH) || `ผู้เล่น${Math.floor(1000 + Math.random() * 9000)}`;
     player.x = WORLD_WIDTH / 2 + (Math.random() - 0.5) * 200;
     player.y = WORLD_HEIGHT / 2 + (Math.random() - 0.5) * 200;
-    player.color = PLAYER_COLORS[Math.floor(Math.random() * PLAYER_COLORS.length)];
+    const skin = Number(options?.skin);
+    player.skin = Number.isInteger(skin) && skin >= 0 && skin < SKINS.length ? skin : 0;
 
     this.state.players.set(client.sessionId, player);
     this.movements.set(client.sessionId, { dirX: 0, dirY: 0, lastChatAt: 0 });
