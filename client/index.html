@@ -33,6 +33,7 @@
     </div>
 
     <div id="stats" hidden>
+      <span id="stats-gold">💰 0</span>
       <span id="stats-level">Lv.1</span>
       <span class="meter hp"><span id="stats-hp-fill"></span><b id="stats-hp">100/100</b></span>
       <span class="meter xp"><span id="stats-xp-fill"></span><b id="stats-xp">XP 0/100</b></span>
@@ -48,6 +49,7 @@
       <button class="skill-button" type="button" data-skill="strike" title="ฟาดสายฟ้า (R)">⚡<span class="key">R</span><span class="cd"></span></button>
       <button class="skill-button" type="button" data-skill="dash" title="พุ่งทะยาน (E)">💨<span class="key">E</span><span class="cd"></span></button>
       <button class="skill-button" type="button" data-skill="heal" title="พรแห่งชีวิต (F)">💚<span class="key">F</span><span class="cd"></span></button>
+      <button id="potion-button" type="button" title="ยาเลือด (G)">🧪<span class="count" id="potion-count">0</span><span class="cd"></span></button>
     </div>
 
     <div id="death" hidden>
@@ -55,7 +57,71 @@
       <p id="death-timer">ฟื้นในอีก 5 วินาที</p>
     </div>
 
-    <button id="gm-button" type="button" hidden aria-controls="gm-panel">🛡 GM</button>
+    <nav id="menu-bar" hidden aria-label="เมนู">
+      <button type="button" data-panel="shop-panel" title="ร้านค้า">🛒</button>
+      <button type="button" data-panel="team-panel" title="ทีม">👥<span id="team-dot" hidden></span></button>
+      <button type="button" data-panel="settings-panel" title="ตั้งค่า">⚙</button>
+      <button id="gm-button" type="button" hidden aria-controls="gm-panel" title="แผง GM">🛡</button>
+    </nav>
+
+    <aside id="shop-panel" class="side-panel" hidden aria-labelledby="shop-title">
+      <header><h2 id="shop-title">🛒 ร้านค้า</h2><button type="button" class="panel-close" aria-label="ปิด">✕</button></header>
+      <p class="wallet">ทองของคุณ <b id="shop-gold">0</b> 💰</p>
+      <div class="shop-item">
+        <span class="shop-icon">🧪</span>
+        <div><strong>ยาเลือด</strong><small>ฟื้นเลือด 50% ทันที · มีอยู่ <b id="shop-potions">0</b> ขวด</small></div>
+        <div class="shop-buy">
+          <button type="button" data-buy="potion" data-count="1">30 💰</button>
+          <button type="button" data-buy="potion" data-count="5">×5 150</button>
+        </div>
+      </div>
+      <div class="shop-item">
+        <span class="shop-icon">⚔</span>
+        <div><strong id="shop-weapon-name"></strong><small id="shop-weapon-info"></small></div>
+        <div class="shop-buy"><button type="button" data-buy="weapon" id="shop-weapon-buy"></button></div>
+      </div>
+      <div class="shop-item">
+        <span class="shop-icon">🛡</span>
+        <div><strong id="shop-armor-name"></strong><small id="shop-armor-info"></small></div>
+        <div class="shop-buy"><button type="button" data-buy="armor" id="shop-armor-buy"></button></div>
+      </div>
+      <p class="muted">ล้มมอนสเตอร์เพื่อเก็บทอง บอสให้ทองเยอะมาก</p>
+    </aside>
+
+    <aside id="team-panel" class="side-panel" hidden aria-labelledby="team-title">
+      <header><h2 id="team-title">👥 ทีม</h2><button type="button" class="panel-close" aria-label="ปิด">✕</button></header>
+      <p class="muted">ทีมละ 4 คน · แบ่ง XP และทองกัน · ตีกันเองไม่โดน</p>
+      <ul id="team-members"></ul>
+      <button type="button" id="team-leave" class="secondary" hidden>ออกจากทีม</button>
+      <h3>ผู้เล่นในภาคนี้</h3>
+      <ul id="team-nearby"></ul>
+    </aside>
+
+    <aside id="settings-panel" class="side-panel" hidden aria-labelledby="settings-title">
+      <header><h2 id="settings-title">⚙ ตั้งค่า</h2><button type="button" class="panel-close" aria-label="ปิด">✕</button></header>
+      <label class="setting"><span>🎵 เพลง</span><input type="checkbox" id="set-music" /></label>
+      <label class="setting"><span>ความดังเพลง</span><input type="range" id="set-volume" min="0" max="1" step="0.05" /></label>
+      <label class="setting"><span>🔊 เสียงเอฟเฟกต์</span><input type="checkbox" id="set-sound" /></label>
+      <div class="setting">
+        <span>🖥 กราฟิก</span>
+        <div class="segmented" id="set-quality">
+          <button type="button" data-quality="low">ประหยัด</button>
+          <button type="button" data-quality="medium">กลาง</button>
+          <button type="button" data-quality="high">สูง</button>
+        </div>
+      </div>
+      <p class="muted">เครื่องกระตุกให้เลือก "ประหยัด" · ตั้งค่าจำไว้ในเครื่องนี้</p>
+    </aside>
+
+    <div id="team-frames" hidden></div>
+
+    <div id="team-invite" hidden role="dialog">
+      <p><b id="team-invite-from"></b> ชวนคุณเข้าทีม</p>
+      <div>
+        <button type="button" id="team-yes">เข้าร่วม</button>
+        <button type="button" id="team-no" class="secondary">ไม่ล่ะ</button>
+      </div>
+    </div>
 
     <aside id="gm-panel" hidden aria-labelledby="gm-title">
       <header>

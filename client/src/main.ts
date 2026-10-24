@@ -13,6 +13,10 @@ import { isRegionId, REGIONS, type RegionId, START_REGION } from "../../shared/r
 import type { Achievement, ProgressView } from "../../shared/quests.ts";
 import { decorateTitle, findTitle, type Title, TITLES } from "../../shared/titles.ts";
 import { type SelfState, World3D } from "./three/World3D.ts";
+import { stopMusic } from "./three/music.ts";
+import { play } from "./three/sfx.ts";
+import { changeSettings, onSettings, type Quality } from "./settings.ts";
+import { ARMOR_TIERS, POTION, type ShopItem, WEAPON_TIERS } from "../../shared/items.ts";
 import { HeroPicker } from "./three/HeroPicker.ts";
 import { RESPAWN_MS, type HitEvent, isSkillId, SKILLS, type SkillId, xpToNext } from "../../shared/combat.ts";
 import { BAN_DAYS, type GmAction, type GmList, type GmPlayer } from "../../shared/gm.ts";
@@ -44,6 +48,8 @@ const attackButton = document.querySelector<HTMLButtonElement>("#attack-button")
 const death = document.querySelector<HTMLDivElement>("#death")!;
 const deathTimer = document.querySelector<HTMLParagraphElement>("#death-timer")!;
 const gmButton = document.querySelector<HTMLButtonElement>("#gm-button")!;
+const menuBar = document.querySelector<HTMLElement>("#menu-bar")!;
+const teamFrames = document.querySelector<HTMLDivElement>("#team-frames")!;
 const gmPanel = document.querySelector<HTMLElement>("#gm-panel")!;
 const gmPlayers = document.querySelector<HTMLUListElement>("#gm-players")!;
 const gmBans = document.querySelector<HTMLUListElement>("#gm-bans")!;
@@ -365,6 +371,10 @@ function showJoinDialog(message: string) {
   actions.hidden = true;
   joystick.hidden = true;
   partyBadge.hidden = true;
+  menuBar.hidden = true;
+  teamFrames.hidden = true;
+  document.querySelectorAll<HTMLElement>(".side-panel").forEach((panel) => (panel.hidden = true));
+  stopMusic();
   death.hidden = true;
   gmButton.hidden = true;
   gmPanel.hidden = true;
@@ -419,6 +429,27 @@ function startGame(joined: Room, region: RegionId) {
   stats.hidden = false;
   actions.hidden = false;
   joystick.hidden = false;
+  menuBar.hidden = false;
+  joined.onMessage("gold", (message: { amount: number; x: number; y: number }) => scene?.showGold(message.amount, message.x, message.y));
+  joined.onMessage("potion", (message: { by: string; amount: number }) => {
+    scene?.showPotion(message.by, message.amount);
+    if (message.by === joined.sessionId) {
+      startPotionCooldown();
+    }
+  });
+  joined.onMessage("upgrade", (message: { id: string }) => scene?.showUpgrade(message.id));
+  joined.onMessage("notice", (message: { text: string; ok: boolean }) => {
+    showToast({ kind: message.ok ? "quest" : "title", text: message.text });
+    if (message.ok) {
+      play("buy", 0.35);
+    }
+  });
+  joined.onMessage("team", renderTeam);
+  joined.onMessage("team-invite", (message: { from: string }) => {
+    document.querySelector("#team-invite-from")!.textContent = message.from;
+    teamInvite.hidden = false;
+    play("click", 0.4);
+  });
 
   renderPartyBadge();
   joined.onMessage("travel", (message: { to?: unknown; from?: unknown; party?: unknown }) => {
@@ -574,6 +605,10 @@ function renderSelf(self: SelfState) {
   document.querySelector("#stats-xp")!.textContent = `XP ${self.xp}/${next}`;
   document.querySelector<HTMLElement>("#stats-hp-fill")!.style.width = `${(self.hp / self.maxHp) * 100}%`;
   document.querySelector<HTMLElement>("#stats-xp-fill")!.style.width = `${Math.min(100, (self.xp / next) * 100)}%`;
+  document.querySelector("#stats-gold")!.textContent = `💰 ${self.gold.toLocaleString()}`;
+  renderShop(self);
+  document.querySelector("#potion-count")!.textContent = String(self.potions);
+  me = self;
   stats.classList.toggle("low", self.hp / self.maxHp <= 0.25);
   gmButton.hidden = !self.gm;
 
@@ -662,6 +697,185 @@ joystick.addEventListener("pointermove", (event) => {
 });
 joystick.addEventListener("pointerup", releaseStick);
 joystick.addEventListener("pointercancel", releaseStick);
+
+// ---- Shop, potions, team, settings ----
+
+let me: SelfState | undefined;
+
+function renderShop(self: SelfState) {
+  document.querySelector("#shop-gold")!.textContent = self.gold.toLocaleString();
+  document.querySelector("#shop-potions")!.textContent = String(self.potions);
+  for (const [slot, tiers, label] of [
+    ["weapon", WEAPON_TIERS, "พลังโจมตี"],
+    ["armor", ARMOR_TIERS, "เลือดสูงสุด"],
+  ] as const) {
+    const now = tiers[self[slot]];
+    const next = tiers[self[slot] + 1];
+    document.querySelector(`#shop-${slot}-name`)!.textContent = next ? next.name : now.name;
+    document.querySelector(`#shop-${slot}-info`)!.textContent = next
+      ? `ตอนนี้: ${now.name} · ${label} ×${next.bonus}`
+      : `ขั้นสูงสุดแล้ว · ${label} ×${now.bonus}`;
+    const buy = document.querySelector<HTMLButtonElement>(`#shop-${slot}-buy`)!;
+    buy.textContent = next ? `${next.price.toLocaleString()} 💰` : "สูงสุด";
+    buy.disabled = !next || self.gold < next.price;
+  }
+}
+
+for (const button of document.querySelectorAll<HTMLButtonElement>("[data-buy]")) {
+  button.addEventListener("click", () => {
+    room?.send("buy", { item: button.dataset.buy as ShopItem, count: Number(button.dataset.count) || 1 });
+  });
+}
+
+const potionButton = document.querySelector<HTMLButtonElement>("#potion-button")!;
+
+function drinkPotion() {
+  if (me && me.potions > 0 && !me.dead && room) {
+    room.send("potion");
+  } else if (me && me.potions === 0) {
+    showToast({ kind: "title", text: "ยาเลือดหมด ซื้อได้ที่ร้านค้า 🛒" });
+  }
+}
+
+function startPotionCooldown() {
+  const ends = performance.now() + POTION.cooldownMs;
+  const countdown = potionButton.querySelector<HTMLSpanElement>(".cd")!;
+  const frame = () => {
+    const left = Math.max(0, ends - performance.now());
+    potionButton.style.setProperty("--cooldown", `${(left / POTION.cooldownMs) * 360}deg`);
+    potionButton.classList.toggle("cooling", left > 0);
+    countdown.textContent = left > 0 ? String(Math.ceil(left / 1000)) : "";
+    if (left > 0) {
+      requestAnimationFrame(frame);
+    }
+  };
+  frame();
+}
+
+potionButton.addEventListener("pointerdown", (event) => {
+  event.preventDefault();
+  drinkPotion();
+});
+window.addEventListener("keydown", (event) => {
+  if (document.activeElement !== chatInput && !event.repeat && (event.code === "KeyG" || event.code === "Digit5")) {
+    drinkPotion();
+  }
+});
+
+// Panels on the right: one open at a time.
+for (const button of menuBar.querySelectorAll<HTMLButtonElement>("[data-panel]")) {
+  button.addEventListener("click", () => {
+    const panel = document.querySelector<HTMLElement>(`#${button.dataset.panel}`)!;
+    const opening = panel.hidden;
+    document.querySelectorAll<HTMLElement>(".side-panel").forEach((other) => (other.hidden = true));
+    panel.hidden = !opening;
+    if (opening && button.dataset.panel === "team-panel") {
+      renderNearby();
+    }
+    play("click", 0.3);
+  });
+}
+for (const close of document.querySelectorAll<HTMLButtonElement>(".panel-close")) {
+  close.addEventListener("click", () => (close.closest<HTMLElement>(".side-panel")!.hidden = true));
+}
+
+// Team
+const teamInvite = document.querySelector<HTMLDivElement>("#team-invite")!;
+document.querySelector("#team-yes")!.addEventListener("click", () => {
+  room?.send("team-answer", { yes: true });
+  teamInvite.hidden = true;
+});
+document.querySelector("#team-no")!.addEventListener("click", () => {
+  room?.send("team-answer", { yes: false });
+  teamInvite.hidden = true;
+});
+document.querySelector("#team-leave")!.addEventListener("click", () => {
+  room?.send("team-leave");
+  teamFrames.hidden = true;
+});
+
+interface TeamMember {
+  me: boolean;
+  name: string;
+  level: number;
+  hp: number;
+  maxHp: number;
+  dead: boolean;
+  region: string;
+  online: boolean;
+}
+
+/** The team in the panel, and small health frames at the side of the screen. */
+function renderTeam(list: TeamMember[]) {
+  const inTeam = list.length > 1;
+  teamFrames.hidden = !inTeam;
+  document.querySelector<HTMLElement>("#team-dot")!.hidden = !inTeam;
+  document.querySelector<HTMLButtonElement>("#team-leave")!.hidden = !inTeam;
+  const frame = (member: TeamMember) => {
+    const row = document.createElement("li");
+    row.className = `team-member${member.dead ? " dead" : ""}${member.online ? "" : " offline"}`;
+    const name = document.createElement("span");
+    name.className = "team-name";
+    name.textContent = `${member.me ? "⭐ " : ""}${member.online ? `Lv.${member.level} ` : ""}${member.name}`;
+    const where = document.createElement("small");
+    where.textContent = member.online ? (member.dead ? "ล้มอยู่" : member.region) : "ออฟไลน์";
+    const bar = document.createElement("span");
+    bar.className = "team-hp";
+    const fill = document.createElement("span");
+    fill.style.width = `${member.online ? (member.hp / member.maxHp) * 100 : 0}%`;
+    bar.append(fill);
+    row.append(name, where, bar);
+    return row;
+  };
+  document.querySelector("#team-members")!.replaceChildren(...list.map(frame));
+  teamFrames.replaceChildren(...list.filter((member) => !member.me).map(frame));
+}
+
+function renderNearby() {
+  const list = scene?.nearbyPlayers() ?? [];
+  const rows = list.map((player) => {
+    const row = document.createElement("li");
+    row.className = "nearby";
+    row.textContent = `Lv.${player.level} ${player.name}`;
+    const invite = document.createElement("button");
+    invite.type = "button";
+    invite.textContent = player.mate ? "ในทีม" : "ชวน";
+    invite.disabled = player.mate;
+    invite.addEventListener("click", () => {
+      room?.send("team-invite", { target: player.id });
+      invite.disabled = true;
+      invite.textContent = "ส่งแล้ว";
+    });
+    row.append(invite);
+    return row;
+  });
+  if (rows.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "muted";
+    empty.textContent = "ยังไม่มีใครในภาคนี้";
+    rows.push(empty);
+  }
+  document.querySelector("#team-nearby")!.replaceChildren(...rows);
+}
+
+// Settings
+const setMusic = document.querySelector<HTMLInputElement>("#set-music")!;
+const setVolume = document.querySelector<HTMLInputElement>("#set-volume")!;
+const setSound = document.querySelector<HTMLInputElement>("#set-sound")!;
+onSettings((options) => {
+  setMusic.checked = options.music;
+  setVolume.value = String(options.musicVolume);
+  setSound.checked = options.sound;
+  for (const button of document.querySelectorAll<HTMLButtonElement>("#set-quality button")) {
+    button.classList.toggle("selected", button.dataset.quality === options.quality);
+  }
+});
+setMusic.addEventListener("change", () => changeSettings({ music: setMusic.checked }));
+setVolume.addEventListener("input", () => changeSettings({ musicVolume: Number(setVolume.value) }));
+setSound.addEventListener("change", () => changeSettings({ sound: setSound.checked }));
+for (const button of document.querySelectorAll<HTMLButtonElement>("#set-quality button")) {
+  button.addEventListener("click", () => changeSettings({ quality: button.dataset.quality as Quality }));
+}
 
 attackButton.addEventListener("pointerdown", (event) => {
   // Not a tap on the map: don't walk there.

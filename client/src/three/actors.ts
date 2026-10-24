@@ -75,6 +75,8 @@ export class Actor {
   private actions = new Map<Move, THREE.AnimationAction>();
   private base?: THREE.AnimationAction;
   private materials: THREE.MeshStandardMaterial[] = [];
+  /** The weapons' own materials, lit up by shop upgrades. */
+  weaponMaterials: THREE.MeshStandardMaterial[] = [];
   private flash = 0;
   /** A quick swell when struck, fading back to normal size. */
   private punch = 0;
@@ -195,6 +197,10 @@ export class Actor {
     if (this.flash > 0) {
       this.flash = Math.max(0, this.flash - delta / 220);
       for (const material of this.materials) {
+        // A glowing weapon keeps its own light.
+        if (this.weaponMaterials.includes(material)) {
+          continue;
+        }
         material.emissive.setRGB(this.flash, this.flash * (this.flash > 0.6 ? 1 : 0.25), this.flash * 0.25);
       }
     }
@@ -216,6 +222,14 @@ export class Actor {
   slideTo(x: number, z: number) {
     this.targetX = x;
     this.targetZ = z;
+  }
+
+  /** A shop-bought weapon glows in its tier's colour; undefined for plain starting gear. */
+  setWeaponGlow(color?: string) {
+    for (const material of this.weaponMaterials) {
+      material.emissive.set(color ?? "#000000");
+      material.emissiveIntensity = color ? 0.9 : 1;
+    }
   }
 
   /** Shows or hides the model together with its labels (labels don't follow the model's visibility). */
@@ -311,6 +325,7 @@ export async function heroActor(hero: { id: string; right?: string; left?: strin
   const model = copyModel(gltf, { ownMaterials: true });
   // Knights wear a visor-less helmet; the face shows, like the pack's own pictures.
   findNode(model, "Knight_HelmetVisor")?.removeFromParent();
+  const weaponMaterials: THREE.MeshStandardMaterial[] = [];
   for (const [side, weapon] of [
     ["handslot.r", hero.right],
     ["handslot.l", hero.left],
@@ -319,10 +334,12 @@ export async function heroActor(hero: { id: string; right?: string; left?: strin
     if (slot) {
       const item = copyModel(await loadModel(`weapons/${weapon}`), { ownMaterials: true });
       slot.add(item);
+      weaponMaterials.push(...materialsOf(item));
     }
   }
   const actor = new Actor(HERO_HEIGHT);
   actor.attach(model, clips, (move) => [HERO_CLIPS[move]]);
+  actor.weaponMaterials = weaponMaterials;
   return actor;
 }
 

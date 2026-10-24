@@ -16,6 +16,9 @@ import { Effects } from "./effects.ts";
 import { BORDER_MODELS, CLOUD_MODELS, GRASS_MODELS, propModels, PX, REGION_LOOKS } from "./look.ts";
 import { buildScenery, type Scenery } from "./scenery.ts";
 import { loadSounds, play } from "./sfx.ts";
+import { playMusic } from "./music.ts";
+import { onSettings, type Settings } from "../settings.ts";
+import { WEAPON_TIERS } from "../../../shared/items.ts";
 
 /** The local player, as the HUD shows it. */
 export interface SelfState {
@@ -26,6 +29,19 @@ export interface SelfState {
   maxHp: number;
   dead: boolean;
   gm: boolean;
+  gold: number;
+  potions: number;
+  weapon: number;
+  armor: number;
+  team: string;
+}
+
+/** Another player in this region, for the team panel's invite list. */
+export interface Nearby {
+  id: string;
+  name: string;
+  level: number;
+  mate: boolean;
 }
 
 interface PlayerState {
@@ -41,6 +57,11 @@ interface PlayerState {
   dead: boolean;
   gm: boolean;
   god: boolean;
+  gold: number;
+  potions: number;
+  weapon: number;
+  armor: number;
+  team: string;
 }
 
 interface MonsterState {
@@ -132,6 +153,10 @@ export class World3D {
   /** When the server last moved the local player; settling waits until it has stopped too. */
   private serverMovedAt = 0;
   private tapTarget?: { x: number; y: number };
+  /** The local player's team, to tell teammates apart. */
+  private myTeam = "";
+  private playerStates = new Map<string, PlayerState>();
+  private bossNear = false;
   private zoom = 1;
   private focus = new THREE.Vector3(WORLD_WIDTH / PX / 2, 0, WORLD_HEIGHT / PX / 2);
   private myLevel = 1;
@@ -180,6 +205,7 @@ export class World3D {
     this.scene.add(this.marker);
 
     this.resize.observe(container);
+    this.cleanup.push(onSettings((options) => this.applyQuality(options)));
     this.fit();
     loadSounds();
     void this.start();
@@ -210,6 +236,7 @@ export class World3D {
       return;
     }
     this.onLoading(1);
+    playMusic(this.regionId);
     this.listen();
     this.bindInput();
     this.loop();
@@ -224,6 +251,7 @@ export class World3D {
     });
     state.players.onRemove((_player: any, id: string) => {
       this.loading.delete(id);
+      this.playerStates.delete(id);
       this.players.get(id)?.dispose();
       this.players.delete(id);
       this.auras.get(id)?.removeFromParent();
@@ -300,7 +328,18 @@ export class World3D {
     } else {
       actor.moveTo(player.x / PX, player.y / PX, now);
     }
-    actor.setName(`${player.gm ? "[GM] " : ""}Lv.${player.level} ${player.name}`, player.gm ? "gm" : isMe ? "me" : "");
+    this.playerStates.set(id, player);
+    if (isMe && this.myTeam !== player.team) {
+      this.myTeam = player.team;
+      // Teammates' names turn green; refresh everyone.
+      this.playerStates.forEach((other, otherId) => otherId !== id && this.updatePlayer(otherId, other));
+    }
+    const mate = !isMe && player.team !== "" && player.team === this.myTeam;
+    actor.setName(
+      `${player.gm ? "[GM] " : ""}Lv.${player.level} ${player.name}`,
+      player.gm ? "gm" : isMe ? "me" : mate ? "mate" : "",
+    );
+    actor.setWeaponGlow(WEAPON_TIERS[player.weapon]?.color);
     actor.setHp(player.hp, player.maxHp);
     actor.setTitle(player.title);
     if (player.dead && !actor.dead) {
@@ -320,6 +359,11 @@ export class World3D {
         maxHp: player.maxHp,
         dead: player.dead,
         gm: player.gm,
+        gold: player.gold,
+        potions: player.potions,
+        weapon: player.weapon,
+        armor: player.armor,
+        team: player.team,
       });
       if (this.myLevel !== player.level) {
         this.myLevel = player.level;
@@ -480,6 +524,46 @@ export class World3D {
     } else {
       this.effects.sparks(at, color, 6);
     }
+  }
+
+  /** Coins fly up from a fallen monster: the gold the local player got. */
+  showGold(amount: number, x: number, y: number) {
+    const at = new THREE.Vector3(x / PX, 1.4, y / PX);
+    this.effects.sparks(at, "#ffd60a", 10);
+    this.effects.floatText(at.clone().add(new THREE.Vector3(0, 0.6, 0)), `+${amount} 💰`, "gold");
+    play("coin", 0.35);
+  }
+
+  /** A potion drunk: a green glow and the health it gave. */
+  showPotion(by: string, amount: number) {
+    const actor = this.players.get(by);
+    if (!actor) {
+      return;
+    }
+    this.effects.heal(actor.root.position);
+    this.effects.floatText(actor.root.position.clone().add(new THREE.Vector3(0, actor.height + 0.4, 0)), `+${amount}`, "heal");
+    this.playNear("potion", actor, 0.35);
+  }
+
+  /** New gear from the shop: a flash of light around the player. */
+  showUpgrade(id: string) {
+    const actor = this.players.get(id);
+    if (actor) {
+      this.effects.levelUp(actor.root.position);
+      this.playNear("buy", actor, 0.4);
+    }
+  }
+
+  /** The other players in this region, for inviting to a team. */
+  nearbyPlayers(): Nearby[] {
+    return [...this.playerStates]
+      .filter(([id]) => id !== this.room.sessionId)
+      .map(([id, player]) => ({
+        id,
+        name: player.name,
+        level: player.level,
+        mate: player.team !== "" && player.team === this.myTeam,
+      }));
   }
 
   showMonsterAttack(id: string) {
@@ -791,6 +875,17 @@ export class World3D {
       ring.scale.setScalar(1 + Math.sin(now / 250) * 0.12);
     });
     this.scenery?.animators.forEach((animate) => animate(now, delta));
+    // Twice a second: is a living boss close? Then the fight theme plays.
+    if (this.frameCount % 30 === 0) {
+      let near = false;
+      this.monsters.forEach(({ actor, boss }) => {
+        near ||= boss && !actor.dead && actor.root.position.distanceTo(this.focus) < 16;
+      });
+      if (near !== this.bossNear) {
+        this.bossNear = near;
+        playMusic(this.regionId, near);
+      }
+    }
     this.fadeOccluders(delta);
     this.effects.update(now);
     const marker = this.marker.material as THREE.MeshBasicMaterial;
@@ -854,6 +949,20 @@ export class World3D {
     }
   }
 
+  /** Sharper pictures and shadows on strong devices; fewer pixels and no shadows on weak ones. */
+  private applyQuality(options: Settings) {
+    const ratio = { high: Math.min(devicePixelRatio, 2), medium: Math.min(devicePixelRatio, 1.25), low: 1 }[options.quality];
+    this.renderer.setPixelRatio(ratio);
+    this.sun.castShadow = options.quality !== "low";
+    const size = options.quality === "high" ? 2048 : 1024;
+    if (this.sun.shadow.mapSize.x !== size) {
+      this.sun.shadow.mapSize.setScalar(size);
+      this.sun.shadow.map?.dispose();
+      this.sun.shadow.map = null;
+    }
+    this.fit();
+  }
+
   private fit() {
     const width = this.container.clientWidth || window.innerWidth;
     const height = this.container.clientHeight || window.innerHeight;
@@ -863,7 +972,7 @@ export class World3D {
     this.camera.updateProjectionMatrix();
   }
 
-  private playNear(sound: "hit" | "swing" | "levelup", actor: Actor, volume: number) {
+  private playNear(sound: "hit" | "swing" | "levelup" | "potion" | "buy", actor: Actor, volume: number) {
     if (actor.root.position.distanceTo(this.focus) < 22) {
       play(sound, volume);
     }

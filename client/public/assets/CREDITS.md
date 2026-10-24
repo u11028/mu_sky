@@ -27,3 +27,19 @@ https://pixel-boy.itch.io/ninja-adventure-asset-pack
 | sfx/swing.wav | Audio/Sounds/Hit & Impact/Impact.wav |
 | sfx/levelup.wav | Audio/Jingles/LevelUp1.wav |
 | sfx/dead.wav | Audio/Jingles/GameOver.wav |
+| sfx/coin.wav | Audio/Sounds/Bonus/Coin.wav |
+| sfx/potion.wav | Audio/Sounds/Bonus/PowerUp1.wav |
+| sfx/click.wav | Audio/Sounds/Menu/Accept.wav |
+| sfx/buy.wav | Audio/Sounds/Bonus/Gold1.wav |
+
+## Music (`music/`), also from Ninja Adventure (CC0)
+
+| File | Track |
+|---|---|
+| music/central.ogg | 4 - Village |
+| music/north.ogg | 13 - Mystical |
+| music/northeast.ogg | 31 - Sunny |
+| music/east.ogg | 18 - Aquatic |
+| music/west.ogg | 30 - Ruins |
+| music/south.ogg | 27 - Chill |
+| music/boss.ogg | 17 - Fight |

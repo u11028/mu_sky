@@ -45,6 +45,8 @@ import { type Achievement, regionOfTheDay, STEP_PX, thaiDay } from "../../shared
 import { findTitle } from "../../shared/titles.ts";
 import { clientAddress } from "./environment.ts";
 import { isGmKey } from "./gmKey.ts";
+import * as teams from "./teams.ts";
+import { ARMOR_TIERS, isShopItem, monsterGold, POTION, type ShopItem, WEAPON_TIERS } from "../../shared/items.ts";
 import * as progress from "./progress.ts";
 import { type Monster, Player, WorldState } from "./schema.ts";
 
@@ -83,7 +85,11 @@ interface Movement {
   gmTries: number;
   /** When each skill may be used again. */
   skillReadyAt: Partial<Record<SkillId, number>>;
+  potionReadyAt: number;
 }
+
+/** Teammates within this distance share a monster's reward even if they didn't hit it. */
+const SHARE_DISTANCE = 800;
 
 interface JoinOptions {
   name?: unknown;
@@ -110,6 +116,11 @@ interface Projectile extends ShotEvent {
 /** How close a shot must pass to hit: about a body's width; bosses are bigger. */
 const SHOT_RADIUS = 26;
 const BOSS_SHOT_RADIUS = 56;
+
+/** Two players on the same team: they can't hurt each other. */
+function sameTeam(a: Player, b: Player) {
+  return a.team !== "" && a.team === b.team;
+}
 
 /** Every open region room, so a GM can reach players anywhere. */
 const rooms = new Set<WorldRoom>();
@@ -238,6 +249,20 @@ export class WorldRoom extends Room<WorldState> {
     });
 
     this.onMessage("attack", (client) => this.attack(client.sessionId));
+    this.onMessage("buy", (client, message: { item?: unknown; count?: unknown }) => {
+      if (isShopItem(message?.item)) {
+        this.buy(client, message.item, Number(message?.count) || 1);
+      }
+    });
+    this.onMessage("potion", (client) => this.drinkPotion(client.sessionId));
+    this.onMessage("team-invite", (client, message: { target?: unknown }) => this.teamInvite(client, String(message?.target)));
+    this.onMessage("team-answer", (client, message: { yes?: unknown }) => this.teamAnswer(client, Boolean(message?.yes)));
+    this.onMessage("team-leave", (client) => {
+      const movement = this.movements.get(client.sessionId);
+      if (movement) {
+        this.teamChanged(teams.leave(movement.playerId), [movement.playerId]);
+      }
+    });
     this.onMessage("skill", (client, message: { id?: unknown }) => {
       if (isSkillId(message?.id)) {
         this.useSkill(client.sessionId, message.id);
@@ -284,6 +309,8 @@ export class WorldRoom extends Room<WorldState> {
     const powers = progress.profile(playerId);
     player.gm = powers.gm;
     player.god = powers.god;
+    Object.assign(player, progress.inventory(playerId));
+    player.team = teams.teamIdOf(playerId);
     this.applyLevel(player, playerId);
     player.hp = player.maxHp;
 
@@ -306,6 +333,7 @@ export class WorldRoom extends Room<WorldState> {
       oneHit: powers.oneHit,
       gmTries: 0,
       skillReadyAt: {},
+      potionReadyAt: 0,
     });
 
     client.send("chat-history", this.chatHistory);
@@ -330,6 +358,14 @@ export class WorldRoom extends Room<WorldState> {
   onLeave(client: Client) {
     const player = this.state.players.get(client.sessionId);
     const movement = this.movements.get(client.sessionId);
+    if (movement && !movement.travelling && teams.teamIdOf(movement.playerId)) {
+      const { playerId } = movement;
+      teams.goneFor(
+        playerId,
+        () => WorldRoom.sessionOf(playerId) !== undefined,
+        (left) => this.teamChanged(left, [playerId]),
+      );
+    }
     this.state.players.delete(client.sessionId);
     this.movements.delete(client.sessionId);
     if (player) {
@@ -395,7 +431,7 @@ export class WorldRoom extends Room<WorldState> {
     player.level = level;
     player.xp = xp;
     // Each class is tougher or frailer than the level alone says.
-    player.maxHp = Math.round(maxHp(level) * heroOf(player.skin).hp);
+    player.maxHp = Math.round(maxHp(level) * heroOf(player.skin).hp * (ARMOR_TIERS[player.armor]?.bonus ?? 1));
     player.hp = Math.min(player.hp, player.maxHp);
   }
 
@@ -435,7 +471,15 @@ export class WorldRoom extends Room<WorldState> {
       this.state.players.forEach((other, otherId) => {
         const otherMovement = this.movements.get(otherId);
         const distance = Math.hypot(other.x - player.x, other.y - player.y);
-        if (otherId !== sessionId && !other.dead && otherMovement && !otherMovement.travelling && distance <= reach && distance < bestDistance) {
+        if (
+          otherId !== sessionId &&
+          !other.dead &&
+          !sameTeam(player, other) &&
+          otherMovement &&
+          !otherMovement.travelling &&
+          distance <= reach &&
+          distance < bestDistance
+        ) {
           best = other;
           bestDistance = distance;
         }
@@ -524,6 +568,7 @@ export class WorldRoom extends Room<WorldState> {
             ended ||
             shot.monstersOnly ||
             targetId === shot.by ||
+            (shooter && sameTeam(shooter.player, target)) ||
             target.dead ||
             !targetMovement ||
             targetMovement.travelling ||
@@ -615,7 +660,7 @@ export class WorldRoom extends Room<WorldState> {
 
     this.state.players.forEach((target, targetId) => {
       const targetMovement = this.movements.get(targetId);
-      if (targetId === sessionId || target.dead || !targetMovement || targetMovement.travelling) {
+      if (targetId === sessionId || target.dead || !targetMovement || targetMovement.travelling || sameTeam(player, target)) {
         return;
       }
       if (inReach(target.x, target.y) && now >= targetMovement.shieldUntil) {
@@ -637,7 +682,12 @@ export class WorldRoom extends Room<WorldState> {
     const hero = heroOf(attacker.skin);
     const crit = Math.random() < hero.crit;
     const rolled =
-      attackPower(attacker.level) * hero.power * multiplier * (0.85 + Math.random() * 0.3) * (crit ? CRIT_MULTIPLIER : 1);
+      attackPower(attacker.level) *
+      hero.power *
+      (WEAPON_TIERS[attacker.weapon]?.bonus ?? 1) *
+      multiplier *
+      (0.85 + Math.random() * 0.3) *
+      (crit ? CRIT_MULTIPLIER : 1);
     return { damage: Math.max(1, Math.round(rolled)), crit };
   }
 
@@ -687,11 +737,22 @@ export class WorldRoom extends Room<WorldState> {
     }
   }
 
-  /** Everyone who fought the monster shares the reward: the top fighter in full, helpers half. */
+  /**
+   * Everyone who fought the monster shares the reward: the top fighter in full, helpers half.
+   * Teammates close by who didn't hit it get the helpers' share too.
+   */
   private monsterDefeated(monsterId: string, monster: Monster) {
     const kind = this.monsters.kind(monster);
     const fighters = this.monsters.defeat(monsterId);
+    const teamsThere = new Set(fighters.map((id) => this.state.players.get(id)?.team).filter(Boolean));
+    this.state.players.forEach((player, sessionId) => {
+      const near = Math.hypot(player.x - monster.x, player.y - monster.y) <= SHARE_DISTANCE;
+      if (!fighters.includes(sessionId) && player.team && teamsThere.has(player.team) && near && !player.dead) {
+        fighters.push(sessionId);
+      }
+    });
     const names: string[] = [];
+    const gold = monsterGold(kind.level, Boolean(kind.boss));
     fighters.forEach((sessionId, index) => {
       const player = this.state.players.get(sessionId);
       const movement = this.movements.get(sessionId);
@@ -701,7 +762,11 @@ export class WorldRoom extends Room<WorldState> {
       }
       names.push(player.name);
       const xp = index === 0 ? monsterXp(kind) : Math.ceil(monsterXp(kind) / 2);
+      const coins = index === 0 ? gold : Math.ceil(gold / 2);
       client.send("xp", { amount: xp });
+      client.send("gold", { amount: coins, x: monster.x, y: monster.y });
+      player.gold += coins;
+      progress.saveInventory(movement.playerId, { gold: player.gold });
       this.levelChanged(player, movement.playerId, progress.addXp(movement.playerId, xp));
       this.celebrate(movement.playerId, progress.recordMonsterKill(movement.playerId, Boolean(kind.boss)));
     });
@@ -786,6 +851,161 @@ export class WorldRoom extends Room<WorldState> {
     player.hp = player.maxHp;
     player.dead = false;
     movement.shieldUntil = Date.now() + SPAWN_SHIELD_MS;
+  }
+
+  // ---- Shop and potions ----
+
+  private buy(client: Client, item: ShopItem, count: number) {
+    const player = this.state.players.get(client.sessionId);
+    const movement = this.movements.get(client.sessionId);
+    if (!player || !movement) {
+      return;
+    }
+    const notice = (text: string, ok: boolean) => client.send("notice", { text, ok });
+
+    if (item === "potion") {
+      const wanted = Math.max(1, Math.min(Math.floor(count), POTION.max - player.potions));
+      const cost = wanted * POTION.price;
+      if (player.potions >= POTION.max) {
+        notice(`พกยาได้สูงสุด ${POTION.max} ขวด`, false);
+      } else if (player.gold < cost) {
+        notice(`ทองไม่พอ ต้องใช้ ${cost} ทอง`, false);
+      } else {
+        player.gold -= cost;
+        player.potions += wanted;
+        notice(`ซื้อ${POTION.name} ${wanted} ขวด`, true);
+      }
+    } else {
+      const tiers = item === "weapon" ? WEAPON_TIERS : ARMOR_TIERS;
+      const next = tiers[player[item] + 1];
+      if (!next) {
+        notice("อัปเกรดสูงสุดแล้ว", false);
+      } else if (player.gold < next.price) {
+        notice(`ทองไม่พอ ต้องใช้ ${next.price} ทอง`, false);
+      } else {
+        player.gold -= next.price;
+        player[item] += 1;
+        if (item === "armor") {
+          const before = player.maxHp;
+          this.applyLevel(player, movement.playerId);
+          player.hp = Math.min(player.maxHp, player.hp + (player.maxHp - before));
+        }
+        notice(`ได้รับ ${next.name}!`, true);
+        this.broadcast("upgrade", { id: client.sessionId });
+      }
+    }
+    const { gold, potions, weapon, armor } = player;
+    progress.saveInventory(movement.playerId, { gold, potions, weapon, armor });
+  }
+
+  private drinkPotion(sessionId: string) {
+    const player = this.state.players.get(sessionId);
+    const movement = this.movements.get(sessionId);
+    const now = Date.now();
+    if (!player || !movement || player.dead || player.potions <= 0 || now < movement.potionReadyAt) {
+      return;
+    }
+    // Not wasted on a full bar.
+    if (player.hp >= player.maxHp) {
+      this.clients.find((c) => c.sessionId === sessionId)?.send("notice", { text: "เลือดเต็มอยู่แล้ว", ok: false });
+      return;
+    }
+    movement.potionReadyAt = now + POTION.cooldownMs;
+    player.potions -= 1;
+    const amount = Math.min(player.maxHp - player.hp, Math.round(player.maxHp * POTION.heal));
+    player.hp += amount;
+    progress.saveInventory(movement.playerId, { potions: player.potions });
+    this.broadcast("potion", { by: sessionId, amount });
+  }
+
+  // ---- Teams ----
+
+  /** The room and session where a player is now, if they're in the game. */
+  private static sessionOf(playerId: string) {
+    for (const room of rooms) {
+      for (const [sessionId, movement] of room.movements) {
+        if (movement.playerId === playerId) {
+          return { room, sessionId };
+        }
+      }
+    }
+    return undefined;
+  }
+
+  private teamInvite(client: Client, targetSession: string) {
+    const movement = this.movements.get(client.sessionId);
+    const target = this.movements.get(targetSession);
+    const player = this.state.players.get(client.sessionId);
+    const targetClient = this.clients.find((c) => c.sessionId === targetSession);
+    if (!movement || !target || !player || !targetClient) {
+      return;
+    }
+    const problem = teams.invite(movement.playerId, target.playerId);
+    if (problem) {
+      client.send("notice", { text: problem, ok: false });
+      return;
+    }
+    targetClient.send("team-invite", { from: player.name });
+    client.send("notice", { text: `ส่งคำชวนให้ ${this.state.players.get(targetSession)?.name} แล้ว`, ok: true });
+  }
+
+  private teamAnswer(client: Client, yes: boolean) {
+    const movement = this.movements.get(client.sessionId);
+    const player = this.state.players.get(client.sessionId);
+    if (!movement || !player) {
+      return;
+    }
+    if (!yes) {
+      const from = teams.decline(movement.playerId);
+      const inviter = from ? WorldRoom.sessionOf(from) : undefined;
+      inviter?.room.clients.find((c) => c.sessionId === inviter.sessionId)?.send("notice", { text: `${player.name} ปฏิเสธคำชวน`, ok: false });
+      return;
+    }
+    const result = teams.accept(movement.playerId);
+    if ("error" in result) {
+      client.send("notice", { text: result.error, ok: false });
+      return;
+    }
+    this.teamChanged([...teams.teamMembers(result.team), ...result.left], []);
+  }
+
+  /** Writes each member's team onto their player, wherever they are; `gone` lose theirs. */
+  private teamChanged(stillIn: string[], gone: string[]) {
+    for (const playerId of [...stillIn, ...gone]) {
+      const where = WorldRoom.sessionOf(playerId);
+      const player = where?.room.state.players.get(where.sessionId);
+      if (player) {
+        player.team = teams.teamIdOf(playerId);
+      }
+    }
+  }
+
+  /** Each player in a team hears how their teammates are doing, wherever they are. */
+  private sendTeamStatus() {
+    for (const [sessionId, player] of this.state.players) {
+      if (!player.team) {
+        continue;
+      }
+      const client = this.clients.find((c) => c.sessionId === sessionId);
+      const mine = this.movements.get(sessionId)?.playerId;
+      const list = teams.teamMembers(player.team).map((playerId) => {
+        const where = WorldRoom.sessionOf(playerId);
+        const mate = where?.room.state.players.get(where.sessionId);
+        return mate
+          ? {
+              me: playerId === mine,
+              name: mate.name,
+              level: mate.level,
+              hp: mate.hp,
+              maxHp: mate.maxHp,
+              dead: mate.dead,
+              region: where!.room.region.name,
+              online: true,
+            }
+          : { me: false, name: progress.summary(playerId).name || "ผู้เล่น", level: 0, hp: 0, maxHp: 1, dead: false, region: "", online: false };
+      });
+      client?.send("team", list);
+    }
   }
 
   // ---- Commands and GM ----
@@ -986,6 +1206,9 @@ export class WorldRoom extends Room<WorldState> {
     const step = (PLAYER_SPEED * deltaMs) / 1000;
     const { bounds, portals } = this.region;
     const flushSteps = ++this.ticks % STEP_FLUSH_TICKS === 0;
+    if (flushSteps) {
+      this.sendTeamStatus();
+    }
     const now = Date.now();
     this.monsters.update(deltaMs);
     this.updateProjectiles(deltaMs);

@@ -1,6 +1,8 @@
 // Short sound effects, decoded once and played without delay.
 
-const SOUNDS = ["hit", "swing", "levelup", "dead"] as const;
+import { settings } from "../settings.ts";
+
+const SOUNDS = ["hit", "swing", "levelup", "dead", "coin", "potion", "click", "buy"] as const;
 export type Sound = (typeof SOUNDS)[number];
 
 let context: AudioContext | undefined;
@@ -28,7 +30,7 @@ export function loadSounds() {
 
 export function play(sound: Sound, volume = 0.4) {
   const buffer = buffers.get(sound);
-  if (!context || !buffer || context.state !== "running") {
+  if (!settings().sound || !context || !buffer || context.state !== "running") {
     return;
   }
   const source = context.createBufferSource();

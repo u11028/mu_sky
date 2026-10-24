@@ -56,6 +56,11 @@ interface Progress {
   name: string;
   skin: number;
   ip: string;
+  gold: number;
+  potions: number;
+  /** Tiers bought in the shop; 0 is the starting gear. */
+  weapon: number;
+  armor: number;
 }
 
 /** Enough to earn every title; older ids are dropped first. */
@@ -135,6 +140,11 @@ function newProgress(): Progress {
     name: "",
     skin: 0,
     ip: "",
+    gold: 0,
+    // A few to start with, so a new player learns what they do.
+    potions: 3,
+    weapon: 0,
+    armor: 0,
   };
 }
 
@@ -443,4 +453,22 @@ export function recordMonsterKill(playerId: string, boss: boolean) {
 export function summary(playerId: string) {
   const record = players.get(playerId);
   return { name: record?.name ?? "", skin: record?.skin ?? 0 };
+}
+
+/** Gold, potions and gear: what the shop sells and the player carries. */
+export interface Inventory {
+  gold: number;
+  potions: number;
+  weapon: number;
+  armor: number;
+}
+
+export function inventory(playerId: string): Inventory {
+  const { gold, potions, weapon, armor } = get(playerId);
+  return { gold, potions, weapon, armor };
+}
+
+export function saveInventory(playerId: string, change: Partial<Inventory>) {
+  Object.assign(get(playerId), change);
+  scheduleSave();
 }

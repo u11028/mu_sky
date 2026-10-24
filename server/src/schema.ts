@@ -16,6 +16,13 @@ export class Player extends Schema {
   @type("boolean") gm = false;
   /** Immortal (a GM power): drawn with a golden aura. */
   @type("boolean") god = false;
+  @type("uint32") gold = 0;
+  @type("uint16") potions = 0;
+  /** Shop tiers, shown as a glowing weapon. */
+  @type("uint8") weapon = 0;
+  @type("uint8") armor = 0;
+  /** The team's id, or "" when alone: teammates can't hurt each other. */
+  @type("string") team = "";
 }
 
 export class Monster extends Schema {
