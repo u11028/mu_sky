@@ -1023,6 +1023,26 @@ chatForm.addEventListener("submit", (event) => {
   }
   chatInput.value = "";
   chatInput.blur();
+  closeChat();
+});
+
+// Phones keep the chat folded to its last lines; 💬 opens it for typing.
+const chatBox = document.querySelector<HTMLElement>("#chat")!;
+
+function closeChat() {
+  chatBox.classList.remove("open");
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+document.querySelector("#chat-toggle")!.addEventListener("click", () => {
+  chatBox.classList.add("open");
+  chatInput.focus();
+});
+// Closing the keyboard without sending folds it back.
+chatInput.addEventListener("blur", () => {
+  if (!chatInput.value.trim()) {
+    setTimeout(closeChat, 150);
+  }
 });
 
 // Enter opens the chat on a keyboard; Escape gives the keys back to walking.
