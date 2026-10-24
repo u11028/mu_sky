@@ -1,8 +1,0 @@
-﻿.livemap {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.livemap-players {
-    flex: 0 0 500px;
-}
