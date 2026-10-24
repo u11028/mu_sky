@@ -1,36 +1,27 @@
 import Phaser from "phaser";
 import type { Room } from "colyseus.js";
 import { SKINS, WORLD_HEIGHT, WORLD_WIDTH } from "../../shared/world.ts";
+import { PORTAL_RADIUS, REGIONS, type RegionId } from "../../shared/regions.ts";
+import { PROPS, type PropName, seededRandom, THEMES } from "./regionThemes.ts";
 
 const FONT = 'Tahoma, "Noto Sans Thai", "Leelawadee UI", sans-serif';
-const ASSETS = "assets/ninja";
 /** The pack is drawn at 16 px; everything is shown three times bigger. */
 const SCALE = 3;
 const TILE = 16 * SCALE;
 const BUBBLE_MS = 4000;
 /** A player counts as walking for this long after the server last moved them. */
 const WALK_HOLD_MS = 150;
+/** Wavy water in tiles/water.png (28 tiles per row). */
+const SEA_TILE = 2 * 28 + 11;
+/** Sand between the walkable ground and the sea. */
+const BEACH_TILE = 5 * 22;
+const SEA_GAP = 40;
 
 /** Columns of a character sheet: one per facing. Rows 0-3 are the walk cycle. */
 const DIRECTIONS = ["down", "up", "left", "right"] as const;
 type Direction = (typeof DIRECTIONS)[number];
 
-/** Grass in tileset_floor.png (22 tiles per row): one plain tile and four with sprouts. */
-const GRASS_PLAIN = 12 * 22 + 11;
-const GRASS_SPROUTS = [12 * 22 + 12, 12 * 22 + 13, 12 * 22 + 14, 12 * 22 + 15];
-
-/** Props cut from tileset_village.png, as x, y, width, height in source pixels. */
-const PROPS = {
-  treeBig: [0, 96, 64, 48],
-  treeSmall: [64, 96, 32, 32],
-  bush: [64, 80, 16, 16],
-  bushRound: [80, 80, 16, 16],
-  stump: [96, 128, 16, 16],
-  house: [192, 96, 64, 80],
-} as const;
-type PropName = keyof typeof PROPS;
-
-/** Names and speech bubbles stay readable even when a player walks behind a house. */
+/** Names, speech bubbles and portal signs stay readable even behind a house. */
 const LABEL_DEPTH = 1_000_000;
 
 interface PlayerView {
@@ -47,11 +38,6 @@ interface PlayerView {
   targetY: number;
 }
 
-/** Deterministic 0..99 per cell, so every player sees the same world. */
-function noise(x: number, y: number) {
-  return (((x * 73856093) ^ (y * 19349663)) >>> 0) % 100;
-}
-
 export class WorldScene extends Phaser.Scene {
   private views = new Map<string, PlayerView>();
   private keys!: Record<"up" | "down" | "left" | "right" | "w" | "a" | "s" | "d", Phaser.Input.Keyboard.Key>;
@@ -60,6 +46,7 @@ export class WorldScene extends Phaser.Scene {
 
   constructor(
     private readonly room: Room,
+    private readonly regionId: RegionId,
     private readonly chatInput: HTMLInputElement,
     private readonly onPlayerCount: (count: number) => void,
   ) {
@@ -70,15 +57,20 @@ export class WorldScene extends Phaser.Scene {
     for (const skin of SKINS) {
       this.load.spritesheet(skin, `assets/characters/${skin}.png`, { frameWidth: 16, frameHeight: 16 });
     }
-    this.load.spritesheet("floor", `${ASSETS}/tileset_floor.png`, { frameWidth: 16, frameHeight: 16 });
-    this.load.image("village", `${ASSETS}/tileset_village.png`);
-    this.load.image("shadow", `${ASSETS}/shadow.png`);
+    this.load.spritesheet("floor", "assets/tiles/floor.png", { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet("water", "assets/tiles/water.png", { frameWidth: 16, frameHeight: 16 });
+    this.load.image("nature", "assets/tiles/nature.png");
+    this.load.image("village", "assets/tiles/village.png");
+    this.load.image("field", "assets/tiles/field.png");
+    this.load.image("shadow", "assets/shadow.png");
   }
 
   create() {
-    this.createAnimations();
+    this.prepareTextures();
     this.drawGround();
     this.placeProps();
+    this.drawPortals();
+    this.showRegionBanner();
 
     this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.cameras.main.setBackgroundColor("#1d3b2a");
@@ -181,7 +173,7 @@ export class WorldScene extends Phaser.Scene {
     // Origin near the feet, so the container's position is where the character stands.
     const sprite = this.add.sprite(0, 0, skin, 0).setScale(SCALE).setOrigin(0.5, 0.9);
     const name = this.add
-      .text(0, -46, player.name, {
+      .text(player.x, player.y - 46, player.name, {
         fontFamily: FONT,
         fontSize: "14px",
         color: isMe ? "#e9c46a" : "#ffffff",
@@ -191,7 +183,7 @@ export class WorldScene extends Phaser.Scene {
       .setOrigin(0.5, 1)
       .setDepth(LABEL_DEPTH);
     const bubble = this.add
-      .text(0, -66, "", {
+      .text(player.x, player.y - 66, "", {
         fontFamily: FONT,
         fontSize: "14px",
         color: "#1b1b1b",
@@ -222,9 +214,9 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
-  private createAnimations() {
+  private prepareTextures() {
     // Crisp pixels for the art only; the Thai text stays smooth.
-    for (const key of [...SKINS, "floor", "village", "shadow"]) {
+    for (const key of [...SKINS, "floor", "water", "nature", "village", "field", "shadow"]) {
       this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
     }
 
@@ -239,59 +231,123 @@ export class WorldScene extends Phaser.Scene {
       });
     }
 
-    const village = this.textures.get("village");
-    for (const [name, [x, y, width, height]] of Object.entries(PROPS)) {
-      village.add(name, 0, x, y, width, height);
+    for (const [name, [sheet, column, row, width, height]] of Object.entries(PROPS)) {
+      this.textures.get(sheet).add(name, 0, column * 16, row * 16, width * 16, height * 16);
     }
   }
 
   private drawGround() {
+    const theme = THEMES[this.regionId];
+    const { bounds } = REGIONS[this.regionId];
+    const random = seededRandom(this.seed() + 1);
+
     const map = this.make.tilemap({
       tileWidth: 16,
       tileHeight: 16,
       width: Math.ceil(WORLD_WIDTH / TILE),
       height: Math.ceil(WORLD_HEIGHT / TILE),
     });
-    const tiles = map.addTilesetImage("floor")!;
-    const layer = map.createBlankLayer("ground", tiles)!.setScale(SCALE).setDepth(-1000);
+    const ground = map.createBlankLayer("ground", map.addTilesetImage("floor")!)!.setScale(SCALE).setDepth(-2000);
+    const sea = map.createBlankLayer("sea", map.addTilesetImage("water")!)!.setScale(SCALE).setDepth(-1999);
 
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
-        const n = noise(x, y);
-        layer.putTileAt(n < 80 ? GRASS_PLAIN : GRASS_SPROUTS[n % GRASS_SPROUTS.length], x, y);
+        // How far this tile lies past the walkable edge on the sea side.
+        const past =
+          theme.sea === "east" ? x * TILE - bounds.maxX : theme.sea === "south" ? y * TILE - bounds.maxY : -Infinity;
+        if (past >= SEA_GAP) {
+          sea.putTileAt(SEA_TILE, x, y);
+        } else if (past > -TILE) {
+          ground.putTileAt(BEACH_TILE, x, y);
+        } else {
+          const details = theme.groundDetails;
+          ground.putTileAt(random() < 0.18 ? details[Math.floor(random() * details.length)] : theme.ground, x, y);
+        }
       }
     }
   }
 
   private placeProps() {
-    const place = (prop: PropName, x: number, y: number) =>
-      // Bottom-centre origin + depth by y: players walk behind the props' upper part.
-      this.add.image(x, y, "village", prop).setScale(SCALE).setOrigin(0.5, 1).setDepth(y);
+    const theme = THEMES[this.regionId];
+    const { bounds, portals } = REGIONS[this.regionId];
+    const random = seededRandom(this.seed());
 
-    // The village sits around the spawn point, which stays clear.
-    const cx = WORLD_WIDTH / 2;
-    const cy = WORLD_HEIGHT / 2;
-    place("house", cx - 260, cy - 120);
-    place("house", cx + 280, cy - 150);
-    place("stump", cx - 120, cy + 170);
-    place("bushRound", cx + 150, cy + 140);
+    // Where props already stand: the centre of their footprint and a radius, to keep the next ones apart.
+    const taken: { x: number; y: number; r: number }[] = [];
+    const footprint = (prop: PropName, x: number, y: number) => {
+      const [, , , width, height] = PROPS[prop];
+      const r = (Math.max(width, height) * TILE) / 2;
+      return { x, y: y - (height * TILE) / 2, r };
+    };
+    const place = (prop: PropName, x: number, y: number) => {
+      const [sheet] = PROPS[prop];
+      // Bottom-centre origin + depth by y: players walk behind a prop's upper part.
+      this.add.image(x, y, sheet, prop).setScale(SCALE).setOrigin(0.5, 1).setDepth(y);
+      taken.push(footprint(prop, x, y));
+    };
 
-    // A forest edge along the borders, thinned out by noise.
-    for (let x = 60; x < WORLD_WIDTH; x += 150) {
-      if (noise(x, 1) < 75) place(noise(x, 2) < 50 ? "treeBig" : "treeSmall", x, 150);
-      if (noise(x, 3) < 75) place(noise(x, 4) < 50 ? "treeBig" : "treeSmall", x + 40, WORLD_HEIGHT - 20);
-    }
-    for (let y = 300; y < WORLD_HEIGHT - 100; y += 160) {
-      if (noise(5, y) < 75) place("treeBig", 90, y);
-      if (noise(6, y) < 75) place("treeBig", WORLD_WIDTH - 90, y);
+    const cx = (bounds.minX + bounds.maxX) / 2;
+    const cy = (bounds.minY + bounds.maxY) / 2;
+    for (const [prop, x, y] of theme.landmarks(cx, cy)) {
+      place(prop, x, y);
     }
 
-    // Scattered bushes and stumps in the open field.
-    for (let i = 0; i < 40; i++) {
-      const x = 200 + (noise(i, 7) / 100) * (WORLD_WIDTH - 400);
-      const y = 260 + (noise(i, 8) / 100) * (WORLD_HEIGHT - 480);
-      if (Math.hypot(x - cx, y - cy) < 220) continue;
-      place(i % 5 === 0 ? "stump" : i % 2 ? "bush" : "bushRound", x, y);
+    // Scatter the rest, apart from each other, the portals and the open middle where players arrive.
+    const weighted = Object.entries(theme.scatter).flatMap(([prop, weight]) => Array(weight).fill(prop as PropName));
+    let placed = 0;
+    for (let attempt = 0; placed < theme.scatterCount && attempt < theme.scatterCount * 30; attempt++) {
+      const x = bounds.minX + 40 + random() * (bounds.maxX - bounds.minX - 80);
+      const y = bounds.minY + 80 + random() * (bounds.maxY - bounds.minY - 100);
+      const prop = weighted[Math.floor(random() * weighted.length)];
+      const spot = footprint(prop, x, y);
+      const crowded = taken.some((t) => Math.hypot(t.x - spot.x, t.y - spot.y) < (t.r + spot.r) * 0.8);
+      const nearPortal = portals.some((p) => Math.hypot(p.x - x, p.y - y) < 150);
+      if (crowded || nearPortal || Math.hypot(x - cx, y - cy) < 200) {
+        continue;
+      }
+      place(prop, x, y);
+      placed++;
     }
+  }
+
+  private drawPortals() {
+    for (const portal of REGIONS[this.regionId].portals) {
+      const glow = this.add.circle(portal.x, portal.y, PORTAL_RADIUS, 0x8be9fd, 0.25).setDepth(portal.y - 1);
+      this.add.circle(portal.x, portal.y, PORTAL_RADIUS).setStrokeStyle(3, 0xe9f9ff, 0.9).setDepth(portal.y - 1);
+      this.tweens.add({ targets: glow, scale: 1.25, alpha: 0.05, duration: 1100, yoyo: true, repeat: -1 });
+      this.add
+        .text(portal.x, portal.y - PORTAL_RADIUS - 8, `ไป${REGIONS[portal.to].name}`, {
+          fontFamily: FONT,
+          fontSize: "15px",
+          color: "#ffffff",
+          backgroundColor: "#1d3b2acc",
+          padding: { x: 8, y: 4 },
+        })
+        .setOrigin(0.5, 1)
+        .setDepth(LABEL_DEPTH);
+    }
+  }
+
+  private showRegionBanner() {
+    const region = REGIONS[this.regionId];
+    const banner = this.add
+      .text(this.scale.width / 2, 90, `${region.name}\n${region.tagline}`, {
+        fontFamily: FONT,
+        fontSize: "26px",
+        color: "#ffffff",
+        align: "center",
+        stroke: "#1b1b1b",
+        strokeThickness: 5,
+        lineSpacing: 6,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(LABEL_DEPTH + 1);
+    this.tweens.add({ targets: banner, alpha: 0, delay: 2500, duration: 900, onComplete: () => banner.destroy() });
+  }
+
+  /** A fixed number per region, so its random layout is the same for everyone. */
+  private seed() {
+    return [...this.regionId].reduce((sum, char) => sum * 31 + char.charCodeAt(0), 7);
   }
 }

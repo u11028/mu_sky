@@ -26,7 +26,8 @@ const gameServer = new Server({
   transport: new WebSocketTransport({ server: createServer(app) }),
 });
 
-gameServer.define(ROOM_NAME, WorldRoom);
+// One room per region: joining with { region: "north" } only matches the north's room.
+gameServer.define(ROOM_NAME, WorldRoom).filterBy(["region"]);
 
 await gameServer.listen(port);
 console.log(`Game server listening on port ${port}`);

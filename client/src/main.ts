@@ -2,6 +2,7 @@ import "./style.css";
 import Phaser from "phaser";
 import { Client, type Room } from "colyseus.js";
 import { ROOM_NAME, SERVER_PORT, SKINS, type ChatMessage } from "../../shared/world.ts";
+import { isRegionId, REGIONS, type RegionId, START_REGION } from "../../shared/regions.ts";
 import { WorldScene } from "./WorldScene.ts";
 
 const NAME_KEY = "mu-sky.name";
@@ -25,6 +26,10 @@ const endpoint = import.meta.env.DEV ? `${protocol}://${location.hostname}:${SER
 let room: Room | undefined;
 let game: Phaser.Game | undefined;
 let scene: WorldScene | undefined;
+/** Who the player is; sent again whenever they enter another region. */
+let player = { name: "", skin: 0 };
+/** True while switching regions, so leaving the old room doesn't count as a disconnect. */
+let travelling = false;
 
 let savedSkin = 0;
 try {
@@ -56,9 +61,8 @@ joinForm.addEventListener("submit", async (event) => {
   const skin = Number(new FormData(joinForm).get("skin")) || 0;
   joinError.textContent = "กำลังเชื่อมต่อ...";
 
-  try {
-    room = await new Client(endpoint).joinOrCreate(ROOM_NAME, { name, skin });
-  } catch {
+  player = { name, skin };
+  if (!(await enterRegion(START_REGION))) {
     joinError.textContent = "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง";
     return;
   }
@@ -72,14 +76,53 @@ joinForm.addEventListener("submit", async (event) => {
 
   joinError.textContent = "";
   joinDialog.hidden = true;
-  startGame(room);
 });
 
-function startGame(joined: Room) {
+/** Joins the room of a region and starts drawing it. False when the server can't be reached. */
+async function enterRegion(region: RegionId, from?: RegionId) {
+  try {
+    room = await new Client(endpoint).joinOrCreate(ROOM_NAME, { ...player, region, from });
+  } catch {
+    return false;
+  }
+
+  startGame(room, region);
+  return true;
+}
+
+/** A portal sent us on: leave this region quietly and join the next one. */
+async function travel(to: RegionId, from: RegionId) {
+  travelling = true;
+  const leaving = room;
+  room = undefined;
+  game?.destroy(true);
+  game = undefined;
+  scene = undefined;
+  online.textContent = `กำลังเดินทางไป${REGIONS[to].name}...`;
+  await leaving?.leave();
+  travelling = false;
+
+  if (!(await enterRegion(to, from))) {
+    showJoinDialog("เดินทางไม่สำเร็จ เข้าเกมใหม่ได้เลย");
+  }
+}
+
+if (import.meta.env.DEV) {
+  // Development only (left out of `npm run build`): jump between regions from the browser console.
+  (window as unknown as { muTravel: typeof travel }).muTravel = travel;
+}
+
+function showJoinDialog(message: string) {
+  online.textContent = "ออฟไลน์";
+  joinError.textContent = message;
+  joinDialog.hidden = false;
+}
+
+function startGame(joined: Room, region: RegionId) {
   // The scene shows the count once its art has loaded.
   online.textContent = "กำลังโหลด...";
-  scene = new WorldScene(joined, chatInput, (count) => {
-    online.textContent = `ออนไลน์ ${count} คน`;
+  scene = new WorldScene(joined, region, chatInput, (count) => {
+    online.textContent = `${REGIONS[region].name} · ออนไลน์ ${count} คน`;
   });
 
   game = new Phaser.Game({
@@ -98,14 +141,22 @@ function startGame(joined: Room) {
     }
   });
 
+  joined.onMessage("travel", (message: { to?: unknown; from?: unknown }) => {
+    if (isRegionId(message?.to) && isRegionId(message?.from)) {
+      void travel(message.to, message.from);
+    }
+  });
+
   joined.onLeave(() => {
+    if (travelling) {
+      return;
+    }
+
     game?.destroy(true);
     game = undefined;
     scene = undefined;
     room = undefined;
-    online.textContent = "ออฟไลน์";
-    joinError.textContent = "หลุดจากเซิร์ฟเวอร์ เข้าเกมใหม่ได้เลย";
-    joinDialog.hidden = false;
+    showJoinDialog("หลุดจากเซิร์ฟเวอร์ เข้าเกมใหม่ได้เลย");
   });
 }
 
