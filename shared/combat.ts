@@ -51,6 +51,10 @@ export const SKILLS = {
   spin: { name: "ฟันพายุหมุน", cooldownMs: 5000, radius: 100, multiplier: 1.6 },
   /** A burst forward that can't be hurt for a moment, to close in or get away. */
   dash: { name: "พุ่งทะยาน", cooldownMs: 4000, distance: 160, shieldMs: 350 },
+  /** Lightning crashes down a little ahead, hurting everyone around where it lands. */
+  strike: { name: "ฟาดสายฟ้า", cooldownMs: 8000, distance: 110, radius: 85, multiplier: 2.4 },
+  /** Gives back part of the player's health at once. */
+  heal: { name: "พรแห่งชีวิต", cooldownMs: 15000, share: 0.4 },
 } as const;
 
 export type SkillId = keyof typeof SKILLS;

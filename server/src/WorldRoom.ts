@@ -163,8 +163,12 @@ export class WorldRoom extends Room<WorldState> {
         return;
       }
 
-      movement.dirX = Math.sign(Number(message?.x) || 0);
-      movement.dirY = Math.sign(Number(message?.y) || 0);
+      // Keys send -1, 0 or 1; a joystick sends any direction. Either way the player walks at full speed.
+      const x = Number(message?.x) || 0;
+      const y = Number(message?.y) || 0;
+      const length = Math.hypot(x, y);
+      movement.dirX = length > 0.2 ? x / length : 0;
+      movement.dirY = length > 0.2 ? y / length : 0;
       if (movement.dirX !== 0 || movement.dirY !== 0) {
         movement.target = undefined;
       }
@@ -422,6 +426,22 @@ export class WorldRoom extends Room<WorldState> {
     if (skillId === "spin") {
       this.broadcast("skill", { id: skillId, by: sessionId });
       this.strikeAround(sessionId, SKILLS.spin.radius, SKILLS.spin.multiplier, () => true);
+      return;
+    }
+
+    if (skillId === "strike") {
+      const { distance, radius, multiplier } = SKILLS.strike;
+      const aimX = movement.facingX * distance;
+      const aimY = movement.facingY * distance;
+      this.broadcast("skill", { id: skillId, by: sessionId, x: player.x + aimX, y: player.y + aimY });
+      this.strikeAround(sessionId, distance + radius, multiplier, (dx, dy) => Math.hypot(dx - aimX, dy - aimY) <= radius);
+      return;
+    }
+
+    if (skillId === "heal") {
+      const amount = Math.min(player.maxHp - player.hp, Math.round(player.maxHp * SKILLS.heal.share));
+      player.hp += amount;
+      this.broadcast("skill", { id: skillId, by: sessionId, amount });
       return;
     }
 
@@ -881,14 +901,10 @@ export class WorldRoom extends Room<WorldState> {
         return;
       }
 
-      // Snapped to the four main directions: where a swing lands.
-      if (Math.abs(dx) > Math.abs(dy)) {
-        movement.facingX = Math.sign(dx);
-        movement.facingY = 0;
-      } else {
-        movement.facingX = 0;
-        movement.facingY = Math.sign(dy);
-      }
+      // The way the player looks: where a swing or a lightning strike lands.
+      const length = Math.hypot(dx, dy);
+      movement.facingX = dx / length;
+      movement.facingY = dy / length;
 
       const moved = slide(this.layout, player.x, player.y, dx, dy);
       const x = clamp(moved.x, bounds.minX, bounds.maxX);

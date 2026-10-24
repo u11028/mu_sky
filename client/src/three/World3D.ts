@@ -71,6 +71,18 @@ const KEY_DIRECTIONS: Record<string, [number, number]> = {
   KeyD: [1, 0],
 };
 
+/** Keys for the skills: Q E R F, or 1 to 4 in the same order as the buttons. */
+const SKILL_KEYS: Record<string, SkillId> = {
+  KeyQ: "spin",
+  Digit1: "spin",
+  KeyE: "dash",
+  Digit2: "dash",
+  KeyR: "strike",
+  Digit3: "strike",
+  KeyF: "heal",
+  Digit4: "heal",
+};
+
 export class World3D {
   private renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
   private labels = new CSS2DRenderer();
@@ -87,6 +99,8 @@ export class World3D {
   private marker: THREE.Mesh;
   private keys = new Set<string>();
   private sentDir = { x: 0, y: 0 };
+  /** The on-screen joystick's direction; wins over the keys while pushed. */
+  private stick = { x: 0, y: 0 };
   private zoom = 1;
   private focus = new THREE.Vector3(WORLD_WIDTH / PX / 2, 0, WORLD_HEIGHT / PX / 2);
   private myLevel = 1;
@@ -406,9 +420,25 @@ export class World3D {
     }
   }
 
-  showSkill(message: { id: SkillId; by: string; fromX?: number; fromY?: number }) {
+  showSkill(message: { id: SkillId; by: string; fromX?: number; fromY?: number; x?: number; y?: number; amount?: number }) {
     const actor = this.players.get(message.by);
     if (!actor) {
+      return;
+    }
+    if (message.id === "strike") {
+      actor.once("attack");
+      const at = new THREE.Vector3((message.x ?? 0) / PX, 0, (message.y ?? 0) / PX);
+      this.effects.lightning(at, SKILLS.strike.radius / PX);
+      this.playNear("hit", actor, 0.55);
+      if (message.by === this.room.sessionId) {
+        this.shake(0.3);
+      }
+      return;
+    }
+    if (message.id === "heal") {
+      this.effects.heal(actor.root.position);
+      this.effects.floatText(actor.root.position.clone().add(new THREE.Vector3(0, actor.height + 0.4, 0)), `+${message.amount ?? 0}`, "heal");
+      this.playNear("levelup", actor, 0.25);
       return;
     }
     if (message.id === "spin") {
@@ -511,10 +541,8 @@ export class World3D {
       } else if (!event.repeat && (event.code === "Space" || event.code === "KeyJ")) {
         event.preventDefault();
         this.attack();
-      } else if (!event.repeat && event.code === "KeyQ") {
-        this.useSkill("spin");
-      } else if (!event.repeat && event.code === "KeyE") {
-        this.useSkill("dash");
+      } else if (!event.repeat && SKILL_KEYS[event.code]) {
+        this.useSkill(SKILL_KEYS[event.code]);
       }
     };
     const keyUp = (event: KeyboardEvent) => this.keys.delete(event.code);
@@ -535,17 +563,26 @@ export class World3D {
     });
   }
 
+  /** The joystick's push, x and y from -1 to 1 (0, 0 when let go). */
+  setStick(x: number, y: number) {
+    this.stick = { x, y };
+  }
+
   private sendKeyboardDirection() {
     let x = 0;
     let y = 0;
-    if (document.activeElement !== this.chatInput) {
+    if (Math.hypot(this.stick.x, this.stick.y) > 0.2) {
+      // Rounded, so a resting thumb doesn't send a message every frame.
+      x = Math.round(this.stick.x * 20) / 20;
+      y = Math.round(this.stick.y * 20) / 20;
+    } else if (document.activeElement !== this.chatInput) {
       for (const code of this.keys) {
         x += KEY_DIRECTIONS[code][0];
         y += KEY_DIRECTIONS[code][1];
       }
+      x = Math.sign(x);
+      y = Math.sign(y);
     }
-    x = Math.sign(x);
-    y = Math.sign(y);
     if (x !== this.sentDir.x || y !== this.sentDir.y) {
       this.sentDir = { x, y };
       this.room.send("dir", { x, y });

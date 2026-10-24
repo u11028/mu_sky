@@ -140,6 +140,53 @@ export class Effects {
     }
   }
 
+  /** A jagged bolt from the sky with a flash of light where it lands. */
+  lightning(at: THREE.Vector3, radius: number) {
+    const bolt = new THREE.Group();
+    const material = glowMaterial("#bfe9ff", 1);
+    let from = new THREE.Vector3(at.x + (Math.random() - 0.5) * 2, 14, at.z + (Math.random() - 0.5) * 2);
+    for (let i = 1; i <= 7; i++) {
+      const to =
+        i === 7
+          ? at.clone()
+          : new THREE.Vector3(
+              at.x + (Math.random() - 0.5) * 1.6,
+              14 - (14 * i) / 7,
+              at.z + (Math.random() - 0.5) * 1.6,
+            );
+      const length = from.distanceTo(to);
+      const segment = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, length, 5), material);
+      segment.position.copy(from).lerp(to, 0.5);
+      segment.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), to.clone().sub(from).normalize());
+      bolt.add(segment);
+      from = to;
+    }
+    const light = new THREE.PointLight("#9fdcff", 60, radius * 4);
+    light.position.copy(at).add(new THREE.Vector3(0, 2, 0));
+    bolt.add(light);
+    this.add(bolt, 320, (t) => {
+      // Flickers, then fades.
+      material.opacity = t < 0.5 ? (Math.random() > 0.3 ? 1 : 0.2) : 1 - t;
+      light.intensity = 60 * (1 - t);
+    });
+    this.shockwave(at, radius, "#9fdcff");
+    this.sparks(at.clone().add(new THREE.Vector3(0, 0.4, 0)), "#e0f6ff", 16);
+    this.dust(at, 1.6, "#cfd8e3");
+  }
+
+  /** A soft green glow rising around someone: health given back. */
+  heal(at: THREE.Vector3) {
+    const material = glowMaterial("#7dff9a", 0.6);
+    const column = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.1, 3, 24, 1, true), material);
+    column.position.copy(at).add(new THREE.Vector3(0, 1.5, 0));
+    this.add(column, 900, (t) => {
+      column.position.y = at.y + 1.5 + t * 1.2;
+      material.opacity = 0.6 * (1 - t);
+    });
+    this.shockwave(at, 2.5, "#7dff9a");
+    this.sparks(at.clone().add(new THREE.Vector3(0, 0.6, 0)), "#b9ffc8", 14);
+  }
+
   /** A number or word that pops up over someone and floats away. */
   floatText(at: THREE.Vector3, text: string, className: string) {
     const element = document.createElement("div");

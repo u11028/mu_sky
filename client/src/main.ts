@@ -32,6 +32,7 @@ const titleList = document.querySelector<HTMLUListElement>("#title-list")!;
 const toasts = document.querySelector<HTMLDivElement>("#toasts")!;
 const stats = document.querySelector<HTMLDivElement>("#stats")!;
 const actions = document.querySelector<HTMLDivElement>("#actions")!;
+const joystick = document.querySelector<HTMLDivElement>("#joystick")!;
 const attackButton = document.querySelector<HTMLButtonElement>("#attack-button")!;
 const death = document.querySelector<HTMLDivElement>("#death")!;
 const deathTimer = document.querySelector<HTMLParagraphElement>("#death-timer")!;
@@ -238,6 +239,7 @@ function showJoinDialog(message: string) {
   questPanel.hidden = true;
   stats.hidden = true;
   actions.hidden = true;
+  joystick.hidden = true;
   death.hidden = true;
   gmButton.hidden = true;
   gmPanel.hidden = true;
@@ -276,7 +278,7 @@ function startGame(joined: Room, region: RegionId) {
   joined.onMessage("levelup", (message: { id: string }) => scene?.showLevelUp(message.id));
   joined.onMessage("mattack", (message: { id: string }) => scene?.showMonsterAttack(message.id));
   joined.onMessage("xp", (message: { amount: number }) => scene?.showXp(message.amount));
-  joined.onMessage("skill", (message: { id: SkillId; by: string; fromX?: number; fromY?: number }) => {
+  joined.onMessage("skill", (message: { id: SkillId; by: string; fromX?: number; fromY?: number; x?: number; y?: number; amount?: number }) => {
     scene?.showSkill(message);
     if (message.by === joined.sessionId) {
       startCooldown(message.id);
@@ -289,6 +291,7 @@ function startGame(joined: Room, region: RegionId) {
   questButton.hidden = false;
   stats.hidden = false;
   actions.hidden = false;
+  joystick.hidden = false;
 
   joined.onMessage("travel", (message: { to?: unknown; from?: unknown }) => {
     if (isRegionId(message?.to) && isRegionId(message?.from)) {
@@ -467,10 +470,12 @@ function startCooldown(id: SkillId) {
     return;
   }
   const ends = performance.now() + SKILLS[id].cooldownMs;
+  const countdown = button.querySelector<HTMLSpanElement>(".cd")!;
   const frame = () => {
     const left = Math.max(0, ends - performance.now());
     button.style.setProperty("--cooldown", `${(left / SKILLS[id].cooldownMs) * 360}deg`);
     button.classList.toggle("cooling", left > 0);
+    countdown.textContent = left > 0 ? String(Math.ceil(left / 1000)) : "";
     if (left > 0) {
       requestAnimationFrame(frame);
     }
@@ -487,6 +492,48 @@ for (const button of document.querySelectorAll<HTMLButtonElement>(".skill-button
     }
   });
 }
+
+// ---- Joystick ----
+
+/** How far the knob travels from the centre, in pixels. */
+const STICK_REACH = 46;
+const knob = joystick.querySelector<HTMLDivElement>(".stick-knob")!;
+let stickPointer: number | undefined;
+
+function moveStick(event: PointerEvent) {
+  const rect = joystick.getBoundingClientRect();
+  let dx = event.clientX - (rect.left + rect.width / 2);
+  let dy = event.clientY - (rect.top + rect.height / 2);
+  const distance = Math.hypot(dx, dy);
+  if (distance > STICK_REACH) {
+    dx = (dx / distance) * STICK_REACH;
+    dy = (dy / distance) * STICK_REACH;
+  }
+  knob.style.transform = `translate(${dx}px, ${dy}px)`;
+  scene?.setStick(dx / STICK_REACH, dy / STICK_REACH);
+}
+
+function releaseStick() {
+  stickPointer = undefined;
+  knob.style.transform = "";
+  joystick.classList.remove("active");
+  scene?.setStick(0, 0);
+}
+
+joystick.addEventListener("pointerdown", (event) => {
+  event.preventDefault();
+  stickPointer = event.pointerId;
+  joystick.setPointerCapture(event.pointerId);
+  joystick.classList.add("active");
+  moveStick(event);
+});
+joystick.addEventListener("pointermove", (event) => {
+  if (event.pointerId === stickPointer) {
+    moveStick(event);
+  }
+});
+joystick.addEventListener("pointerup", releaseStick);
+joystick.addEventListener("pointercancel", releaseStick);
 
 attackButton.addEventListener("pointerdown", (event) => {
   // Not a tap on the map: don't walk there.
