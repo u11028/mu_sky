@@ -11,7 +11,19 @@ const cache = new Map<string, Promise<GLTF>>();
 export function loadModel(path: string) {
   let pending = cache.get(path);
   if (!pending) {
-    pending = loader.loadAsync(`assets/3d/${path}.glb`);
+    pending = loader.loadAsync(`assets/3d/${path}.glb`).then((gltf) => {
+      // Copies share these, so leaving a region must not free them.
+      gltf.scene.traverse((child) => {
+        const mesh = child as THREE.Mesh;
+        if (mesh.isMesh) {
+          mesh.geometry.userData.shared = true;
+          for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+            material.userData.shared = true;
+          }
+        }
+      });
+      return gltf;
+    });
     cache.set(path, pending);
   }
   return pending;
@@ -51,7 +63,13 @@ export function copyModel(gltf: GLTF, options: CopyOptions = {}) {
     mesh.castShadow = options.shadows ?? true;
     mesh.receiveShadow = true;
     if (options.ownMaterials) {
-      mesh.material = Array.isArray(mesh.material) ? mesh.material.map((m) => m.clone()) : mesh.material.clone();
+      const own = (material: THREE.Material) => {
+        const copy = material.clone();
+        // This copy belongs to one model only, so it is freed with it.
+        copy.userData.shared = false;
+        return copy;
+      };
+      mesh.material = Array.isArray(mesh.material) ? mesh.material.map(own) : own(mesh.material);
     }
     // Skinned meshes' bounds come from the rest pose; animated limbs would get culled at screen edges.
     mesh.frustumCulled = !(mesh as THREE.SkinnedMesh).isSkinnedMesh;
@@ -141,6 +159,7 @@ export function tintLeaves(model: THREE.Object3D, color: THREE.ColorRepresentati
         );
       };
       copy.customProgramCacheKey = () => `leaf-tint-${tint.getHexString()}`;
+      copy.userData.shared = true;
       tinted.set(key, copy);
       material = copy;
     }

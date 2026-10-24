@@ -2,6 +2,20 @@
 
 import * as THREE from "three";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
+import { radialTexture } from "./scenery.ts";
+
+/** One soft glow texture for every flash, made once. */
+let glowTexture: THREE.Texture | undefined;
+
+/** A camera-facing glow: flashes, muzzle fire, trails. */
+function glowSprite(color: THREE.ColorRepresentation, size: number) {
+  glowTexture ??= radialTexture("#ffffff");
+  const sprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({ map: glowTexture, color, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }),
+  );
+  sprite.scale.setScalar(size);
+  return sprite;
+}
 
 interface Effect {
   object: THREE.Object3D;
@@ -40,7 +54,10 @@ export class Effects {
         effect.object.removeFromParent();
         effect.object.traverse((child) => {
           const mesh = child as THREE.Mesh;
-          mesh.geometry?.dispose();
+          // Every sprite shares one built-in geometry; freeing it would only force a re-upload.
+          if (!(child as THREE.Sprite).isSprite) {
+            mesh.geometry?.dispose();
+          }
           (mesh.material as THREE.Material | undefined)?.dispose?.();
         });
         if (effect.object instanceof CSS2DObject) {
@@ -53,20 +70,94 @@ export class Effects {
     });
   }
 
-  /** A curved streak of light sweeping in front of a swing. */
-  slash(at: THREE.Vector3, angle: number, color = "#fff2b8") {
-    const material = glowMaterial(color, 0.95);
-    const arc = new THREE.Mesh(new THREE.RingGeometry(0.9, 1.9, 32, 1, -1.2, 2.4), material);
-    arc.rotation.x = -Math.PI / 2;
-    const holder = new THREE.Group();
-    holder.add(arc);
-    holder.position.copy(at).add(new THREE.Vector3(0, 1, 0));
-    holder.rotation.y = angle - Math.PI / 2;
-    this.add(holder, 240, (t) => {
-      arc.rotation.z = -0.9 + t * 1.8;
-      holder.scale.setScalar(0.7 + t * 0.5);
-      material.opacity = 0.95 * (1 - t);
+  /**
+   * A curved streak of light sweeping in front of a swing: a coloured arc with a white-hot edge.
+   * `twin` adds a second, crossing arc for quick double strikes.
+   */
+  slash(at: THREE.Vector3, angle: number, color = "#fff2b8", twin = false) {
+    const sweep = (tilt: number, delay: number) => {
+      const material = glowMaterial(color, 0.9);
+      const core = glowMaterial("#ffffff", 1);
+      const arc = new THREE.Mesh(new THREE.RingGeometry(0.8, 2, 40, 1, -1.3, 2.6), material);
+      const edge = new THREE.Mesh(new THREE.RingGeometry(1.85, 2.05, 40, 1, -1.3, 2.6), core);
+      arc.rotation.x = edge.rotation.x = -Math.PI / 2;
+      const holder = new THREE.Group();
+      holder.add(arc, edge);
+      holder.position.copy(at).add(new THREE.Vector3(0, 1, 0));
+      holder.rotation.set(tilt, angle - Math.PI / 2, 0);
+      this.add(holder, 260 + delay, (t) => {
+        const s = Math.max(0, (t * (260 + delay) - delay) / 260);
+        arc.rotation.z = edge.rotation.z = -1.1 + s * 2.2;
+        holder.scale.setScalar(0.65 + s * 0.55);
+        material.opacity = s === 0 ? 0 : 0.9 * (1 - s);
+        core.opacity = s === 0 ? 0 : 1 - s;
+      });
+    };
+    sweep(0, 0);
+    if (twin) {
+      sweep(0.5, 90);
+    }
+  }
+
+  /** A burst of light where a blow lands: a flash, streaks flying out and sparks. */
+  impact(at: THREE.Vector3, color = "#fff3b0", big = false) {
+    const flash = glowSprite(color, 1);
+    flash.position.copy(at);
+    const size = big ? 3.6 : 2.2;
+    this.add(flash, 200, (t) => {
+      flash.scale.setScalar(0.6 + t * size);
+      flash.material.opacity = 1 - t;
     });
+    const streaks = new THREE.Group();
+    streaks.position.copy(at);
+    const material = glowMaterial("#ffffff", 1);
+    for (let i = 0; i < (big ? 10 : 6); i++) {
+      const streak = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.7), material);
+      const direction = new THREE.Vector3(Math.random() - 0.5, Math.random() * 0.8 - 0.2, Math.random() - 0.5).normalize();
+      streak.lookAt(direction);
+      streak.userData.direction = direction;
+      streaks.add(streak);
+    }
+    this.add(streaks, 220, (t) => {
+      for (const streak of streaks.children) {
+        streak.position.copy(streak.userData.direction).multiplyScalar(0.3 + t * (big ? 2 : 1.3));
+      }
+      material.opacity = 1 - t;
+    });
+    this.sparks(at, color, big ? 14 : 7);
+  }
+
+  /** The flash at the hands as a shot leaves. */
+  muzzle(at: THREE.Vector3, color: string) {
+    const flash = glowSprite(color, 0.4);
+    flash.position.copy(at);
+    this.add(flash, 140, (t) => {
+      flash.scale.setScalar(0.4 + t * 1.4);
+      flash.material.opacity = 1 - t;
+    });
+  }
+
+  /** A fading glow left behind a shot in flight. */
+  trail(at: THREE.Vector3, color: string, size: number) {
+    const glow = glowSprite(color, size);
+    glow.position.copy(at);
+    this.add(glow, 260, (t) => {
+      glow.scale.setScalar(size * (1 - t * 0.7));
+      glow.material.opacity = 0.7 * (1 - t);
+    });
+  }
+
+  /** A magic orb bursting: a bright bloom, a ring and a spray of sparks. */
+  explosion(at: THREE.Vector3, color: string) {
+    const bloom = glowSprite(color, 1);
+    bloom.position.copy(at);
+    this.add(bloom, 320, (t) => {
+      bloom.scale.setScalar(1 + t * 4);
+      bloom.material.opacity = 1 - t;
+    });
+    this.shockwave(new THREE.Vector3(at.x, 0, at.z), 2.4, color);
+    this.sparks(at, "#ffffff", 10);
+    this.sparks(at, color, 12);
   }
 
   /** A whirlwind of blades around the player. */

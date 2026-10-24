@@ -5,7 +5,9 @@ import {
   CHAT_HISTORY_SIZE,
   CHAT_MAX_LENGTH,
   type ChatMessage,
+  cleanPartyCode,
   NAME_MAX_LENGTH,
+  PARTY_MAX_PLAYERS,
   PLAYER_SPEED,
   HEROES,
   WORLD_HEIGHT,
@@ -138,7 +140,7 @@ function banText(ban: { until: number; reason: string }) {
   return forGood ? `คุณถูกแบนถาวร${reason}` : `คุณถูกแบนถึง ${until}${reason}`;
 }
 
-/** One room per region; the matchmaker keeps them apart with filterBy(["region"]). */
+/** One room per region and party; the matchmaker keeps them apart with filterBy(["region", "party"]). */
 export class WorldRoom extends Room<WorldState> {
   maxClients = 50;
 
@@ -152,8 +154,15 @@ export class WorldRoom extends Room<WorldState> {
   private layout!: RegionLayout;
   private monsters!: MonsterSystem;
 
-  onCreate(options: { region?: unknown }) {
+  /** A private room's code; "" in the public world. */
+  private party = "";
+
+  onCreate(options: { region?: unknown; party?: unknown }) {
     this.regionId = isRegionId(options?.region) ? options.region : START_REGION;
+    this.party = cleanPartyCode(options?.party);
+    if (this.party) {
+      this.maxClients = PARTY_MAX_PLAYERS;
+    }
     this.region = REGIONS[this.regionId];
     this.setState(new WorldState());
     rooms.add(this);
@@ -826,7 +835,7 @@ export class WorldRoom extends Room<WorldState> {
               {
                 id,
                 name: player.name,
-                region: room.region.name,
+                region: room.party ? `${room.region.name} · ห้อง ${room.party}` : room.region.name,
                 level: player.level,
                 hp: player.hp,
                 maxHp: player.maxHp,
@@ -967,7 +976,8 @@ export class WorldRoom extends Room<WorldState> {
 
     arrivals.set(movement.playerId, spot);
     movement.travelling = true;
-    client.send("travel", { to: destination.regionId, from: this.regionId });
+    // Into the destination's room, which may be another party's.
+    client.send("travel", { to: destination.regionId, from: this.regionId, party: destination.party });
   }
 
   // ---- Simulation ----
@@ -1052,7 +1062,9 @@ export class WorldRoom extends Room<WorldState> {
       const portal = portals.find((p) => Math.hypot(p.x - player.x, p.y - player.y) < PORTAL_RADIUS);
       if (portal) {
         movement.travelling = true;
-        this.clients.find((c) => c.sessionId === sessionId)?.send("travel", { to: portal.to, from: this.regionId });
+        this.clients
+          .find((c) => c.sessionId === sessionId)
+          ?.send("travel", { to: portal.to, from: this.regionId, party: this.party });
       }
     });
   }

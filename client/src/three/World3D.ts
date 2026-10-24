@@ -72,6 +72,23 @@ const KEY_DIRECTIONS: Record<string, [number, number]> = {
   KeyD: [1, 0],
 };
 
+/** Swing colours by class: the blade's own light. Quick fighters strike twice. */
+const SLASHES: Record<string, { color: string; twin?: boolean }> = {
+  Knight: { color: "#ffe9a8" },
+  Skeleton_Warrior: { color: "#d6f5ff" },
+  Barbarian: { color: "#ff9a4d" },
+  Skeleton_Rogue: { color: "#ff7a59" },
+  Rogue: { color: "#8ff0ff", twin: true },
+  Skeleton_Minion: { color: "#b8ff9a", twin: true },
+};
+
+/** The glow of each kind of shot. */
+const SHOT_COLORS: Record<ShotEvent["projectile"], string> = {
+  arrow: "#ffe2a0",
+  bolt: "#cfe8ff",
+  magic: "#b88cff",
+};
+
 /** Keys for the skills: Q E R F, or 1 to 4 in the same order as the buttons. */
 const SKILL_KEYS: Record<string, SkillId> = {
   KeyQ: "spin",
@@ -112,11 +129,14 @@ export class World3D {
    */
   private predicted?: { x: number; y: number };
   private server = { x: 0, y: 0 };
+  /** When the server last moved the local player; settling waits until it has stopped too. */
+  private serverMovedAt = 0;
   private tapTarget?: { x: number; y: number };
   private zoom = 1;
   private focus = new THREE.Vector3(WORLD_WIDTH / PX / 2, 0, WORLD_HEIGHT / PX / 2);
   private myLevel = 1;
   private frame = 0;
+  private frameCount = 0;
   private last = performance.now();
   private disposed = false;
   private resize = new ResizeObserver(() => this.fit());
@@ -267,6 +287,9 @@ export class World3D {
     const now = performance.now();
     const isMe = id === this.room.sessionId;
     if (isMe) {
+      if (player.x !== this.server.x || player.y !== this.server.y) {
+        this.serverMovedAt = now;
+      }
       this.server = { x: player.x, y: player.y };
       // First sight, a respawn, a dash or a GM's teleport: jump to where the server says.
       if (!this.predicted || player.dead || Math.hypot(player.x - this.predicted.x, player.y - this.predicted.y) > 140) {
@@ -278,7 +301,7 @@ export class World3D {
       actor.moveTo(player.x / PX, player.y / PX, now);
     }
     actor.setName(`${player.gm ? "[GM] " : ""}Lv.${player.level} ${player.name}`, player.gm ? "gm" : isMe ? "me" : "");
-    actor.setHp(player.hp / player.maxHp);
+    actor.setHp(player.hp, player.maxHp);
     actor.setTitle(player.title);
     if (player.dead && !actor.dead) {
       actor.die();
@@ -314,17 +337,18 @@ export class World3D {
     }
     const { actor, boss } = entry;
     actor.moveTo(monster.x / PX, monster.y / PX, performance.now());
-    actor.setHp(monster.hp / monster.maxHp, !boss);
+    actor.setHp(monster.hp, monster.maxHp, !boss);
     if (monster.dead && !actor.dead) {
       actor.die();
-      // Fade away after falling.
+      // The name goes at once; the body after its fall.
+      actor.label.object.visible = false;
       setTimeout(() => {
         if (actor.dead) {
-          actor.root.visible = false;
+          actor.setVisible(false);
         }
       }, 1600);
     } else if (!monster.dead && actor.dead) {
-      actor.root.visible = true;
+      actor.setVisible(true);
       actor.root.position.set(actor.targetX, 0, actor.targetZ);
       actor.revive();
       this.effects.dust(actor.root.position, boss ? 3 : 1.2, "#e9d8ff");
@@ -375,9 +399,14 @@ export class World3D {
     }
     actor.face(dirX, dirY);
     actor.once("attack");
-    // Archers and mages shoot instead; their shot arrives as its own message.
-    if (this.heroes.get(id)?.attack.kind !== "ranged") {
-      this.effects.slash(actor.root.position, Math.atan2(dirX, dirY));
+    const hero = this.heroes.get(id);
+    if (hero?.attack.kind === "ranged") {
+      // The shot itself arrives as its own message; here only the flash at the hands.
+      const hands = actor.root.position.clone().add(new THREE.Vector3(dirX * 0.7, 1.2, dirY * 0.7));
+      this.effects.muzzle(hands, SHOT_COLORS[hero.attack.projectile]);
+    } else {
+      const look = SLASHES[hero?.id ?? ""] ?? SLASHES.Knight;
+      this.effects.slash(actor.root.position, Math.atan2(dirX, dirY), look.color, look.twin);
     }
     this.playNear("swing", actor, 0.25);
   }
@@ -394,8 +423,10 @@ export class World3D {
       return;
     }
 
-    actor.hurt();
-    this.effects.sparks(actor.root.position.clone().add(new THREE.Vector3(0, actor.height * 0.6, 0)), "#fff3b0", event.crit ? 14 : 7);
+    const mine = event.attacker === this.room.sessionId;
+    actor.hurt(mine || Boolean(event.crit));
+    const body = actor.root.position.clone().add(new THREE.Vector3(0, actor.height * 0.55, 0));
+    this.effects.impact(body, event.crit ? "#ffd60a" : isMe ? "#ff6b6b" : "#fff3b0", Boolean(event.crit));
     this.effects.floatText(head, event.crit ? `${event.damage}!` : `${event.damage}`, event.crit ? "crit" : isMe ? "hurt" : "damage");
     this.playNear("hit", actor, 0.35);
     if (!event.killed && performance.now() >= actor.busyUntil) {
@@ -403,8 +434,9 @@ export class World3D {
     }
     if (isMe) {
       this.shake(event.killed ? 0.6 : 0.25);
-    } else if (event.attacker === this.room.sessionId && event.crit) {
-      this.shake(0.15);
+    } else if (mine) {
+      // Your own blows land with a little kick.
+      this.shake(event.crit ? 0.22 : 0.08);
     }
     if (event.killed) {
       const boss = this.monsters.get(event.target)?.boss;
@@ -441,7 +473,13 @@ export class World3D {
     }
     shot.object.removeFromParent();
     this.shots.delete(id);
-    this.effects.sparks(new THREE.Vector3(x / PX, 1.1, y / PX), shot.object.userData.color ?? "#fff3b0", 6);
+    const at = new THREE.Vector3(x / PX, 1.1, y / PX);
+    const color = shot.object.userData.color ?? "#fff3b0";
+    if (shot.object.userData.kind === "magic") {
+      this.effects.explosion(at, color);
+    } else {
+      this.effects.sparks(at, color, 6);
+    }
   }
 
   showMonsterAttack(id: string) {
@@ -690,12 +728,18 @@ export class World3D {
         position.x += (this.server.x - position.x) * 0.1;
         position.y += (this.server.y - position.y) * 0.1;
       }
-    } else {
+      me.moveTo(position.x / PX, position.y / PX, now);
+      return;
+    }
+
+    // Standing still: the server finishes its last steps a moment later. Once it has stopped too,
+    // settle onto its position quietly, without turning or walking back.
+    if (now - this.serverMovedAt > 250) {
       const blend = Math.min(1, delta / 150);
       position.x += (this.server.x - position.x) * blend;
       position.y += (this.server.y - position.y) * blend;
+      me.slideTo(position.x / PX, position.y / PX);
     }
-    me.moveTo(position.x / PX, position.y / PX, now);
   }
 
   // ---- Every frame ----
@@ -714,6 +758,7 @@ export class World3D {
     const now = performance.now();
     const delta = Math.min(100, now - this.last);
     this.last = now;
+    this.frameCount++;
 
     this.sendKeyboardDirection();
     const mine = this.players.get(this.room.sessionId);
@@ -727,6 +772,11 @@ export class World3D {
       shot.object.position.z += shot.dz * travel;
       shot.left -= travel;
       shot.object.rotation.z += shot.object.userData.spin ?? 0;
+      // A glowing wake: every frame for magic, every other frame for arrows and bolts.
+      const magic = shot.object.userData.kind === "magic";
+      if (magic || this.frameCount % 2 === 0) {
+        this.effects.trail(shot.object.position, shot.object.userData.color, magic ? 0.8 : 0.35);
+      }
       // The server says where it ends; this only tidies up one whose end message was missed.
       if (shot.left <= 0 && shot.left > -1) {
         shot.left = -1;
@@ -790,6 +840,7 @@ export class World3D {
           if (mesh.isMesh) {
             const own = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material).clone();
             own.transparent = true;
+            own.userData.shared = false;
             mesh.material = own;
             occluder.materials!.push(own);
           }
@@ -843,6 +894,21 @@ export class World3D {
     this.cleanup.forEach((undo) => undo());
     this.players.forEach((actor) => actor.dispose());
     this.monsters.forEach(({ actor }) => actor.dispose());
+    // Free this region's own meshes and materials; models shared with the loader cache stay for the next region.
+    this.scene.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh && !(child as THREE.Points).isPoints) {
+        return;
+      }
+      if (!mesh.geometry.userData.shared) {
+        mesh.geometry.dispose();
+      }
+      for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+        if (!material.userData.shared) {
+          material.dispose();
+        }
+      }
+    });
     this.renderer.dispose();
     this.renderer.domElement.remove();
     this.labels.domElement.remove();
@@ -864,6 +930,7 @@ function projectileModel(kind: ShotEvent["projectile"]) {
     const light = new THREE.PointLight("#b88cff", 6, 5);
     group.add(core, glow, light);
     group.userData.color = "#c9a6ff";
+    group.userData.kind = "magic";
     return group;
   }
 
@@ -897,6 +964,7 @@ function projectileModel(kind: ShotEvent["projectile"]) {
   streak.rotation.x = Math.PI / 2;
   streak.position.z = -length / 2 - 0.6;
   group.add(streak);
-  group.userData.color = "#fff3b0";
+  group.userData.color = long ? "#ffe2a0" : "#cfe8ff";
+  group.userData.kind = kind;
   return group;
 }

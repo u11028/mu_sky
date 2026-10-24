@@ -1,6 +1,13 @@
 import "./style.css";
 import { Client, type Room } from "colyseus.js";
-import { ROOM_NAME, SERVER_PORT, type ChatMessage } from "../../shared/world.ts";
+import {
+  type ChatMessage,
+  cleanPartyCode,
+  PARTY_ALPHABET,
+  PARTY_CODE_LENGTH,
+  ROOM_NAME,
+  SERVER_PORT,
+} from "../../shared/world.ts";
 import { HEROES, type ShotEvent } from "../../shared/heroes.ts";
 import { isRegionId, REGIONS, type RegionId, START_REGION } from "../../shared/regions.ts";
 import type { Achievement, ProgressView } from "../../shared/quests.ts";
@@ -53,7 +60,7 @@ const endpoint = import.meta.env.DEV ? `${protocol}://${location.hostname}:${SER
 let room: Room | undefined;
 let scene: World3D | undefined;
 /** Who the player is; sent again whenever they enter another region. */
-let player = { name: "", skin: 0, playerId: loadPlayerId() };
+let player = { name: "", skin: 0, playerId: loadPlayerId(), party: "" };
 /** True while switching regions, so leaving the old room doesn't count as a disconnect. */
 let travelling = false;
 /** Why the server removed us (kicked or banned), shown once the connection closes. */
@@ -201,6 +208,85 @@ fullscreenButton.addEventListener("click", () => {
   }
 });
 
+// ---- Rooms: the public world, or a private one found by its code ----
+
+const partyHint = document.querySelector<HTMLParagraphElement>("#party-hint")!;
+const partyCode = document.querySelector<HTMLInputElement>("#party-code")!;
+const partyBadge = document.querySelector<HTMLDivElement>("#party-badge")!;
+let partyMode: "public" | "create" | "join" = "public";
+let createdCode = "";
+
+function newPartyCode() {
+  const bytes = crypto.getRandomValues(new Uint8Array(PARTY_CODE_LENGTH));
+  return Array.from(bytes, (b) => PARTY_ALPHABET[b % PARTY_ALPHABET.length]).join("");
+}
+
+function choosePartyMode(mode: typeof partyMode) {
+  partyMode = mode;
+  for (const option of document.querySelectorAll<HTMLButtonElement>(".party-option")) {
+    option.classList.toggle("selected", option.dataset.party === mode);
+  }
+  partyCode.hidden = mode !== "join";
+  if (mode === "create") {
+    createdCode ||= newPartyCode();
+  }
+  partyHint.textContent =
+    mode === "public"
+      ? "เล่นกับทุกคนที่ออนไลน์"
+      : mode === "create"
+        ? `ห้องใหม่ของคุณ รหัส ${createdCode} · เข้าเกมแล้วกด "ชวนเพื่อน" เพื่อส่งลิงก์`
+        : "ใส่รหัสห้องที่เพื่อนส่งมา";
+}
+
+/** The party to join: "" for the public world, a code for a private room, undefined when the code is missing. */
+function chosenParty() {
+  if (partyMode === "public") {
+    return "";
+  }
+  if (partyMode === "create") {
+    return createdCode;
+  }
+  return cleanPartyCode(partyCode.value) || undefined;
+}
+
+for (const option of document.querySelectorAll<HTMLButtonElement>(".party-option")) {
+  option.addEventListener("click", () => choosePartyMode(option.dataset.party as typeof partyMode));
+}
+
+// A friend's invite link (…?room=K7Q2MX) opens straight onto their room.
+const invited = cleanPartyCode(new URLSearchParams(location.search).get("room"));
+if (invited) {
+  partyCode.value = invited;
+  choosePartyMode("join");
+  partyHint.textContent = `เพื่อนชวนเข้าห้อง ${invited} · ตั้งชื่อแล้วกดเข้าเกมได้เลย`;
+}
+
+function inviteLink() {
+  return `${location.origin}${location.pathname}?room=${player.party}`;
+}
+
+function renderPartyBadge() {
+  partyBadge.hidden = !player.party;
+  document.querySelector("#party-badge-code")!.textContent = player.party;
+}
+
+document.querySelector("#party-invite")!.addEventListener("click", async () => {
+  const link = inviteLink();
+  const text = `มาเล่น MU Sky ด้วยกัน! ห้อง ${player.party}`;
+  try {
+    // Phones open their share sheet (LINE, Messenger…); computers copy the link.
+    if (navigator.share) {
+      await navigator.share({ title: "MU Sky", text, url: link });
+      return;
+    }
+    await navigator.clipboard.writeText(link);
+    showToast({ kind: "quest", text: "คัดลอกลิงก์ชวนเพื่อนแล้ว ส่งให้เพื่อนได้เลย" });
+  } catch {
+    // Without clipboard access (plain http), show the link to copy by hand.
+    prompt("คัดลอกลิงก์นี้ส่งให้เพื่อน", link);
+  }
+});
+
 joinForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   // Tapping "join" counts as the gesture browsers need before going full screen.
@@ -211,7 +297,12 @@ joinForm.addEventListener("submit", async (event) => {
   const skin = Number(new FormData(joinForm).get("skin")) || 0;
   joinError.textContent = "กำลังเชื่อมต่อ...";
 
-  player = { ...player, name, skin };
+  const party = chosenParty();
+  if (party === undefined) {
+    joinError.textContent = "ใส่รหัสห้อง 6 ตัวที่เพื่อนส่งมา";
+    return;
+  }
+  player = { ...player, name, skin, party };
   const entered = await enterRegion(START_REGION);
   if (entered !== true) {
     joinError.textContent = entered;
@@ -244,7 +335,8 @@ async function enterRegion(region: RegionId, from?: RegionId): Promise<true | st
 }
 
 /** A portal sent us on: leave this region quietly and join the next one. */
-async function travel(to: RegionId, from: RegionId) {
+async function travel(to: RegionId, from: RegionId, party = player.party) {
+  player.party = party;
   travelling = true;
   const leaving = room;
   room = undefined;
@@ -272,6 +364,7 @@ function showJoinDialog(message: string) {
   stats.hidden = true;
   actions.hidden = true;
   joystick.hidden = true;
+  partyBadge.hidden = true;
   death.hidden = true;
   gmButton.hidden = true;
   gmPanel.hidden = true;
@@ -327,9 +420,10 @@ function startGame(joined: Room, region: RegionId) {
   actions.hidden = false;
   joystick.hidden = false;
 
-  joined.onMessage("travel", (message: { to?: unknown; from?: unknown }) => {
+  renderPartyBadge();
+  joined.onMessage("travel", (message: { to?: unknown; from?: unknown; party?: unknown }) => {
     if (isRegionId(message?.to) && isRegionId(message?.from)) {
-      void travel(message.to, message.from);
+      void travel(message.to, message.from, cleanPartyCode(message.party));
     }
   });
 

@@ -40,8 +40,9 @@ const gameServer = new Server({
   transport: new WebSocketTransport({ server: createServer(app) }),
 });
 
-// One room per region: joining with { region: "north" } only matches the north's room.
-gameServer.define(ROOM_NAME, WorldRoom).filterBy(["region"]);
+// One room per region and party: joining with { region: "north", party: "" } finds the public north,
+// and { region: "north", party: "K7Q2MX" } that private room's own north.
+gameServer.define(ROOM_NAME, WorldRoom).filterBy(["region", "party"]);
 
 await gameServer.listen(port);
 console.log(`Game server listening on port ${port}`);

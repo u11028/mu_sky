@@ -27,6 +27,11 @@
       <span id="online">ออฟไลน์</span>
     </div>
 
+    <div id="party-badge" hidden>
+      <span>🔒 ห้อง <b id="party-badge-code"></b></span>
+      <button id="party-invite" type="button">ชวนเพื่อน</button>
+    </div>
+
     <div id="stats" hidden>
       <span id="stats-level">Lv.1</span>
       <span class="meter hp"><span id="stats-hp-fill"></span><b id="stats-hp">100/100</b></span>
@@ -142,6 +147,13 @@
           <p id="hero-name"></p>
           <input type="hidden" name="skin" id="hero-skin" value="0" />
         </div>
+        <div id="party-choice" role="radiogroup" aria-label="เลือกห้อง">
+          <button type="button" class="party-option selected" data-party="public">🌏 ห้องรวม</button>
+          <button type="button" class="party-option" data-party="create">🔒 สร้างห้อง</button>
+          <button type="button" class="party-option" data-party="join">🔑 เข้าห้องเพื่อน</button>
+        </div>
+        <p id="party-hint" class="party-hint">เล่นกับทุกคนที่ออนไลน์</p>
+        <input id="party-code" maxlength="6" placeholder="รหัสห้อง 6 ตัว" autocomplete="off" autocapitalize="characters" hidden />
         <button type="submit">เข้าเกม</button>
         <p id="join-error" role="alert"></p>
         <details id="account">

@@ -40,6 +40,8 @@ export interface Label {
   name: HTMLDivElement;
   hp: HTMLDivElement;
   hpFill: HTMLSpanElement;
+  /** Health in numbers, written over the bar. */
+  hpText: HTMLElement;
 }
 
 function makeLabel(height: number): Label {
@@ -57,12 +59,13 @@ function makeLabel(height: number): Label {
   const hp = document.createElement("div");
   hp.className = "actor-hp";
   const hpFill = document.createElement("span");
-  hp.append(hpFill);
+  const hpText = document.createElement("b");
+  hp.append(hpFill, hpText);
   stack.append(bubble, title, name, hp);
   anchor.append(stack);
   const object = new CSS2DObject(anchor);
   object.position.y = height + 0.25;
-  return { object, bubble, title, name, hp, hpFill };
+  return { object, bubble, title, name, hp, hpFill, hpText };
 }
 
 export class Actor {
@@ -73,6 +76,10 @@ export class Actor {
   private base?: THREE.AnimationAction;
   private materials: THREE.MeshStandardMaterial[] = [];
   private flash = 0;
+  /** A quick swell when struck, fading back to normal size. */
+  private punch = 0;
+  /** The animation holds still for a blink on a heavy hit, so the blow is felt. */
+  private frozenUntil = 0;
   private bubbleTimer?: ReturnType<typeof setTimeout>;
   private titleId = "";
 
@@ -155,13 +162,23 @@ export class Actor {
     this.once("spawn");
   }
 
-  /** A white-then-red flash, fading out. */
-  hurt() {
+  /** A white-then-red flash and a jolt, fading out; `heavy` also holds the pose for a blink. */
+  hurt(heavy = false) {
     this.flash = 1;
+    this.punch = 1;
+    if (heavy) {
+      this.frozenUntil = performance.now() + 80;
+    }
   }
 
   update(delta: number, now: number) {
-    this.mixer?.update(delta / 1000);
+    if (now >= this.frozenUntil) {
+      this.mixer?.update(delta / 1000);
+    }
+    if (this.punch > 0) {
+      this.punch = Math.max(0, this.punch - delta / 160);
+      this.root.scale.set(1 + this.punch * 0.14, 1 - this.punch * 0.1, 1 + this.punch * 0.14);
+    }
 
     const blend = Math.min(1, delta / 90);
     const far = Math.hypot(this.targetX - this.root.position.x, this.targetZ - this.root.position.z) > 8;
@@ -195,6 +212,18 @@ export class Actor {
     this.targetZ = z;
   }
 
+  /** Moves towards a point without turning or walking: small corrections that aren't real steps. */
+  slideTo(x: number, z: number) {
+    this.targetX = x;
+    this.targetZ = z;
+  }
+
+  /** Shows or hides the model together with its labels (labels don't follow the model's visibility). */
+  setVisible(visible: boolean) {
+    this.root.visible = visible;
+    this.label.object.visible = visible;
+  }
+
   face(dx: number, dz: number) {
     if (dx !== 0 || dz !== 0) {
       this.facing = Math.atan2(dx, dz);
@@ -206,9 +235,10 @@ export class Actor {
     this.label.name.className = `actor-name ${className}`;
   }
 
-  setHp(share: number, hideWhenFull = false) {
-    const clamped = Math.max(0, Math.min(1, share));
+  setHp(hp: number, maxHp: number, hideWhenFull = false) {
+    const clamped = Math.max(0, Math.min(1, hp / Math.max(1, maxHp)));
     this.label.hpFill.style.width = `${clamped * 100}%`;
+    this.label.hpText.textContent = `${Math.max(0, Math.round(hp))}/${maxHp}`;
     this.label.hp.classList.toggle("low", clamped <= 0.25);
     this.label.hp.classList.toggle("mid", clamped > 0.25 && clamped <= 0.5);
     this.label.hp.style.visibility = hideWhenFull && clamped >= 1 ? "hidden" : "visible";

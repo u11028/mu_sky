@@ -30,3 +30,18 @@ export interface ChatMessage {
   /** Title the writer wore, to colour their chat line. */
   title?: string;
 }
+
+/** Private rooms are found by a code like "K7Q2MX"; letters and digits that are hard to confuse. */
+export const PARTY_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+export const PARTY_CODE_LENGTH = 6;
+/** How many fit in a private room. */
+export const PARTY_MAX_PLAYERS = 20;
+
+/** The code in its standard form, or "" for the shared public world. */
+export function cleanPartyCode(value: unknown) {
+  if (typeof value !== "string") {
+    return "";
+  }
+  const code = value.trim().toUpperCase();
+  return code.length === PARTY_CODE_LENGTH && [...code].every((c) => PARTY_ALPHABET.includes(c)) ? code : "";
+}
