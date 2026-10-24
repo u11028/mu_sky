@@ -23,6 +23,9 @@ export type LifeStat =
   | "kills"
   /** Times defeated. */
   | "deaths"
+  /** Monsters and bosses defeated. */
+  | "monsters"
+  | "bosses"
   /** Other titles earned. */
   | "titles";
 
@@ -225,6 +228,33 @@ export const TITLES: readonly Title[] = [
     stat: "kills",
     goal: 100,
     style: { color: "#ffffff", glow: "#7b2cbf", bubbleFill: "#10001f", bubbleBorder: "#9d4edd", bubbleText: "#ead6ff" },
+  },
+  {
+    id: "hunter",
+    name: "นักล่ามือใหม่",
+    rarity: "rare",
+    hint: "ล้มมอนสเตอร์ 50 ตัว",
+    stat: "monsters",
+    goal: 50,
+    style: { color: "#c7f464", glow: "#4caf50", bubbleFill: "#f4ffe6", bubbleBorder: "#7cc242", bubbleText: "#1f3d0c" },
+  },
+  {
+    id: "bossbane",
+    name: "ผู้โค่นบัลลังก์บอส",
+    rarity: "epic",
+    hint: "ปราบบอส 6 ครั้ง",
+    stat: "bosses",
+    goal: 6,
+    style: { color: "#ffb703", glow: "#fb8500", bubbleFill: "#2b1600", bubbleBorder: "#ffb703", bubbleText: "#ffe8c2" },
+  },
+  {
+    id: "slayer",
+    name: "จอมปราบอสูรแห่งสยาม",
+    rarity: "legendary",
+    hint: "ล้มมอนสเตอร์ 1,000 ตัว",
+    stat: "monsters",
+    goal: 1000,
+    style: { color: "#ffffff", glow: "#2a9d8f", bubbleFill: "#04201d", bubbleBorder: "#3ddbc8", bubbleText: "#d8fff9" },
   },
   {
     id: "regular",

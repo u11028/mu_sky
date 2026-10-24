@@ -6,7 +6,7 @@ import { isRegionId, REGIONS, type RegionId, START_REGION } from "../../shared/r
 import type { Achievement, ProgressView } from "../../shared/quests.ts";
 import { decorateTitle, findTitle, type Title, TITLES } from "../../shared/titles.ts";
 import { type SelfState, WorldScene } from "./WorldScene.ts";
-import { RESPAWN_MS, type HitEvent, xpToNext } from "../../shared/combat.ts";
+import { RESPAWN_MS, type HitEvent, isSkillId, SKILLS, type SkillId, xpToNext } from "../../shared/combat.ts";
 import { BAN_DAYS, type GmAction, type GmList, type GmPlayer } from "../../shared/gm.ts";
 
 const NAME_KEY = "mu-sky.name";
@@ -30,6 +30,7 @@ const questDays = document.querySelector<HTMLParagraphElement>("#quest-days")!;
 const titleList = document.querySelector<HTMLUListElement>("#title-list")!;
 const toasts = document.querySelector<HTMLDivElement>("#toasts")!;
 const stats = document.querySelector<HTMLDivElement>("#stats")!;
+const actions = document.querySelector<HTMLDivElement>("#actions")!;
 const attackButton = document.querySelector<HTMLButtonElement>("#attack-button")!;
 const death = document.querySelector<HTMLDivElement>("#death")!;
 const deathTimer = document.querySelector<HTMLParagraphElement>("#death-timer")!;
@@ -163,7 +164,7 @@ function showJoinDialog(message: string) {
   questButton.hidden = true;
   questPanel.hidden = true;
   stats.hidden = true;
-  attackButton.hidden = true;
+  actions.hidden = true;
   death.hidden = true;
   gmButton.hidden = true;
   gmPanel.hidden = true;
@@ -205,13 +206,21 @@ function startGame(joined: Room, region: RegionId) {
   joined.onMessage("swing", (message: { id: string; x: number; y: number }) => scene?.showSwing(message.id, message.x, message.y));
   joined.onMessage("hit", (event: HitEvent) => scene?.showHit(event));
   joined.onMessage("levelup", (message: { id: string }) => scene?.showLevelUp(message.id));
+  joined.onMessage("mattack", (message: { id: string }) => scene?.showMonsterAttack(message.id));
+  joined.onMessage("xp", (message: { amount: number }) => scene?.showXp(message.amount));
+  joined.onMessage("skill", (message: { id: SkillId; by: string; fromX?: number; fromY?: number }) => {
+    scene?.showSkill(message);
+    if (message.by === joined.sessionId) {
+      startCooldown(message.id);
+    }
+  });
   joined.onMessage("gm-list", renderGmList);
   joined.onMessage("removed", (message: { text: string }) => {
     removedReason = message.text;
   });
   questButton.hidden = false;
   stats.hidden = false;
-  attackButton.hidden = false;
+  actions.hidden = false;
 
   joined.onMessage("travel", (message: { to?: unknown; from?: unknown }) => {
     if (isRegionId(message?.to) && isRegionId(message?.from)) {
@@ -373,6 +382,34 @@ function renderSelf(self: SelfState) {
     death.hidden = true;
     clearInterval(deathCountdown);
   }
+}
+
+/** Sweeps a shade around a skill button until the skill can be used again. */
+function startCooldown(id: SkillId) {
+  const button = document.querySelector<HTMLButtonElement>(`.skill-button[data-skill="${id}"]`);
+  if (!button) {
+    return;
+  }
+  const ends = performance.now() + SKILLS[id].cooldownMs;
+  const frame = () => {
+    const left = Math.max(0, ends - performance.now());
+    button.style.setProperty("--cooldown", `${(left / SKILLS[id].cooldownMs) * 360}deg`);
+    button.classList.toggle("cooling", left > 0);
+    if (left > 0) {
+      requestAnimationFrame(frame);
+    }
+  };
+  frame();
+}
+
+for (const button of document.querySelectorAll<HTMLButtonElement>(".skill-button")) {
+  button.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    const id = button.dataset.skill;
+    if (isSkillId(id)) {
+      scene?.useSkill(id);
+    }
+  });
 }
 
 attackButton.addEventListener("pointerdown", (event) => {

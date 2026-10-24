@@ -534,10 +534,66 @@ button {
   }
 }
 
-#attack-button {
+#actions {
   position: fixed;
   right: calc(env(safe-area-inset-right, 0px) + 20px);
   bottom: calc(env(safe-area-inset-bottom, 0px) + 84px);
+  width: 76px;
+  height: 76px;
+}
+
+#actions[hidden] {
+  display: none;
+}
+
+/* The two skills sit in an arc above and to the left of the attack button, under the thumb. */
+.skill-button {
+  position: absolute;
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  background: radial-gradient(circle at 35% 30%, #6bb8ff, #3a2fb0 75%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-size: 24px;
+  touch-action: none;
+  user-select: none;
+  overflow: hidden;
+}
+
+.skill-button[data-skill="spin"] {
+  right: 78px;
+  bottom: 4px;
+}
+
+.skill-button[data-skill="dash"] {
+  right: 8px;
+  bottom: 84px;
+}
+
+.skill-button .key {
+  position: absolute;
+  right: 6px;
+  bottom: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+/* The shade sweeping back while the skill recharges. */
+.skill-button.cooling::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(rgba(0, 0, 0, 0.62) var(--cooldown), transparent 0);
+}
+
+#attack-button {
+  position: absolute;
+  right: 0;
+  bottom: 0;
   width: 76px;
   height: 76px;
   padding: 0;
@@ -549,10 +605,6 @@ button {
   font-size: 34px;
   touch-action: none;
   user-select: none;
-}
-
-#attack-button[hidden] {
-  display: none;
 }
 
 #attack-button.pressed {
@@ -738,14 +790,14 @@ button {
   font-size: 14px;
 }
 
-/* Phones: the chat leaves room on the right for the thumb on the attack button. */
+/* Phones: the chat leaves room on the right for the thumb on the attack and skill buttons. */
 @media (max-width: 600px) {
-  #chat {
-    width: calc(100vw - 124px);
+  #actions {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
   }
 
-  #attack-button {
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  #chat {
+    width: calc(100vw - 190px);
   }
 
   #stats {

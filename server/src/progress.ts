@@ -33,6 +33,8 @@ interface Life {
   skins: number[];
   kills: number;
   deaths: number;
+  monsters: number;
+  bosses: number;
 }
 
 interface Progress {
@@ -111,6 +113,8 @@ function newLife(): Life {
     skins: [],
     kills: 0,
     deaths: 0,
+    monsters: 0,
+    bosses: 0,
   };
 }
 
@@ -419,4 +423,15 @@ export function bans(): GmBan[] {
   return [...players]
     .filter(([, record]) => record.bannedUntil > now)
     .map(([playerId, record]) => ({ playerId, name: record.name, until: record.bannedUntil, reason: record.banReason }));
+}
+
+/** A monster fell; everyone who fought it counts it for the hunting quest. */
+export function recordMonsterKill(playerId: string, boss: boolean) {
+  return update(playerId, ({ daily, life }) => {
+    daily.counts.hunt = (daily.counts.hunt ?? 0) + 1;
+    life.monsters++;
+    if (boss) {
+      life.bosses++;
+    }
+  });
 }

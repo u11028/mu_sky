@@ -18,6 +18,18 @@ export class Player extends Schema {
   @type("boolean") god = false;
 }
 
+export class Monster extends Schema {
+  /** Key into MONSTER_KINDS. */
+  @type("string") kind = "";
+  @type("number") x = 0;
+  @type("number") y = 0;
+  @type("uint16") level = 1;
+  @type("uint32") hp = 1;
+  @type("uint32") maxHp = 1;
+  @type("boolean") dead = false;
+}
+
 export class WorldState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>();
+  @type({ map: Monster }) monsters = new MapSchema<Monster>();
 }

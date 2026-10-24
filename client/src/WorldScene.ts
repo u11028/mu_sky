@@ -3,8 +3,9 @@ import type { Room } from "colyseus.js";
 import { SKINS, WORLD_HEIGHT, WORLD_WIDTH } from "../../shared/world.ts";
 import { PORTAL_RADIUS, REGIONS, type RegionId } from "../../shared/regions.ts";
 import { decorateTitle, findTitle, type Title, type TitleStyle } from "../../shared/titles.ts";
-import type { HitEvent } from "../../shared/combat.ts";
-import { PROPS, type PropName, seededRandom, THEMES } from "./regionThemes.ts";
+import { type HitEvent, SKILLS } from "../../shared/combat.ts";
+import { MONSTER_KINDS, type MonsterKind, monsterKind } from "../../shared/monsters.ts";
+import { PROPS, regionLayout, regionSeed, seededRandom, THEMES } from "../../shared/regionThemes.ts";
 
 const FONT = 'Tahoma, "Noto Sans Thai", "Leelawadee UI", sans-serif';
 /** The pack is drawn at 16 px; everything is shown three times bigger. */
@@ -31,11 +32,9 @@ const SNAP_DISTANCE = 200;
 
 const HP_BAR = { width: 42, height: 5, y: 10 };
 
-/** Drifting leaves or petals for the regions known for their trees. */
+/** Drifting petals or leaves, only where they stand out from the ground (green on green reads as dirt). */
 const AMBIENT: Partial<Record<RegionId, string>> = {
   north: "leaf-pink",
-  central: "leaf",
-  west: "leaf",
   northeast: "leaf",
 };
 
@@ -113,10 +112,32 @@ export interface SelfState {
   gm: boolean;
 }
 
+interface MonsterView {
+  container: Phaser.GameObjects.Container;
+  sprite: Phaser.GameObjects.Sprite;
+  name: Phaser.GameObjects.Text;
+  hpBar: Phaser.GameObjects.Graphics;
+  kind: MonsterKind;
+  facing: Direction;
+  movedAt: number;
+  targetX: number;
+  targetY: number;
+  dead: boolean;
+  hpShown: number;
+  /** How high the name sits above the feet. */
+  nameY: number;
+}
+
+/** Anything drawn at a spot: a player's or monster's container. */
+type Spot = { x: number; y: number };
+
 export class WorldScene extends Phaser.Scene {
   private views = new Map<string, PlayerView>();
+  private monsterViews = new Map<string, MonsterView>();
+  /** The local player's level, to colour monster names by how dangerous they are. */
+  private myLevel = 1;
   private keys!: Record<
-    "up" | "down" | "left" | "right" | "w" | "a" | "s" | "d" | "space" | "j",
+    "up" | "down" | "left" | "right" | "w" | "a" | "s" | "d" | "space" | "j" | "q" | "e",
     Phaser.Input.Keyboard.Key
   >;
   private sentDir = { x: 0, y: 0 };
@@ -146,6 +167,17 @@ export class WorldScene extends Phaser.Scene {
     this.load.spritesheet("smoke", "assets/fx/smoke.png", { frameWidth: 32, frameHeight: 32 });
     this.load.spritesheet("leaf", "assets/fx/leaf.png", { frameWidth: 12, frameHeight: 7 });
     this.load.spritesheet("leaf-pink", "assets/fx/leaf-pink.png", { frameWidth: 12, frameHeight: 7 });
+    this.load.spritesheet("spin", "assets/fx/spin.png", { frameWidth: 32, frameHeight: 32 });
+    for (const kind of Object.values(MONSTER_KINDS) as MonsterKind[]) {
+      if (kind.frame) {
+        this.load.spritesheet(`mon-${kind.sprite}`, `assets/bosses/${kind.sprite}.png`, {
+          frameWidth: kind.frame.width,
+          frameHeight: kind.frame.height,
+        });
+      } else {
+        this.load.spritesheet(`mon-${kind.sprite}`, `assets/monsters/${kind.sprite}.png`, { frameWidth: 16, frameHeight: 16 });
+      }
+    }
     for (const sound of ["hit", "swing", "levelup", "dead"]) {
       this.load.audio(sound, `assets/sfx/${sound}.wav`);
     }
@@ -168,16 +200,32 @@ export class WorldScene extends Phaser.Scene {
 
     // false = don't swallow these keys globally, or nobody could type "w" into the chat.
     this.keys = this.input.keyboard!.addKeys(
-      { up: "UP", down: "DOWN", left: "LEFT", right: "RIGHT", w: "W", a: "A", s: "S", d: "D", space: "SPACE", j: "J" },
+      {
+        up: "UP",
+        down: "DOWN",
+        left: "LEFT",
+        right: "RIGHT",
+        w: "W",
+        a: "A",
+        s: "S",
+        d: "D",
+        space: "SPACE",
+        j: "J",
+        q: "Q",
+        e: "E",
+      },
       false,
     ) as WorldScene["keys"];
-    for (const key of [this.keys.space, this.keys.j]) {
+    const bind = (key: Phaser.Input.Keyboard.Key, action: () => void) =>
       key.on("down", () => {
         if (document.activeElement !== this.chatInput) {
-          this.attack();
+          action();
         }
       });
-    }
+    bind(this.keys.space, () => this.attack());
+    bind(this.keys.j, () => this.attack());
+    bind(this.keys.q, () => this.useSkill("spin"));
+    bind(this.keys.e, () => this.useSkill("dash"));
 
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       this.room.send("target", { x: pointer.worldX, y: pointer.worldY });
@@ -208,6 +256,19 @@ export class WorldScene extends Phaser.Scene {
       this.views.delete(sessionId);
       this.onPlayerCount(this.views.size);
     });
+
+    const monsters = this.room.state.monsters;
+    monsters.onAdd((monster: any, id: string) => {
+      this.addMonster(id, monster);
+      monster.onChange(() => this.onMonsterChanged(id, monster));
+    });
+    monsters.onRemove((_monster: any, id: string) => {
+      const view = this.monsterViews.get(id);
+      view?.container.destroy();
+      view?.name.destroy();
+      view?.hpBar.destroy();
+      this.monsterViews.delete(id);
+    });
   }
 
   update(time: number, delta: number) {
@@ -215,6 +276,24 @@ export class WorldScene extends Phaser.Scene {
 
     // Glide towards the server position instead of jumping 20 times a second.
     const blend = Math.min(1, delta / 90);
+    this.monsterViews.forEach((view) => {
+      view.container.x += (view.targetX - view.container.x) * blend;
+      view.container.y += (view.targetY - view.container.y) * blend;
+      view.container.setDepth(view.container.y);
+      const { x, y } = view.container;
+      view.name.setPosition(x, y + view.nameY);
+      view.hpBar.setPosition(x, y + HP_BAR.y).setDepth(view.container.y + 1);
+      if (view.kind.boss) {
+        return;
+      }
+      if (time - view.movedAt < WALK_HOLD_MS) {
+        view.sprite.play(`mon-${view.kind.sprite}-walk-${view.facing}`, true);
+      } else {
+        view.sprite.stop();
+        view.sprite.setFrame(DIRECTIONS.indexOf(view.facing));
+      }
+    });
+
     this.views.forEach((view) => {
       const far = Math.hypot(view.targetX - view.container.x, view.targetY - view.container.y) > SNAP_DISTANCE;
       view.container.x += (view.targetX - view.container.x) * (far ? 1 : blend);
@@ -289,19 +368,20 @@ export class WorldScene extends Phaser.Scene {
       .setBlendMode(Phaser.BlendModes.ADD);
     slash.play("slash");
     slash.once("animationcomplete", () => slash.destroy());
-    this.playNear("swing", view, 0.25);
+    this.playNear("swing", view.container, 0.25);
   }
 
   /** A hit lands: a red flash, a jolt, a floating number, and for the one hurt a shaking screen. */
   showHit(event: HitEvent) {
-    const view = this.views.get(event.target);
+    const view = this.views.get(event.target) ?? this.monsterViews.get(event.target);
     if (!view) {
       return;
     }
 
+    const at = view.container;
     const isMe = event.target === this.room.sessionId;
     if (event.blocked) {
-      this.floatText(view, "อมตะ!", "#ffd60a", 18);
+      this.floatText(at, "อมตะ!", "#ffd60a", 18);
       return;
     }
 
@@ -311,20 +391,108 @@ export class WorldScene extends Phaser.Scene {
     this.tweens.add({ targets: view.sprite, x: { from: Phaser.Math.Between(-4, 4), to: 0 }, duration: 120 });
 
     const text = event.crit ? `${event.damage}!` : `${event.damage}`;
-    this.floatText(view, text, event.crit ? "#ffd60a" : isMe ? "#ff5c5c" : "#ffffff", event.crit ? 26 : 19);
-    this.playNear("hit", view, 0.35);
+    this.floatText(at, text, event.crit ? "#ffd60a" : isMe ? "#ff5c5c" : "#ffffff", event.crit ? 26 : 19);
+    this.playNear("hit", at, 0.35);
     if (isMe) {
       this.cameras.main.shake(event.killed ? 300 : 120, event.killed ? 0.012 : 0.005);
+    } else if (event.attacker === this.room.sessionId && event.crit) {
+      // Our own critical hit: a small jolt to feel it.
+      this.cameras.main.shake(90, 0.004);
     }
 
     if (event.killed) {
-      const smoke = this.add.sprite(view.container.x, view.container.y - 18, "smoke").setScale(2.5).setDepth(view.container.y + 3);
+      const big = "kind" in view && view.kind.boss;
+      const smoke = this.add
+        .sprite(at.x, at.y - 18, "smoke")
+        .setScale(big ? 5 : 2.5)
+        .setDepth(at.y + 3);
       smoke.play("smoke");
       smoke.once("animationcomplete", () => smoke.destroy());
       if (isMe) {
         this.sound.play("dead", { volume: 0.35 });
       }
+      if (big) {
+        this.cameras.main.flash(250, 255, 230, 150);
+      }
     }
+  }
+
+  /** A monster lunges as it strikes. */
+  showMonsterAttack(id: string) {
+    const view = this.monsterViews.get(id);
+    if (!view) {
+      return;
+    }
+    const scale = view.sprite.scale;
+    this.tweens.add({ targets: view.sprite, scale: scale * 1.18, duration: 110, yoyo: true });
+    if (view.kind.boss) {
+      // A boss slams the ground: a shock ring as wide as its reach.
+      const ring = this.add.circle(view.container.x, view.container.y, 20).setStrokeStyle(5, 0xff4d4d, 0.9).setDepth(view.container.y - 1);
+      this.tweens.add({ targets: ring, scale: 4, alpha: 0, duration: 450, onComplete: () => ring.destroy() });
+      this.playNear("hit", view.container, 0.5);
+    }
+  }
+
+  /** Experience floats up over the local player. */
+  showXp(amount: number) {
+    const view = this.views.get(this.room.sessionId);
+    if (view) {
+      this.floatText(view.container, `+${amount} XP`, "#8ecbff", 17);
+    }
+  }
+
+  /** Asks the server for a skill; its effect shows when the server confirms. */
+  useSkill(id: keyof typeof SKILLS) {
+    if (!this.views.get(this.room.sessionId)?.dead) {
+      this.room.send("skill", { id });
+    }
+  }
+
+  /** A skill went off: a whirl of blades, or a dash leaving a trail of dust. */
+  showSkill(message: { id: keyof typeof SKILLS; by: string; fromX?: number; fromY?: number }) {
+    const view = this.views.get(message.by);
+    if (!view) {
+      return;
+    }
+
+    if (message.id === "spin") {
+      const whirl = this.add
+        .sprite(view.container.x, view.container.y - 16, "spin")
+        .setScale((SKILLS.spin.radius * 2) / 32)
+        .setDepth(view.container.y + 2)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      whirl.play("spin");
+      this.tweens.add({ targets: whirl, angle: 360, duration: 300 });
+      whirl.once("animationcomplete", () => whirl.destroy());
+      view.attackUntil = this.time.now + 300;
+      this.playNear("swing", view.container, 0.4);
+      return;
+    }
+
+    // Dash: puffs of dust along the way and a quick ghost of the player where they started.
+    const fromX = message.fromX ?? view.container.x;
+    const fromY = message.fromY ?? view.container.y;
+    for (let i = 0; i < 4; i++) {
+      const t = i / 4;
+      const puff = this.add
+        .sprite(fromX + (view.targetX - fromX) * t, fromY + (view.targetY - fromY) * t - 6, "smoke")
+        .setScale(1.4)
+        .setAlpha(0.8)
+        .setDepth(fromY);
+      puff.play("smoke");
+      puff.once("animationcomplete", () => puff.destroy());
+    }
+    const ghost = this.add
+      .sprite(fromX, fromY, view.sprite.texture.key, view.sprite.frame.name)
+      .setScale(SCALE)
+      .setOrigin(0.5, 0.9)
+      .setAlpha(0.5)
+      .setTint(0x8ecbff)
+      .setDepth(fromY);
+    this.tweens.add({ targets: ghost, alpha: 0, duration: 300, onComplete: () => ghost.destroy() });
+    // Jump straight there instead of gliding.
+    view.container.setPosition(view.targetX, view.targetY);
+    this.playNear("swing", view.container, 0.25);
   }
 
   /** A golden ring and a "LEVEL UP" over a player who just grew stronger (or was healed by a GM). */
@@ -339,13 +507,13 @@ export class WorldScene extends Phaser.Scene {
       .setStrokeStyle(4, 0xffd60a)
       .setDepth(LABEL_DEPTH - 2);
     this.tweens.add({ targets: ring, scale: 5, alpha: 0, duration: 700, ease: "Cubic.easeOut", onComplete: () => ring.destroy() });
-    this.floatText(view, "LEVEL UP!", "#ffd60a", 22);
-    this.playNear("levelup", view, 0.4);
+    this.floatText(view.container, "LEVEL UP!", "#ffd60a", 22);
+    this.playNear("levelup", view.container, 0.4);
   }
 
-  private floatText(view: PlayerView, text: string, color: string, size: number) {
+  private floatText(at: Spot, text: string, color: string, size: number) {
     const label = this.add
-      .text(view.container.x + Phaser.Math.Between(-10, 10), view.container.y - 50, text, {
+      .text(at.x + Phaser.Math.Between(-10, 10), at.y - 50, text, {
         fontFamily: FONT,
         fontSize: `${size}px`,
         fontStyle: "bold",
@@ -369,8 +537,8 @@ export class WorldScene extends Phaser.Scene {
   }
 
   /** Plays a sound only for things happening on screen, so far-off fights stay quiet. */
-  private playNear(key: string, view: PlayerView, volume: number) {
-    if (this.cameras.main.worldView.contains(view.container.x, view.container.y)) {
+  private playNear(key: string, at: Spot, volume: number) {
+    if (this.cameras.main.worldView.contains(at.x, at.y)) {
       this.sound.play(key, { volume });
     }
   }
@@ -420,6 +588,106 @@ export class WorldScene extends Phaser.Scene {
 
     if (sessionId === this.room.sessionId) {
       this.onSelf({ ...player });
+      if (this.myLevel !== player.level) {
+        this.myLevel = player.level;
+        this.monsterViews.forEach((monster) => this.colourMonsterName(monster));
+      }
+    }
+  }
+
+  private addMonster(id: string, monster: { kind: string; x: number; y: number; hp: number; maxHp: number; level: number; dead: boolean }) {
+    const kind = monsterKind(monster.kind);
+    if (!kind) {
+      return;
+    }
+
+    const key = `mon-${kind.sprite}`;
+    const shadow = this.add
+      .image(0, 2, "shadow")
+      .setScale(kind.boss ? SCALE * 2.2 : SCALE)
+      .setAlpha(0.5);
+    const sprite = this.add.sprite(0, 0, key, 0).setScale(kind.scale).setOrigin(0.5, 0.9);
+    if (kind.boss) {
+      sprite.play(`${key}-idle`);
+    }
+    const height = (kind.frame?.height ?? 16) * kind.scale * 0.9;
+    const name = this.add
+      .text(monster.x, monster.y, kind.boss ? `👑 Lv.${kind.level} ${kind.name}` : `Lv.${kind.level} ${kind.name}`, {
+        fontFamily: FONT,
+        fontSize: kind.boss ? "16px" : "13px",
+        fontStyle: kind.boss ? "bold" : "normal",
+        stroke: "#1b1b1b",
+        strokeThickness: kind.boss ? 4 : 3,
+      })
+      .setOrigin(0.5, 1)
+      .setDepth(LABEL_DEPTH);
+    const container = this.add.container(monster.x, monster.y, [shadow, sprite]);
+    const hpBar = this.add.graphics({ x: monster.x, y: monster.y + HP_BAR.y });
+    const view: MonsterView = {
+      container,
+      sprite,
+      name,
+      hpBar,
+      kind,
+      facing: "down",
+      movedAt: 0,
+      targetX: monster.x,
+      targetY: monster.y,
+      dead: false,
+      hpShown: -1,
+      nameY: -height - 4,
+    };
+    this.monsterViews.set(id, view);
+    this.colourMonsterName(view);
+    this.onMonsterChanged(id, monster);
+  }
+
+  /** Red when much stronger than the player, orange when a little, white when not. */
+  private colourMonsterName(view: MonsterView) {
+    const gap = view.kind.level - this.myLevel;
+    const color = view.kind.boss ? "#ffb703" : gap >= 3 ? "#ff5c5c" : gap >= 1 ? "#ffb35c" : "#ffffff";
+    view.name.setColor(color);
+  }
+
+  private onMonsterChanged(id: string, monster: { x: number; y: number; hp: number; maxHp: number; dead: boolean }) {
+    const view = this.monsterViews.get(id);
+    if (!view) {
+      return;
+    }
+
+    const dx = monster.x - view.targetX;
+    const dy = monster.y - view.targetY;
+    if (Math.abs(dx) + Math.abs(dy) > 0.5) {
+      view.facing = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : dy > 0 ? "down" : "up";
+      view.movedAt = this.time.now;
+    }
+    view.targetX = monster.x;
+    view.targetY = monster.y;
+
+    if (view.dead !== monster.dead) {
+      view.dead = monster.dead;
+      if (monster.dead) {
+        this.tweens.add({ targets: [view.container, view.name, view.hpBar], alpha: 0, duration: 400 });
+      } else {
+        // Back after its rest: appear where it lives.
+        view.container.setPosition(monster.x, monster.y);
+        this.tweens.add({ targets: [view.container, view.name, view.hpBar], alpha: 1, duration: 500 });
+      }
+    }
+
+    const share = monster.hp / monster.maxHp;
+    if (view.hpShown !== share) {
+      view.hpShown = share;
+      const width = view.kind.boss ? 90 : 36;
+      const left = -width / 2;
+      view.hpBar
+        .clear()
+        .fillStyle(0x140b1f, 0.75)
+        .fillRoundedRect(left - 2, -2, width + 4, HP_BAR.height + 4, 3)
+        .fillStyle(view.kind.boss ? 0xff6b00 : 0xe63946, 1)
+        .fillRoundedRect(left, 0, Math.max(2, width * share), HP_BAR.height, 2);
+      // Full-health ordinary monsters don't need a bar.
+      view.hpBar.setVisible(view.kind.boss || share < 1);
     }
   }
 
@@ -697,7 +965,7 @@ export class WorldScene extends Phaser.Scene {
 
   private prepareTextures() {
     // Crisp pixels for the art only; the Thai text stays smooth.
-    for (const key of [...SKINS, "floor", "water", "nature", "village", "field", "shadow", "slash", "smoke", "leaf", "leaf-pink"]) {
+    for (const key of [...SKINS, "floor", "water", "nature", "village", "field", "shadow", "slash", "smoke", "leaf", "leaf-pink", "spin"]) {
       this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
     }
 
@@ -717,6 +985,23 @@ export class WorldScene extends Phaser.Scene {
     }
 
     this.anims.create({ key: "slash", frames: this.anims.generateFrameNumbers("slash"), frameRate: 24 });
+    this.anims.create({ key: "spin", frames: this.anims.generateFrameNumbers("spin"), frameRate: 16 });
+    for (const kind of Object.values(MONSTER_KINDS) as MonsterKind[]) {
+      const key = `mon-${kind.sprite}`;
+      this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+      if (kind.frame) {
+        this.anims.create({ key: `${key}-idle`, frames: this.anims.generateFrameNumbers(key), frameRate: 7, repeat: -1 });
+        continue;
+      }
+      DIRECTIONS.forEach((direction, column) => {
+        this.anims.create({
+          key: `${key}-walk-${direction}`,
+          frames: [0, 1, 2, 3].map((row) => ({ key, frame: row * DIRECTIONS.length + column })),
+          frameRate: 6,
+          repeat: -1,
+        });
+      });
+    }
     this.anims.create({ key: "smoke", frames: this.anims.generateFrameNumbers("smoke"), frameRate: 14 });
 
     // A four-pointed star for the sparkles around grand titles.
@@ -740,7 +1025,7 @@ export class WorldScene extends Phaser.Scene {
   private drawGround() {
     const theme = THEMES[this.regionId];
     const { bounds } = REGIONS[this.regionId];
-    const random = seededRandom(this.seed() + 1);
+    const random = seededRandom(regionSeed(this.regionId) + 1);
 
     const map = this.make.tilemap({
       tileWidth: 16,
@@ -769,45 +1054,10 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private placeProps() {
-    const theme = THEMES[this.regionId];
-    const { bounds, portals } = REGIONS[this.regionId];
-    const random = seededRandom(this.seed());
-
-    // Where props already stand: the centre of their footprint and a radius, to keep the next ones apart.
-    const taken: { x: number; y: number; r: number }[] = [];
-    const footprint = (prop: PropName, x: number, y: number) => {
-      const [, , , width, height] = PROPS[prop];
-      const r = (Math.max(width, height) * TILE) / 2;
-      return { x, y: y - (height * TILE) / 2, r };
-    };
-    const place = (prop: PropName, x: number, y: number) => {
+    for (const { prop, x, y } of regionLayout(this.regionId).props) {
       const [sheet] = PROPS[prop];
       // Bottom-centre origin + depth by y: players walk behind a prop's upper part.
       this.add.image(x, y, sheet, prop).setScale(SCALE).setOrigin(0.5, 1).setDepth(y);
-      taken.push(footprint(prop, x, y));
-    };
-
-    const cx = (bounds.minX + bounds.maxX) / 2;
-    const cy = (bounds.minY + bounds.maxY) / 2;
-    for (const [prop, x, y] of theme.landmarks(cx, cy)) {
-      place(prop, x, y);
-    }
-
-    // Scatter the rest, apart from each other, the portals and the open middle where players arrive.
-    const weighted = Object.entries(theme.scatter).flatMap(([prop, weight]) => Array(weight).fill(prop as PropName));
-    let placed = 0;
-    for (let attempt = 0; placed < theme.scatterCount && attempt < theme.scatterCount * 30; attempt++) {
-      const x = bounds.minX + 40 + random() * (bounds.maxX - bounds.minX - 80);
-      const y = bounds.minY + 80 + random() * (bounds.maxY - bounds.minY - 100);
-      const prop = weighted[Math.floor(random() * weighted.length)];
-      const spot = footprint(prop, x, y);
-      const crowded = taken.some((t) => Math.hypot(t.x - spot.x, t.y - spot.y) < (t.r + spot.r) * 0.8);
-      const nearPortal = portals.some((p) => Math.hypot(p.x - x, p.y - y) < 150);
-      if (crowded || nearPortal || Math.hypot(x - cx, y - cy) < 200) {
-        continue;
-      }
-      place(prop, x, y);
-      placed++;
     }
   }
 
@@ -845,10 +1095,5 @@ export class WorldScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(LABEL_DEPTH + 1);
     this.tweens.add({ targets: banner, alpha: 0, delay: 2500, duration: 900, onComplete: () => banner.destroy() });
-  }
-
-  /** A fixed number per region, so its random layout is the same for everyone. */
-  private seed() {
-    return [...this.regionId].reduce((sum, char) => sum * 31 + char.charCodeAt(0), 7);
   }
 }

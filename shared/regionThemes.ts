@@ -1,4 +1,4 @@
-import type { RegionId } from "../../shared/regions.ts";
+import { REGIONS, type RegionId } from "./regions.ts";
 
 /** The 16 px tilesets props are cut from. */
 export type PropSheet = "nature" | "village" | "field";
@@ -139,6 +139,147 @@ export const THEMES: Record<RegionId, Theme> = {
     },
   },
 };
+
+/** Props are drawn from 16 px tiles at three times their size. */
+export const PROP_SCALE = 3;
+const TILE = 16 * PROP_SCALE;
+
+/**
+ * The part of a prop that blocks walking, as width and height in world pixels, centred on the prop's
+ * bottom edge: a trunk, a wall, a rock's base. Props without one (flowers, grass, fields) can be walked through.
+ */
+const SOLID: Partial<Record<PropName, readonly [number, number]>> = {
+  roundTree: [30, 22],
+  pine: [30, 22],
+  deadTree: [30, 22],
+  leafyTree: [30, 22],
+  cherry: [30, 22],
+  yellowTree: [30, 22],
+  pineCluster: [150, 48],
+  greenCluster: [150, 48],
+  cherryCluster: [150, 48],
+  rockPileBrown: [150, 56],
+  rockPileGrey: [150, 56],
+  bigRockBrown: [160, 80],
+  bigRockGrey: [160, 80],
+  bigCherry: [64, 30],
+  bigGreen: [64, 30],
+  bigOrange: [64, 30],
+  stumpBig: [60, 30],
+  bamboo: [18, 14],
+  house: [176, 110],
+};
+
+export interface PlacedProp {
+  prop: PropName;
+  /** Bottom centre, where the prop stands. */
+  x: number;
+  y: number;
+}
+
+export interface Box {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+}
+
+export interface RegionLayout {
+  props: PlacedProp[];
+  /** Areas nobody can walk into. */
+  solids: Box[];
+}
+
+/** A fixed number per region, so its random layout is the same for everyone. */
+export function regionSeed(regionId: RegionId) {
+  return [...regionId].reduce((sum, char) => sum * 31 + char.charCodeAt(0), 7);
+}
+
+const layouts = new Map<RegionId, RegionLayout>();
+
+/** Where every prop of a region stands; the same on the server and in every browser. */
+export function regionLayout(regionId: RegionId): RegionLayout {
+  const cached = layouts.get(regionId);
+  if (cached) {
+    return cached;
+  }
+
+  const theme = THEMES[regionId];
+  const { bounds, portals } = REGIONS[regionId];
+  const random = seededRandom(regionSeed(regionId));
+  const props: PlacedProp[] = [];
+
+  // Where props already stand: the centre of their footprint and a radius, to keep the next ones apart.
+  const taken: { x: number; y: number; r: number }[] = [];
+  const footprint = (prop: PropName, x: number, y: number) => {
+    const [, , , width, height] = PROPS[prop];
+    const r = (Math.max(width, height) * TILE) / 2;
+    return { x, y: y - (height * TILE) / 2, r };
+  };
+  const place = (prop: PropName, x: number, y: number) => {
+    props.push({ prop, x, y });
+    taken.push(footprint(prop, x, y));
+  };
+
+  const cx = (bounds.minX + bounds.maxX) / 2;
+  const cy = (bounds.minY + bounds.maxY) / 2;
+  for (const [prop, x, y] of theme.landmarks(cx, cy)) {
+    place(prop, x, y);
+  }
+
+  // Scatter the rest, apart from each other, the portals and the open middle where players arrive.
+  const weighted = Object.entries(theme.scatter).flatMap(([prop, weight]) => Array(weight).fill(prop as PropName));
+  let placed = 0;
+  for (let attempt = 0; placed < theme.scatterCount && attempt < theme.scatterCount * 30; attempt++) {
+    const x = bounds.minX + 40 + random() * (bounds.maxX - bounds.minX - 80);
+    const y = bounds.minY + 80 + random() * (bounds.maxY - bounds.minY - 100);
+    const prop = weighted[Math.floor(random() * weighted.length)];
+    const spot = footprint(prop, x, y);
+    const crowded = taken.some((t) => Math.hypot(t.x - spot.x, t.y - spot.y) < (t.r + spot.r) * 0.8);
+    const nearPortal = portals.some((p) => Math.hypot(p.x - x, p.y - y) < 150);
+    if (crowded || nearPortal || Math.hypot(x - cx, y - cy) < 200) {
+      continue;
+    }
+    place(prop, x, y);
+    placed++;
+  }
+
+  const solids = props.flatMap(({ prop, x, y }) => {
+    const solid = SOLID[prop];
+    return solid ? [{ minX: x - solid[0] / 2, maxX: x + solid[0] / 2, minY: y - solid[1], maxY: y }] : [];
+  });
+
+  const layout = { props, solids };
+  layouts.set(regionId, layout);
+  return layout;
+}
+
+/** Whether a walker this wide, with feet at x, y, would stand inside something solid. */
+export function isBlocked(layout: RegionLayout, x: number, y: number, radius = 10) {
+  return layout.solids.some(
+    (box) => x + radius > box.minX && x - radius < box.maxX && y + radius / 2 > box.minY && y - radius / 2 < box.maxY,
+  );
+}
+
+/**
+ * Moves from (x, y) by (dx, dy), sliding along whatever is in the way.
+ * Someone already stuck inside a prop (an old spawn, a GM teleport) may walk out freely.
+ */
+export function slide(layout: RegionLayout, x: number, y: number, dx: number, dy: number) {
+  if (isBlocked(layout, x, y)) {
+    return { x: x + dx, y: y + dy };
+  }
+  if (!isBlocked(layout, x + dx, y + dy)) {
+    return { x: x + dx, y: y + dy };
+  }
+  if (dx !== 0 && !isBlocked(layout, x + dx, y)) {
+    return { x: x + dx, y };
+  }
+  if (dy !== 0 && !isBlocked(layout, x, y + dy)) {
+    return { x, y: y + dy };
+  }
+  return { x, y };
+}
 
 /** Small deterministic random generator, so every player sees the same layout. */
 export function seededRandom(seed: number) {

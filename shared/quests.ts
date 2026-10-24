@@ -1,8 +1,8 @@
-// Daily quests (ภารกิจประจำวัน): the same four for everyone, renewed at midnight Thai time.
+// Daily quests (ภารกิจประจำวัน): the same five for everyone, renewed at midnight Thai time.
 
 import { REGIONS, type RegionId } from "./regions.ts";
 
-export type QuestId = "visit" | "chat" | "walk" | "meet";
+export type QuestId = "visit" | "chat" | "walk" | "meet" | "hunt";
 
 export interface Quest {
   id: QuestId;
@@ -34,6 +34,7 @@ export function dailyQuests(day: number): Quest[] {
     { id: "chat", text: "ทักทายชาวเมือง คุยในแชท 5 ข้อความ", goal: 5 },
     { id: "walk", text: "เดินเล่น 500 ก้าว", goal: 500 },
     { id: "meet", text: "พบผู้เล่นคนอื่น 1 คน", goal: 1 },
+    { id: "hunt", text: "ล่ามอนสเตอร์ 10 ตัว", goal: 10 },
   ];
 }
 

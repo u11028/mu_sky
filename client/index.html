@@ -19,7 +19,11 @@
       <span class="meter xp"><span id="stats-xp-fill"></span><b id="stats-xp">XP 0/100</b></span>
     </div>
 
-    <button id="attack-button" type="button" hidden aria-label="โจมตี (Space)">⚔</button>
+    <div id="actions" hidden>
+      <button id="attack-button" type="button" aria-label="โจมตี (Space)">⚔</button>
+      <button class="skill-button" type="button" data-skill="spin" aria-label="ฟันพายุหมุน (Q)">🌀<span class="key">Q</span></button>
+      <button class="skill-button" type="button" data-skill="dash" aria-label="พุ่งทะยาน (E)">💨<span class="key">E</span></button>
+    </div>
 
     <div id="death" hidden>
       <p class="big">คุณถูกล้ม!</p>

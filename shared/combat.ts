@@ -44,3 +44,17 @@ export interface HitEvent {
   blocked?: boolean;
   killed?: boolean;
 }
+
+/** Special moves, each with its own wait before it can be used again. */
+export const SKILLS = {
+  /** A full circle of the blade around the player: hits everyone close, whichever way they stand. */
+  spin: { name: "ฟันพายุหมุน", cooldownMs: 5000, radius: 100, multiplier: 1.6 },
+  /** A burst forward that can't be hurt for a moment, to close in or get away. */
+  dash: { name: "พุ่งทะยาน", cooldownMs: 4000, distance: 160, shieldMs: 350 },
+} as const;
+
+export type SkillId = keyof typeof SKILLS;
+
+export function isSkillId(value: unknown): value is SkillId {
+  return typeof value === "string" && Object.hasOwn(SKILLS, value);
+}

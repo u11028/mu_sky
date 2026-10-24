@@ -31,15 +31,21 @@ import {
   maxHp,
   REGEN_DELAY_MS,
   REGEN_PER_SECOND,
+  isSkillId,
   RESPAWN_MS,
+  SKILLS,
+  type SkillId,
   SPAWN_SHIELD_MS,
 } from "../../shared/combat.ts";
+import { monsterXp } from "../../shared/monsters.ts";
+import { regionLayout, type RegionLayout, slide } from "../../shared/regionThemes.ts";
+import { MonsterSystem } from "./MonsterSystem.ts";
 import { type GmAction, type GmList, PERMANENT_BAN_DAYS } from "../../shared/gm.ts";
 import { type Achievement, regionOfTheDay, STEP_PX, thaiDay } from "../../shared/quests.ts";
 import { findTitle } from "../../shared/titles.ts";
 import { isGmKey } from "./gmKey.ts";
 import * as progress from "./progress.ts";
-import { Player, WorldState } from "./schema.ts";
+import { type Monster, Player, WorldState } from "./schema.ts";
 
 // colyseus 0.15 is CommonJS: Node's ESM loader only sees its default export.
 const { Room, ServerError } = colyseus;
@@ -74,6 +80,8 @@ interface Movement {
   oneHit: boolean;
   /** Wrong GM keys typed; after a few the player can't try again this visit. */
   gmTries: number;
+  /** When each skill may be used again. */
+  skillReadyAt: Partial<Record<SkillId, number>>;
 }
 
 interface JoinOptions {
@@ -129,12 +137,25 @@ export class WorldRoom extends Room<WorldState> {
   private movements = new Map<string, Movement>();
   private chatHistory: ChatMessage[] = [];
   private ticks = 0;
+  private layout!: RegionLayout;
+  private monsters!: MonsterSystem;
 
   onCreate(options: { region?: unknown }) {
     this.regionId = isRegionId(options?.region) ? options.region : START_REGION;
     this.region = REGIONS[this.regionId];
     this.setState(new WorldState());
     rooms.add(this);
+    this.layout = regionLayout(this.regionId);
+    this.monsters = new MonsterSystem({
+      regionId: this.regionId,
+      region: this.region,
+      layout: this.layout,
+      monsters: this.state.monsters,
+      targets: () => this.chaseable(),
+      broadcast: (type, message) => this.broadcast(type, message),
+      strikePlayer: (monsterId, sessionId, damage) => this.monsterHit(monsterId, sessionId, damage),
+      announce: (text) => this.sendChat({ from: "ระบบ", text, system: true }),
+    });
 
     this.onMessage("dir", (client, message: { x?: unknown; y?: unknown }) => {
       const movement = this.movements.get(client.sessionId);
@@ -192,6 +213,11 @@ export class WorldRoom extends Room<WorldState> {
     });
 
     this.onMessage("attack", (client) => this.attack(client.sessionId));
+    this.onMessage("skill", (client, message: { id?: unknown }) => {
+      if (isSkillId(message?.id)) {
+        this.useSkill(client.sessionId, message.id);
+      }
+    });
     this.onMessage("gm", (client, message: GmAction) => this.runGmAction(client, message));
 
     this.setSimulationInterval((deltaMs) => this.update(deltaMs), 50);
@@ -254,6 +280,7 @@ export class WorldRoom extends Room<WorldState> {
       regen: 0,
       oneHit: powers.oneHit,
       gmTries: 0,
+      skillReadyAt: {},
     });
 
     client.send("chat-history", this.chatHistory);
@@ -346,37 +373,116 @@ export class WorldRoom extends Room<WorldState> {
     player.hp = Math.min(player.hp, player.maxHp);
   }
 
+  /** Players a monster may chase: alive, here, and not leaving. */
+  private *chaseable(): Iterable<[string, Player]> {
+    for (const [sessionId, player] of this.state.players) {
+      const movement = this.movements.get(sessionId);
+      if (!player.dead && movement && !movement.travelling) {
+        yield [sessionId, player];
+      }
+    }
+  }
+
+  /** The player and their movement, when they can act right now. */
+  private fighter(sessionId: string) {
+    const player = this.state.players.get(sessionId);
+    const movement = this.movements.get(sessionId);
+    return player && movement && !player.dead && !movement.travelling ? { player, movement } : undefined;
+  }
+
   /** A swing in the way the player faces; it hits everyone in reach in front of them. */
   private attack(sessionId: string) {
-    const attacker = this.state.players.get(sessionId);
-    const movement = this.movements.get(sessionId);
+    const attacker = this.fighter(sessionId);
     const now = Date.now();
-    if (!attacker || !movement || attacker.dead || movement.travelling) {
-      return;
-    }
-    if (now - movement.lastAttackAt < ATTACK_COOLDOWN_MS) {
+    if (!attacker || now - attacker.movement.lastAttackAt < ATTACK_COOLDOWN_MS) {
       return;
     }
 
-    movement.lastAttackAt = now;
+    attacker.movement.lastAttackAt = now;
     // Attacking ends the arrival shield.
+    attacker.movement.shieldUntil = 0;
+    const { facingX, facingY } = attacker.movement;
+    this.broadcast("swing", { id: sessionId, x: facingX, y: facingY });
+    this.strikeAround(sessionId, ATTACK_RANGE, 1, (dx, dy, distance) => {
+      return distance < 20 || (dx * facingX + dy * facingY) / distance > 0.25;
+    });
+  }
+
+  private useSkill(sessionId: string, skillId: SkillId) {
+    const attacker = this.fighter(sessionId);
+    const now = Date.now();
+    if (!attacker || now < (attacker.movement.skillReadyAt[skillId] ?? 0)) {
+      return;
+    }
+
+    const { player, movement } = attacker;
+    movement.skillReadyAt[skillId] = now + SKILLS[skillId].cooldownMs;
     movement.shieldUntil = 0;
-    this.broadcast("swing", { id: sessionId, x: movement.facingX, y: movement.facingY });
+
+    if (skillId === "spin") {
+      this.broadcast("skill", { id: skillId, by: sessionId });
+      this.strikeAround(sessionId, SKILLS.spin.radius, SKILLS.spin.multiplier, () => true);
+      return;
+    }
+
+    // Dash: forward in small steps, so it stops at walls and the shore instead of passing through.
+    const from = { x: player.x, y: player.y };
+    const { bounds } = this.region;
+    for (let travelled = 0; travelled < SKILLS.dash.distance; travelled += 10) {
+      const next = slide(this.layout, player.x, player.y, movement.facingX * 10, movement.facingY * 10);
+      player.x = clamp(next.x, bounds.minX, bounds.maxX);
+      player.y = clamp(next.y, bounds.minY, bounds.maxY);
+    }
+    movement.target = undefined;
+    movement.shieldUntil = now + SKILLS.dash.shieldMs;
+    movement.walkedPx += Math.hypot(player.x - from.x, player.y - from.y);
+    this.broadcast("skill", { id: skillId, by: sessionId, fromX: from.x, fromY: from.y });
+  }
+
+  /** Hits every player and monster within reach that `aims` accepts, with the attacker's power times `multiplier`. */
+  private strikeAround(
+    sessionId: string,
+    reach: number,
+    multiplier: number,
+    aims: (dx: number, dy: number, distance: number) => boolean,
+  ) {
+    const attacker = this.fighter(sessionId);
+    if (!attacker) {
+      return;
+    }
+    const { player, movement } = attacker;
+    const now = Date.now();
+    const inReach = (x: number, y: number, extra = 0) => {
+      const dx = x - player.x;
+      const dy = y - player.y;
+      const distance = Math.hypot(dx, dy);
+      return distance <= reach + extra && aims(dx, dy, distance);
+    };
 
     this.state.players.forEach((target, targetId) => {
       const targetMovement = this.movements.get(targetId);
       if (targetId === sessionId || target.dead || !targetMovement || targetMovement.travelling) {
         return;
       }
-
-      const dx = target.x - attacker.x;
-      const dy = target.y - attacker.y;
-      const distance = Math.hypot(dx, dy);
-      const inFront = distance < 20 || (dx * movement.facingX + dy * movement.facingY) / distance > 0.25;
-      if (distance <= ATTACK_RANGE && inFront && now >= targetMovement.shieldUntil) {
-        this.hit(sessionId, attacker, movement, targetId, target, targetMovement);
+      if (inReach(target.x, target.y) && now >= targetMovement.shieldUntil) {
+        this.hit(sessionId, player, movement, targetId, target, targetMovement, multiplier);
       }
     });
+
+    this.state.monsters.forEach((monster, monsterId) => {
+      // Bosses are big: their body can be reached from further away.
+      const extra = this.monsters.kind(monster).boss ? 40 : 0;
+      if (!monster.dead && inReach(monster.x, monster.y, extra)) {
+        this.hitMonster(sessionId, player, movement, monsterId, monster, multiplier);
+      }
+    });
+  }
+
+  /** Damage from the attacker's level, a little random, sometimes critical. */
+  private rollDamage(attacker: Player, multiplier: number) {
+    const crit = Math.random() < CRIT_CHANCE;
+    const rolled = attackPower(attacker.level) * multiplier * (0.85 + Math.random() * 0.3) * (crit ? CRIT_MULTIPLIER : 1);
+    return { damage: Math.max(1, Math.round(rolled)), crit };
   }
 
   private hit(
@@ -386,27 +492,103 @@ export class WorldRoom extends Room<WorldState> {
     targetId: string,
     target: Player,
     targetMovement: Movement,
+    multiplier = 1,
   ) {
     if (target.god) {
       this.broadcast("hit", { attacker: attackerId, target: targetId, damage: 0, blocked: true } satisfies HitEvent);
       return;
     }
 
-    const crit = Math.random() < CRIT_CHANCE;
-    const rolled = attackPower(attacker.level) * (0.85 + Math.random() * 0.3) * (crit ? CRIT_MULTIPLIER : 1);
-    const damage = attackerMovement.oneHit ? target.hp : Math.max(1, Math.round(rolled));
+    const rolled = this.rollDamage(attacker, multiplier);
+    // A one-hit GM always kills.
+    const damage = attackerMovement.oneHit ? target.hp : rolled.damage;
     target.hp = Math.max(0, target.hp - damage);
     targetMovement.lastHitAt = Date.now();
     const killed = target.hp === 0;
-    this.broadcast("hit", { attacker: attackerId, target: targetId, damage, crit, killed } satisfies HitEvent);
+    this.broadcast("hit", { attacker: attackerId, target: targetId, damage, crit: rolled.crit, killed } satisfies HitEvent);
 
     if (killed) {
       this.defeat(targetId, target, targetMovement, attacker, attackerMovement);
     }
   }
 
-  /** The target falls; the winner, if any, gains experience. A GM's punishment has no winner. */
-  private defeat(targetId: string, target: Player, targetMovement: Movement, killer?: Player, killerMovement?: Movement) {
+  private hitMonster(
+    attackerId: string,
+    attacker: Player,
+    attackerMovement: Movement,
+    monsterId: string,
+    monster: Monster,
+    multiplier: number,
+  ) {
+    const rolled = this.rollDamage(attacker, multiplier);
+    const damage = attackerMovement.oneHit ? monster.hp : Math.min(monster.hp, rolled.damage);
+    monster.hp -= damage;
+    this.monsters.hurt(monsterId, attackerId, damage);
+    const killed = monster.hp <= 0;
+    this.broadcast("hit", { attacker: attackerId, target: monsterId, damage, crit: rolled.crit, killed } satisfies HitEvent);
+    if (killed) {
+      this.monsterDefeated(monsterId, monster);
+    }
+  }
+
+  /** Everyone who fought the monster shares the reward: the top fighter in full, helpers half. */
+  private monsterDefeated(monsterId: string, monster: Monster) {
+    const kind = this.monsters.kind(monster);
+    const fighters = this.monsters.defeat(monsterId);
+    const names: string[] = [];
+    fighters.forEach((sessionId, index) => {
+      const player = this.state.players.get(sessionId);
+      const movement = this.movements.get(sessionId);
+      const client = this.clients.find((c) => c.sessionId === sessionId);
+      if (!player || !movement || !client) {
+        return;
+      }
+      names.push(player.name);
+      const xp = index === 0 ? monsterXp(kind) : Math.ceil(monsterXp(kind) / 2);
+      client.send("xp", { amount: xp });
+      this.levelChanged(player, movement.playerId, progress.addXp(movement.playerId, xp));
+      this.celebrate(movement.playerId, progress.recordMonsterKill(movement.playerId, Boolean(kind.boss)));
+    });
+
+    if (kind.boss && names.length > 0) {
+      this.sendChat({ from: "ระบบ", text: `🏆 ${names.join(", ")} ปราบ${kind.name}สำเร็จ!`, system: true });
+    }
+  }
+
+  /** A monster's blow on a player, through the same shields as a player's. */
+  private monsterHit(monsterId: string, sessionId: string, damage: number) {
+    const target = this.state.players.get(sessionId);
+    const movement = this.movements.get(sessionId);
+    if (!target || !movement || target.dead || Date.now() < movement.shieldUntil) {
+      return;
+    }
+    if (target.god) {
+      this.broadcast("hit", { attacker: monsterId, target: sessionId, damage: 0, blocked: true } satisfies HitEvent);
+      return;
+    }
+
+    target.hp = Math.max(0, target.hp - damage);
+    movement.lastHitAt = Date.now();
+    const killed = target.hp === 0;
+    this.broadcast("hit", { attacker: monsterId, target: sessionId, damage, killed } satisfies HitEvent);
+    if (killed) {
+      const monster = this.state.monsters.get(monsterId);
+      this.defeat(sessionId, target, movement, undefined, undefined, monster && this.monsters.kind(monster).name);
+    }
+  }
+
+  /**
+   * The target falls; the winner, if any, gains experience.
+   * A monster's victim has the monster's name and no winner; a GM's punishment has neither.
+   */
+  private defeat(
+    targetId: string,
+    target: Player,
+    targetMovement: Movement,
+    killer?: Player,
+    killerMovement?: Movement,
+    monsterName?: string,
+  ) {
     target.hp = 0;
     target.dead = true;
     targetMovement.diedAt = Date.now();
@@ -415,6 +597,10 @@ export class WorldRoom extends Room<WorldState> {
     targetMovement.dirY = 0;
     this.celebrate(targetMovement.playerId, progress.recordDeath(targetMovement.playerId));
 
+    if (monsterName) {
+      this.sendChat({ from: "ระบบ", text: `💀 ${target.name} ถูก${monsterName}ล้ม!`, system: true });
+      return;
+    }
     if (!killer || !killerMovement) {
       this.sendChat({ from: "ระบบ", text: `⚡ ${target.name} ถูก GM ลงทัณฑ์!`, system: true });
       return;
@@ -644,6 +830,7 @@ export class WorldRoom extends Room<WorldState> {
     const { bounds, portals } = this.region;
     const flushSteps = ++this.ticks % STEP_FLUSH_TICKS === 0;
     const now = Date.now();
+    this.monsters.update(deltaMs);
 
     this.movements.forEach((movement, sessionId) => {
       const player = this.state.players.get(sessionId);
@@ -703,8 +890,9 @@ export class WorldRoom extends Room<WorldState> {
         movement.facingY = Math.sign(dy);
       }
 
-      const x = clamp(player.x + dx, bounds.minX, bounds.maxX);
-      const y = clamp(player.y + dy, bounds.minY, bounds.maxY);
+      const moved = slide(this.layout, player.x, player.y, dx, dy);
+      const x = clamp(moved.x, bounds.minX, bounds.maxX);
+      const y = clamp(moved.y, bounds.minY, bounds.maxY);
       // The east and south have the sea past their edge: walking into it gets nowhere.
       const intoSea =
         (dx > 0 && x === bounds.maxX && bounds.maxX < WORLD_WIDTH - 16) ||
