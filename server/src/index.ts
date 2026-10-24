@@ -6,6 +6,7 @@ import colyseus from "colyseus";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { ROOM_NAME, SERVER_PORT } from "../../shared/world.ts";
 import * as accounts from "./accounts.ts";
+import { clientAddress } from "./environment.ts";
 import { saveNow, summary } from "./progress.ts";
 import { WorldRoom } from "./WorldRoom.ts";
 
@@ -31,7 +32,7 @@ app.post("/api/register", (req, res) => {
   res.status(result.ok ? 200 : 400).json(result.ok ? { ...result, ...summary(result.playerId) } : result);
 });
 app.post("/api/login", (req, res) => {
-  const result = accounts.login(req.body?.username, req.body?.password, req.socket.remoteAddress ?? "");
+  const result = accounts.login(req.body?.username, req.body?.password, clientAddress(req));
   res.status(result.ok ? 200 : 401).json(result.ok ? { ...result, ...summary(result.playerId) } : result);
 });
 

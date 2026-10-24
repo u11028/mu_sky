@@ -4,9 +4,9 @@
 
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
 import type { RegionId } from "../../shared/regions.ts";
 import { MAX_LEVEL, xpToNext } from "../../shared/combat.ts";
+import { dataFile } from "./environment.ts";
 import type { GmBan } from "../../shared/gm.ts";
 import { type Achievement, dailyQuests, type ProgressView, type QuestId, thaiDay } from "../../shared/quests.ts";
 import { decorateTitle, findTitle, type LifeStat, TITLES } from "../../shared/titles.ts";
@@ -62,7 +62,7 @@ interface Progress {
 const MAX_MET = 100;
 const SAVE_DELAY_MS = 2000;
 
-const file = process.env.PROGRESS_FILE ?? fileURLToPath(new URL("../data/progress.json", import.meta.url));
+const file = process.env.PROGRESS_FILE ?? dataFile("progress.json");
 const players = load();
 let saveTimer: NodeJS.Timeout | undefined;
 /** Records that already have every field. */

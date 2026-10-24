@@ -1,0 +1,27 @@
+# Render blueprint: https://render.com/docs/blueprint-spec
+# Builds the game, runs one Node server for the page and the multiplayer rooms,
+# and keeps progress, accounts and the GM key on a disk that survives restarts.
+services:
+  - type: web
+    name: mu-sky
+    runtime: node
+    # A disk needs a paid plan; on "free" the data starts over whenever the server restarts.
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATA_DIR
+        value: /var/data
+      # Render's proxy forwards each player's real address; bans by address need it.
+      - key: TRUST_PROXY
+        value: "1"
+      # Asked for when the blueprint is created: the secret typed in the game as "/gm <key>".
+      - key: GM_KEY
+        sync: false
+    disk:
+      name: mu-sky-data
+      mountPath: /var/data
+      sizeGB: 1

@@ -43,6 +43,7 @@ import { MonsterSystem } from "./MonsterSystem.ts";
 import { type GmAction, type GmList, PERMANENT_BAN_DAYS } from "../../shared/gm.ts";
 import { type Achievement, regionOfTheDay, STEP_PX, thaiDay } from "../../shared/quests.ts";
 import { findTitle } from "../../shared/titles.ts";
+import { clientAddress } from "./environment.ts";
 import { isGmKey } from "./gmKey.ts";
 import * as progress from "./progress.ts";
 import { type Monster, Player, WorldState } from "./schema.ts";
@@ -233,7 +234,7 @@ export class WorldRoom extends Room<WorldState> {
 
   /** Banned players and anyone from a banned address are turned away before joining. */
   onAuth(_client: Client, options: JoinOptions, request?: IncomingMessage) {
-    const ip = request?.socket?.remoteAddress ?? "";
+    const ip = clientAddress(request);
     const ban = progress.activeBan(validPlayerId(options?.playerId) ?? "", ip);
     if (ban) {
       throw new ServerError(403, banText(ban));

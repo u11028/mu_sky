@@ -1,10 +1,10 @@
 // Accounts: a name and password that lead to a player id, so the same progress opens on any device.
-// Passwords are kept only as salted scrypt hashes in server/data/accounts.json.
+// Passwords are kept only as salted scrypt hashes in accounts.json in the data folder.
 
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { dataFile } from "./environment.ts";
 
 interface Account {
   username: string;
@@ -23,7 +23,7 @@ const PLAYER_ID = /^[A-Za-z0-9_-]{16,64}$/;
 const MAX_FAILURES = 10;
 const FAILURE_WINDOW_MS = 10 * 60 * 1000;
 
-const file = process.env.ACCOUNTS_FILE ?? fileURLToPath(new URL("../data/accounts.json", import.meta.url));
+const file = process.env.ACCOUNTS_FILE ?? dataFile("accounts.json");
 const accounts = load();
 const failures = new Map<string, number[]>();
 

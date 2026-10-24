@@ -1,12 +1,12 @@
 // The secret that makes a player a GM: typed once in the chat as "/gm <key>".
-// It comes from GM_KEY, or from server/data/gm-key.txt, made with a random key on first start.
+// It comes from GM_KEY, or from gm-key.txt in the data folder, made with a random key on first start.
 
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { dataFile } from "./environment.ts";
 
-export const GM_KEY_FILE = fileURLToPath(new URL("../data/gm-key.txt", import.meta.url));
+export const GM_KEY_FILE = dataFile("gm-key.txt");
 
 function loadKey() {
   if (process.env.GM_KEY) {
