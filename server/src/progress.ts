@@ -1,10 +1,13 @@
-// Quest and title progress per player, kept in a JSON file so it survives restarts.
+// Everything kept about a player: quests, titles, level, GM powers and bans.
+// It lives in a JSON file so it survives restarts.
 // A player is known by the random id their browser keeps; accounts can replace it later.
 
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { RegionId } from "../../shared/regions.ts";
+import { MAX_LEVEL, xpToNext } from "../../shared/combat.ts";
+import type { GmBan } from "../../shared/gm.ts";
 import { type Achievement, dailyQuests, type ProgressView, type QuestId, thaiDay } from "../../shared/quests.ts";
 import { decorateTitle, findTitle, type LifeStat, TITLES } from "../../shared/titles.ts";
 
@@ -28,12 +31,28 @@ interface Life {
   laughs: number;
   nightChats: number;
   skins: number[];
+  kills: number;
+  deaths: number;
 }
 
 interface Progress {
   daily: Daily;
   life: Life;
   equipped: string;
+  level: number;
+  xp: number;
+  /** Titles a GM gave. */
+  granted: string[];
+  gm: boolean;
+  /** GM powers: takes no damage; kills with one hit. */
+  god: boolean;
+  oneHit: boolean;
+  /** Unix time in ms until which the player may not join; 0 = not banned. */
+  bannedUntil: number;
+  banReason: string;
+  /** Last name and address seen, to find and ban players. */
+  name: string;
+  ip: string;
 }
 
 /** Enough to earn every title; older ids are dropped first. */
@@ -43,6 +62,8 @@ const SAVE_DELAY_MS = 2000;
 const file = process.env.PROGRESS_FILE ?? fileURLToPath(new URL("../data/progress.json", import.meta.url));
 const players = load();
 let saveTimer: NodeJS.Timeout | undefined;
+/** Records that already have every field. */
+const complete = new WeakSet<Progress>();
 
 function load(): Map<string, Progress> {
   if (!existsSync(file)) {
@@ -88,17 +109,37 @@ function newLife(): Life {
     laughs: 0,
     nightChats: 0,
     skins: [],
+    kills: 0,
+    deaths: 0,
+  };
+}
+
+function newProgress(): Progress {
+  return {
+    daily: newDaily(thaiDay()),
+    life: newLife(),
+    equipped: "rookie",
+    level: 1,
+    xp: 0,
+    granted: [],
+    gm: false,
+    god: false,
+    oneHit: false,
+    bannedUntil: 0,
+    banReason: "",
+    name: "",
+    ip: "",
   };
 }
 
 function get(playerId: string): Progress {
   let progress = players.get(playerId);
-  if (!progress) {
-    progress = { daily: newDaily(thaiDay()), life: newLife(), equipped: "rookie" };
+  if (!progress || !complete.has(progress)) {
+    // New players, and players saved before a field existed, get the starting values.
+    progress = { ...newProgress(), ...progress, life: { ...newLife(), ...progress?.life } };
+    complete.add(progress);
     players.set(playerId, progress);
   }
-  // Players saved before a counter existed start it at zero.
-  progress.life = { ...newLife(), ...progress.life };
 
   // A new day brings fresh quests.
   const today = thaiDay();
@@ -118,20 +159,26 @@ function lifeValue(life: Life, stat: Exclude<LifeStat, "titles">) {
 }
 
 /** How far a player is towards each title; "titles" counts the others they own. */
-function titleStates(life: Life) {
+function titleStates({ life, granted }: Progress) {
   const states = TITLES.map((title) => {
-    const value = !title.stat ? 0 : title.stat === "titles" ? 0 : lifeValue(life, title.stat);
+    const value = granted.includes(title.id)
+      ? title.goal
+      : !title.stat || title.stat === "titles"
+        ? 0
+        : lifeValue(life, title.stat);
     return { id: title.id, progress: Math.min(title.goal, value), goal: title.goal };
   });
   const owned = states.filter((state, index) => TITLES[index].stat !== "titles" && state.progress >= state.goal).length;
   return states.map((state, index) => {
-    const progress = TITLES[index].stat === "titles" ? Math.min(state.goal, owned) : state.progress;
+    const progress =
+      TITLES[index].stat === "titles" && !granted.includes(state.id) ? Math.min(state.goal, owned) : state.progress;
     return { ...state, progress, unlocked: progress >= state.goal };
   });
 }
 
 export function view(playerId: string): ProgressView {
-  const { daily, life, equipped } = get(playerId);
+  const record = get(playerId);
+  const { daily, life, equipped } = record;
   return {
     quests: dailyQuests(daily.day).map((quest) => ({
       ...quest,
@@ -139,7 +186,7 @@ export function view(playerId: string): ProgressView {
     })),
     dailyDone: daily.done,
     days: life.days,
-    titles: titleStates(life),
+    titles: titleStates(record),
     equipped,
   };
 }
@@ -263,4 +310,113 @@ export function recordMeeting(playerId: string, otherId: string) {
       }
     }
   });
+}
+
+export function recordKill(playerId: string) {
+  return update(playerId, ({ life }) => {
+    life.kills++;
+  });
+}
+
+export function recordDeath(playerId: string) {
+  return update(playerId, ({ life }) => {
+    life.deaths++;
+  });
+}
+
+/** A GM gives a title, even one nobody can earn. */
+export function grantTitle(playerId: string, titleId: string) {
+  return update(playerId, ({ granted }) => {
+    if (findTitle(titleId) && !granted.includes(titleId)) {
+      granted.push(titleId);
+    }
+  });
+}
+
+/** Level, experience and powers, as the game needs them while playing. */
+export function profile(playerId: string) {
+  const { level, xp, gm, god, oneHit } = get(playerId);
+  return { level, xp, gm, god, oneHit };
+}
+
+/** Adds experience; returns how many levels it brought. */
+export function addXp(playerId: string, amount: number) {
+  const record = get(playerId);
+  record.xp += amount;
+  let levels = 0;
+  while (record.level < MAX_LEVEL && record.xp >= xpToNext(record.level)) {
+    record.xp -= xpToNext(record.level);
+    record.level++;
+    levels++;
+  }
+  scheduleSave();
+  return levels;
+}
+
+export function setLevel(playerId: string, level: number) {
+  const record = get(playerId);
+  record.level = Math.max(1, Math.min(MAX_LEVEL, Math.round(level)));
+  record.xp = 0;
+  scheduleSave();
+  return record.level;
+}
+
+export function setPower(playerId: string, power: "gm" | "god" | "oneHit", on: boolean) {
+  get(playerId)[power] = on;
+  scheduleSave();
+}
+
+/** Remembers who a player last was, so a GM can find and ban them. */
+export function remember(playerId: string, name: string, ip: string) {
+  const record = get(playerId);
+  record.name = name;
+  record.ip = ip;
+  scheduleSave();
+}
+
+export function ban(playerId: string, days: number, reason: string) {
+  const record = get(playerId);
+  record.bannedUntil = Date.now() + days * 24 * 60 * 60 * 1000;
+  record.banReason = reason;
+  scheduleSave();
+  return record.bannedUntil;
+}
+
+export function unban(playerId: string) {
+  const record = players.get(playerId);
+  if (record) {
+    record.bannedUntil = 0;
+    record.banReason = "";
+    scheduleSave();
+  }
+}
+
+/** Addresses shared by everyone on this computer: banning one would ban the GM too. */
+function isLocalAddress(ip: string) {
+  return ip === "" || ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1";
+}
+
+/** The ban that keeps this player, or anyone from their address, out; undefined when they may join. */
+export function activeBan(playerId: string, ip: string) {
+  const now = Date.now();
+  const own = players.get(playerId);
+  if (own && own.bannedUntil > now) {
+    return { until: own.bannedUntil, reason: own.banReason };
+  }
+  if (isLocalAddress(ip)) {
+    return undefined;
+  }
+  for (const record of players.values()) {
+    if (record.ip === ip && record.bannedUntil > now) {
+      return { until: record.bannedUntil, reason: record.banReason };
+    }
+  }
+  return undefined;
+}
+
+export function bans(): GmBan[] {
+  const now = Date.now();
+  return [...players]
+    .filter(([, record]) => record.bannedUntil > now)
+    .map(([playerId, record]) => ({ playerId, name: record.name, until: record.bannedUntil, reason: record.banReason }));
 }

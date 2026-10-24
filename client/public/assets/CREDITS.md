@@ -13,3 +13,11 @@ Asset pack: https://pixel-boy.itch.io/ninja-adventure-asset-pack (downloaded 202
 | tiles/field.png | Backgrounds/Tilesets/TilesetField.png |
 | tiles/water.png | Backgrounds/Tilesets/TilesetWater.png |
 | tiles/village.png | Backgrounds/Tilesets/TilesetVillageAbandoned.png |
+| fx/slash.png | FX/Attack/SlashCurved/SpriteSheet.png |
+| fx/smoke.png | FX/Smoke/Smoke/SpriteSheet.png |
+| sfx/hit.wav | Audio/Sounds/Hit & Impact/Hit1.wav |
+| sfx/swing.wav | Audio/Sounds/Hit & Impact/Impact.wav |
+| sfx/levelup.wav | Audio/Jingles/LevelUp1.wav |
+| sfx/dead.wav | Audio/Jingles/GameOver.wav |
+| fx/leaf.png | FX/Particle/Leaf.png |
+| fx/leaf-pink.png | FX/Particle/LeafPink.png |

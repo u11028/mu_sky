@@ -13,6 +13,66 @@
       <span id="online">ออฟไลน์</span>
     </div>
 
+    <div id="stats" hidden>
+      <span id="stats-level">Lv.1</span>
+      <span class="meter hp"><span id="stats-hp-fill"></span><b id="stats-hp">100/100</b></span>
+      <span class="meter xp"><span id="stats-xp-fill"></span><b id="stats-xp">XP 0/100</b></span>
+    </div>
+
+    <button id="attack-button" type="button" hidden aria-label="โจมตี (Space)">⚔</button>
+
+    <div id="death" hidden>
+      <p class="big">คุณถูกล้ม!</p>
+      <p id="death-timer">ฟื้นในอีก 5 วินาที</p>
+    </div>
+
+    <button id="gm-button" type="button" hidden aria-controls="gm-panel">🛡 GM</button>
+
+    <aside id="gm-panel" hidden aria-labelledby="gm-title">
+      <header>
+        <h2 id="gm-title">🛡 แผงควบคุม GM</h2>
+        <button id="gm-close" type="button" aria-label="ปิด">✕</button>
+      </header>
+      <form id="gm-announce" autocomplete="off">
+        <input id="gm-announce-text" maxlength="120" placeholder="ประกาศถึงทุกคนในทุกภาค..." />
+        <button type="submit">📢</button>
+      </form>
+      <h3>ผู้เล่นออนไลน์ <button id="gm-refresh" type="button" class="small">รีเฟรช</button></h3>
+      <ul id="gm-players"></ul>
+      <section id="gm-actions" hidden>
+        <h3 id="gm-target-name"></h3>
+        <div class="gm-grid">
+          <button type="button" data-gm="kill" class="danger">💀 ฆ่า</button>
+          <button type="button" data-gm="heal">💚 ฟื้นพลัง</button>
+          <button type="button" data-gm="god" id="gm-god">✨ อมตะ</button>
+          <button type="button" data-gm="onehit" id="gm-onehit">🗡 ฆ่าทีเดียวตาย</button>
+          <button type="button" data-gm="goto">🌀 วาร์ปไปหา</button>
+          <button type="button" data-gm="summon">🧲 ดึงมาหา</button>
+        </div>
+        <label class="gm-row">
+          เลเวล
+          <input id="gm-level" type="number" value="10" step="1" />
+          <button type="button" data-gm="level">เพิ่ม</button>
+        </label>
+        <label class="gm-row">
+          ฉายา
+          <select id="gm-title-select"></select>
+          <button type="button" data-gm="title">มอบ</button>
+        </label>
+        <label class="gm-row">
+          แบน
+          <select id="gm-ban-days"></select>
+          <input id="gm-ban-reason" maxlength="80" placeholder="เหตุผล" />
+        </label>
+        <div class="gm-grid">
+          <button type="button" data-gm="kick">👢 เตะออก</button>
+          <button type="button" data-gm="ban" class="danger">⛔ แบน</button>
+        </div>
+      </section>
+      <h3>ผู้เล่นที่ถูกแบน</h3>
+      <ul id="gm-bans"></ul>
+    </aside>
+
     <button id="quest-button" type="button" hidden aria-controls="quests">
       📜 ภารกิจ <span id="quest-count"></span>
     </button>

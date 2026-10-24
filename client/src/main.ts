@@ -4,8 +4,10 @@ import { Client, type Room } from "colyseus.js";
 import { ROOM_NAME, SERVER_PORT, SKINS, type ChatMessage } from "../../shared/world.ts";
 import { isRegionId, REGIONS, type RegionId, START_REGION } from "../../shared/regions.ts";
 import type { Achievement, ProgressView } from "../../shared/quests.ts";
-import { decorateTitle, findTitle, type Title } from "../../shared/titles.ts";
-import { WorldScene } from "./WorldScene.ts";
+import { decorateTitle, findTitle, type Title, TITLES } from "../../shared/titles.ts";
+import { type SelfState, WorldScene } from "./WorldScene.ts";
+import { RESPAWN_MS, type HitEvent, xpToNext } from "../../shared/combat.ts";
+import { BAN_DAYS, type GmAction, type GmList, type GmPlayer } from "../../shared/gm.ts";
 
 const NAME_KEY = "mu-sky.name";
 const SKIN_KEY = "mu-sky.skin";
@@ -27,6 +29,18 @@ const questList = document.querySelector<HTMLOListElement>("#quest-list")!;
 const questDays = document.querySelector<HTMLParagraphElement>("#quest-days")!;
 const titleList = document.querySelector<HTMLUListElement>("#title-list")!;
 const toasts = document.querySelector<HTMLDivElement>("#toasts")!;
+const stats = document.querySelector<HTMLDivElement>("#stats")!;
+const attackButton = document.querySelector<HTMLButtonElement>("#attack-button")!;
+const death = document.querySelector<HTMLDivElement>("#death")!;
+const deathTimer = document.querySelector<HTMLParagraphElement>("#death-timer")!;
+const gmButton = document.querySelector<HTMLButtonElement>("#gm-button")!;
+const gmPanel = document.querySelector<HTMLElement>("#gm-panel")!;
+const gmPlayers = document.querySelector<HTMLUListElement>("#gm-players")!;
+const gmBans = document.querySelector<HTMLUListElement>("#gm-bans")!;
+const gmActions = document.querySelector<HTMLElement>("#gm-actions")!;
+const gmTargetName = document.querySelector<HTMLHeadingElement>("#gm-target-name")!;
+const gmTitleSelect = document.querySelector<HTMLSelectElement>("#gm-title-select")!;
+const gmBanDays = document.querySelector<HTMLSelectElement>("#gm-ban-days")!;
 
 // In development Vite serves the page and the game server runs on its own port;
 // after `npm run build` the game server serves the page itself.
@@ -40,6 +54,8 @@ let scene: WorldScene | undefined;
 let player = { name: "", skin: 0, playerId: loadPlayerId() };
 /** True while switching regions, so leaving the old room doesn't count as a disconnect. */
 let travelling = false;
+/** Why the server removed us (kicked or banned), shown once the connection closes. */
+let removedReason = "";
 
 /** A random id this browser keeps, so the server remembers its quests and titles. */
 function loadPlayerId() {
@@ -88,8 +104,9 @@ joinForm.addEventListener("submit", async (event) => {
   joinError.textContent = "กำลังเชื่อมต่อ...";
 
   player = { ...player, name, skin };
-  if (!(await enterRegion(START_REGION))) {
-    joinError.textContent = "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง";
+  const entered = await enterRegion(START_REGION);
+  if (entered !== true) {
+    joinError.textContent = entered;
     return;
   }
 
@@ -104,12 +121,14 @@ joinForm.addEventListener("submit", async (event) => {
   joinDialog.hidden = true;
 });
 
-/** Joins the room of a region and starts drawing it. False when the server can't be reached. */
-async function enterRegion(region: RegionId, from?: RegionId) {
+/** Joins the room of a region and starts drawing it. Returns why not when it can't. */
+async function enterRegion(region: RegionId, from?: RegionId): Promise<true | string> {
   try {
     room = await new Client(endpoint).joinOrCreate(ROOM_NAME, { ...player, region, from });
-  } catch {
-    return false;
+  } catch (error) {
+    // A ban comes back as a 403 with the reason; anything else means the server is out of reach.
+    const { code, message } = error as { code?: number; message?: string };
+    return code === 403 && message ? message : "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง";
   }
 
   startGame(room, region);
@@ -128,8 +147,9 @@ async function travel(to: RegionId, from: RegionId) {
   await leaving?.leave();
   travelling = false;
 
-  if (!(await enterRegion(to, from))) {
-    showJoinDialog("เดินทางไม่สำเร็จ เข้าเกมใหม่ได้เลย");
+  const entered = await enterRegion(to, from);
+  if (entered !== true) {
+    showJoinDialog(entered === "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง" ? "เดินทางไม่สำเร็จ เข้าเกมใหม่ได้เลย" : entered);
   }
 }
 
@@ -142,6 +162,11 @@ function showJoinDialog(message: string) {
   online.textContent = "ออฟไลน์";
   questButton.hidden = true;
   questPanel.hidden = true;
+  stats.hidden = true;
+  attackButton.hidden = true;
+  death.hidden = true;
+  gmButton.hidden = true;
+  gmPanel.hidden = true;
   joinError.textContent = message;
   joinDialog.hidden = false;
 }
@@ -149,9 +174,15 @@ function showJoinDialog(message: string) {
 function startGame(joined: Room, region: RegionId) {
   // The scene shows the count once its art has loaded.
   online.textContent = "กำลังโหลด...";
-  scene = new WorldScene(joined, region, chatInput, (count) => {
-    online.textContent = `${REGIONS[region].name} · ออนไลน์ ${count} คน`;
-  });
+  scene = new WorldScene(
+    joined,
+    region,
+    chatInput,
+    (count) => {
+      online.textContent = `${REGIONS[region].name} · ออนไลน์ ${count} คน`;
+    },
+    renderSelf,
+  );
 
   game = new Phaser.Game({
     type: Phaser.AUTO,
@@ -171,7 +202,16 @@ function startGame(joined: Room, region: RegionId) {
 
   joined.onMessage("progress", renderProgress);
   joined.onMessage("achievement", showToast);
+  joined.onMessage("swing", (message: { id: string; x: number; y: number }) => scene?.showSwing(message.id, message.x, message.y));
+  joined.onMessage("hit", (event: HitEvent) => scene?.showHit(event));
+  joined.onMessage("levelup", (message: { id: string }) => scene?.showLevelUp(message.id));
+  joined.onMessage("gm-list", renderGmList);
+  joined.onMessage("removed", (message: { text: string }) => {
+    removedReason = message.text;
+  });
   questButton.hidden = false;
+  stats.hidden = false;
+  attackButton.hidden = false;
 
   joined.onMessage("travel", (message: { to?: unknown; from?: unknown }) => {
     if (isRegionId(message?.to) && isRegionId(message?.from)) {
@@ -188,7 +228,8 @@ function startGame(joined: Room, region: RegionId) {
     game = undefined;
     scene = undefined;
     room = undefined;
-    showJoinDialog("หลุดจากเซิร์ฟเวอร์ เข้าเกมใหม่ได้เลย");
+    showJoinDialog(removedReason || "หลุดจากเซิร์ฟเวอร์ เข้าเกมใหม่ได้เลย");
+    removedReason = "";
   });
 }
 
@@ -306,6 +347,164 @@ function showToast(achievement: Achievement) {
   toasts.append(toast);
   setTimeout(() => toast.remove(), 4000);
 }
+
+let deathCountdown: ReturnType<typeof setInterval> | undefined;
+
+/** The HUD's level, health and experience, the death screen and the GM button. */
+function renderSelf(self: SelfState) {
+  const next = xpToNext(self.level);
+  document.querySelector("#stats-level")!.textContent = `Lv.${self.level}`;
+  document.querySelector("#stats-hp")!.textContent = `${self.hp}/${self.maxHp}`;
+  document.querySelector("#stats-xp")!.textContent = `XP ${self.xp}/${next}`;
+  document.querySelector<HTMLElement>("#stats-hp-fill")!.style.width = `${(self.hp / self.maxHp) * 100}%`;
+  document.querySelector<HTMLElement>("#stats-xp-fill")!.style.width = `${Math.min(100, (self.xp / next) * 100)}%`;
+  stats.classList.toggle("low", self.hp / self.maxHp <= 0.25);
+  gmButton.hidden = !self.gm;
+
+  if (self.dead && death.hidden) {
+    death.hidden = false;
+    const respawnAt = Date.now() + RESPAWN_MS;
+    const tick = () => {
+      deathTimer.textContent = `ฟื้นในอีก ${Math.max(0, Math.ceil((respawnAt - Date.now()) / 1000))} วินาที`;
+    };
+    tick();
+    deathCountdown = setInterval(tick, 250);
+  } else if (!self.dead && !death.hidden) {
+    death.hidden = true;
+    clearInterval(deathCountdown);
+  }
+}
+
+attackButton.addEventListener("pointerdown", (event) => {
+  // Not a tap on the map: don't walk there.
+  event.preventDefault();
+  scene?.attack();
+  attackButton.classList.remove("pressed");
+  void attackButton.offsetWidth;
+  attackButton.classList.add("pressed");
+});
+
+// ---- GM panel ----
+
+let gmTarget: GmPlayer | undefined;
+
+function sendGm(action: GmAction) {
+  room?.send("gm", action);
+}
+
+for (const title of TITLES) {
+  gmTitleSelect.append(new Option(decorateTitle(title), title.id));
+}
+for (const days of BAN_DAYS) {
+  gmBanDays.append(new Option(days === 0 ? "ถาวร" : `${days} วัน`, String(days)));
+}
+
+function renderGmList(list: GmList) {
+  gmPlayers.replaceChildren(
+    ...list.players.map((p) => {
+      const item = document.createElement("li");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "gm-player";
+      button.classList.toggle("selected", p.id === gmTarget?.id);
+      const marks = `${p.gm ? " 🛡" : ""}${p.god ? " ✨" : ""}${p.oneHit ? " 🗡" : ""}`;
+      button.textContent = `Lv.${p.level} ${p.name}${marks} · ${p.region} · ❤ ${p.hp}/${p.maxHp}`;
+      button.addEventListener("click", () => {
+        gmTarget = p;
+        renderGmList(list);
+      });
+      item.append(button);
+      return item;
+    }),
+  );
+
+  // Keep the chosen player's details fresh, or forget them once they've gone.
+  gmTarget = list.players.find((p) => p.id === gmTarget?.id);
+  gmActions.hidden = !gmTarget;
+  if (gmTarget) {
+    gmTargetName.textContent = `เลือก: ${gmTarget.name} (Lv.${gmTarget.level})`;
+    document.querySelector("#gm-god")!.classList.toggle("on", gmTarget.god);
+    document.querySelector("#gm-onehit")!.classList.toggle("on", gmTarget.oneHit);
+  }
+
+  gmBans.replaceChildren(
+    ...list.bans.map((ban) => {
+      const item = document.createElement("li");
+      const until = ban.until - Date.now() > 10 * 365 * 864e5 ? "ถาวร" : new Date(ban.until).toLocaleString("th-TH");
+      item.textContent = `${ban.name || ban.playerId.slice(0, 8)} · ${until}${ban.reason ? ` · ${ban.reason}` : ""} `;
+      const unban = document.createElement("button");
+      unban.type = "button";
+      unban.className = "small";
+      unban.textContent = "ปลดแบน";
+      unban.addEventListener("click", () => sendGm({ action: "unban", playerId: ban.playerId }));
+      item.append(unban);
+      return item;
+    }),
+  );
+  if (list.bans.length === 0) {
+    const none = document.createElement("li");
+    none.className = "muted";
+    none.textContent = "ยังไม่มีใครถูกแบน";
+    gmBans.append(none);
+  }
+}
+
+gmPanel.addEventListener("click", (event) => {
+  const action = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-gm]")?.dataset.gm;
+  if (!action || !gmTarget) {
+    return;
+  }
+
+  const target = gmTarget.id;
+  switch (action) {
+    case "god":
+      sendGm({ action, target, on: !gmTarget.god });
+      break;
+    case "onehit":
+      sendGm({ action, target, on: !gmTarget.oneHit });
+      break;
+    case "level":
+      sendGm({ action, target, amount: Number(document.querySelector<HTMLInputElement>("#gm-level")!.value) });
+      break;
+    case "title":
+      sendGm({ action, target, titleId: gmTitleSelect.value });
+      break;
+    case "ban": {
+      const days = Number(gmBanDays.value);
+      const length = days === 0 ? "ถาวร" : `${days} วัน`;
+      if (confirm(`แบน ${gmTarget.name} ${length}?`)) {
+        sendGm({ action, target, days, reason: document.querySelector<HTMLInputElement>("#gm-ban-reason")!.value });
+      }
+      break;
+    }
+    case "kick":
+    case "kill":
+    case "heal":
+    case "goto":
+    case "summon":
+      sendGm({ action, target });
+      break;
+  }
+});
+
+gmButton.addEventListener("click", () => {
+  gmPanel.hidden = !gmPanel.hidden;
+  if (!gmPanel.hidden) {
+    sendGm({ action: "list" });
+  }
+});
+document.querySelector("#gm-close")!.addEventListener("click", () => {
+  gmPanel.hidden = true;
+});
+document.querySelector("#gm-refresh")!.addEventListener("click", () => sendGm({ action: "list" }));
+document.querySelector("#gm-announce")!.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const input = document.querySelector<HTMLInputElement>("#gm-announce-text")!;
+  if (input.value.trim()) {
+    sendGm({ action: "announce", text: input.value.trim() });
+  }
+  input.value = "";
+});
 
 questButton.addEventListener("click", () => {
   questPanel.hidden = !questPanel.hidden;

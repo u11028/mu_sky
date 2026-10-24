@@ -3,6 +3,7 @@ import type { Room } from "colyseus.js";
 import { SKINS, WORLD_HEIGHT, WORLD_WIDTH } from "../../shared/world.ts";
 import { PORTAL_RADIUS, REGIONS, type RegionId } from "../../shared/regions.ts";
 import { decorateTitle, findTitle, type Title, type TitleStyle } from "../../shared/titles.ts";
+import type { HitEvent } from "../../shared/combat.ts";
 import { PROPS, type PropName, seededRandom, THEMES } from "./regionThemes.ts";
 
 const FONT = 'Tahoma, "Noto Sans Thai", "Leelawadee UI", sans-serif';
@@ -18,9 +19,25 @@ const SEA_TILE = 2 * 28 + 11;
 const BEACH_TILE = 5 * 22;
 const SEA_GAP = 40;
 
-/** Columns of a character sheet: one per facing. Rows 0-3 are the walk cycle. */
+/** Columns of a character sheet: one per facing. Rows 0-3 are the walk cycle, 4 the swing, 6 the fall. */
 const DIRECTIONS = ["down", "up", "left", "right"] as const;
 type Direction = (typeof DIRECTIONS)[number];
+const ATTACK_ROW = 4;
+const DEAD_FRAME = 6 * DIRECTIONS.length;
+/** How long the swing pose shows. */
+const SWING_MS = 220;
+/** Farther than this in one update is a teleport (respawn, GM): jump instead of gliding. */
+const SNAP_DISTANCE = 200;
+
+const HP_BAR = { width: 42, height: 5, y: 10 };
+
+/** Drifting leaves or petals for the regions known for their trees. */
+const AMBIENT: Partial<Record<RegionId, string>> = {
+  north: "leaf-pink",
+  central: "leaf",
+  west: "leaf",
+  northeast: "leaf",
+};
 
 /** Names, speech bubbles and portal signs stay readable even behind a house. */
 const LABEL_DEPTH = 1_000_000;
@@ -72,14 +89,36 @@ interface PlayerView {
   skin: string;
   facing: Direction;
   movedAt: number;
+  /** Health under the feet, and the golden ring of an immortal GM. */
+  hpBar: Phaser.GameObjects.Graphics;
+  aura?: Phaser.GameObjects.Ellipse;
+  attackUntil: number;
+  dead: boolean;
+  /** What the name label and health bar last showed, to redraw them only on change. */
+  label: string;
+  hpShown: number;
   /** Last position the server sent; the view glides towards it. */
   targetX: number;
   targetY: number;
 }
 
+/** The local player, as the HUD shows it. */
+export interface SelfState {
+  name: string;
+  level: number;
+  xp: number;
+  hp: number;
+  maxHp: number;
+  dead: boolean;
+  gm: boolean;
+}
+
 export class WorldScene extends Phaser.Scene {
   private views = new Map<string, PlayerView>();
-  private keys!: Record<"up" | "down" | "left" | "right" | "w" | "a" | "s" | "d", Phaser.Input.Keyboard.Key>;
+  private keys!: Record<
+    "up" | "down" | "left" | "right" | "w" | "a" | "s" | "d" | "space" | "j",
+    Phaser.Input.Keyboard.Key
+  >;
   private sentDir = { x: 0, y: 0 };
   private marker!: Phaser.GameObjects.Arc;
 
@@ -88,6 +127,7 @@ export class WorldScene extends Phaser.Scene {
     private readonly regionId: RegionId,
     private readonly chatInput: HTMLInputElement,
     private readonly onPlayerCount: (count: number) => void,
+    private readonly onSelf: (self: SelfState) => void,
   ) {
     super("world");
   }
@@ -102,6 +142,13 @@ export class WorldScene extends Phaser.Scene {
     this.load.image("village", "assets/tiles/village.png");
     this.load.image("field", "assets/tiles/field.png");
     this.load.image("shadow", "assets/shadow.png");
+    this.load.spritesheet("slash", "assets/fx/slash.png", { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet("smoke", "assets/fx/smoke.png", { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet("leaf", "assets/fx/leaf.png", { frameWidth: 12, frameHeight: 7 });
+    this.load.spritesheet("leaf-pink", "assets/fx/leaf-pink.png", { frameWidth: 12, frameHeight: 7 });
+    for (const sound of ["hit", "swing", "levelup", "dead"]) {
+      this.load.audio(sound, `assets/sfx/${sound}.wav`);
+    }
   }
 
   create() {
@@ -110,17 +157,27 @@ export class WorldScene extends Phaser.Scene {
     this.placeProps();
     this.drawPortals();
     this.showRegionBanner();
+    this.addAmbience();
 
     this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.cameras.main.setBackgroundColor("#1d3b2a");
+    // A soft darkening towards the screen's edges draws the eye to the middle (WebGL only).
+    this.cameras.main.postFX?.addVignette(0.5, 0.5, 0.95, 0.22);
 
     this.marker = this.add.circle(0, 0, 10).setStrokeStyle(2, 0xffffff, 0.9).setVisible(false).setDepth(1);
 
     // false = don't swallow these keys globally, or nobody could type "w" into the chat.
     this.keys = this.input.keyboard!.addKeys(
-      { up: "UP", down: "DOWN", left: "LEFT", right: "RIGHT", w: "W", a: "A", s: "S", d: "D" },
+      { up: "UP", down: "DOWN", left: "LEFT", right: "RIGHT", w: "W", a: "A", s: "S", d: "D", space: "SPACE", j: "J" },
       false,
     ) as WorldScene["keys"];
+    for (const key of [this.keys.space, this.keys.j]) {
+      key.on("down", () => {
+        if (document.activeElement !== this.chatInput) {
+          this.attack();
+        }
+      });
+    }
 
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       this.room.send("target", { x: pointer.worldX, y: pointer.worldY });
@@ -134,6 +191,7 @@ export class WorldScene extends Phaser.Scene {
       player.onChange(() => {
         this.onPlayerMoved(sessionId, player.x, player.y);
         this.setTitle(sessionId, player.title);
+        this.onPlayerState(sessionId, player);
       });
       // players.size isn't updated yet inside onAdd, so count what is on screen.
       this.onPlayerCount(this.views.size);
@@ -145,6 +203,8 @@ export class WorldScene extends Phaser.Scene {
       view?.title.destroy();
       view?.sparkles?.destroy();
       view?.bubble.destroy();
+      view?.hpBar.destroy();
+      view?.aura?.destroy();
       this.views.delete(sessionId);
       this.onPlayerCount(this.views.size);
     });
@@ -156,11 +216,14 @@ export class WorldScene extends Phaser.Scene {
     // Glide towards the server position instead of jumping 20 times a second.
     const blend = Math.min(1, delta / 90);
     this.views.forEach((view) => {
-      view.container.x += (view.targetX - view.container.x) * blend;
-      view.container.y += (view.targetY - view.container.y) * blend;
+      const far = Math.hypot(view.targetX - view.container.x, view.targetY - view.container.y) > SNAP_DISTANCE;
+      view.container.x += (view.targetX - view.container.x) * (far ? 1 : blend);
+      view.container.y += (view.targetY - view.container.y) * (far ? 1 : blend);
       view.container.setDepth(view.container.y);
       const { x, y } = view.container;
       view.name.setPosition(x, y + NAME_Y);
+      view.hpBar.setPosition(x, y + HP_BAR.y).setDepth(view.container.y + 1);
+      view.aura?.setPosition(x, y + 2).setDepth(view.container.y - 1);
 
       const title = findTitle(view.titleId);
       // Rarer titles float gently; legendary ones also run through the rainbow.
@@ -186,13 +249,217 @@ export class WorldScene extends Phaser.Scene {
       }
       view.bubble.setPosition(x, y + (title ? BUBBLE_Y_WITH_TITLE : BUBBLE_Y));
 
-      if (time - view.movedAt < WALK_HOLD_MS) {
+      const column = DIRECTIONS.indexOf(view.facing);
+      if (view.dead) {
+        view.sprite.stop();
+        view.sprite.setFrame(DEAD_FRAME);
+      } else if (time < view.attackUntil) {
+        view.sprite.stop();
+        view.sprite.setFrame(ATTACK_ROW * DIRECTIONS.length + column);
+      } else if (time - view.movedAt < WALK_HOLD_MS) {
         view.sprite.play(`${view.skin}-walk-${view.facing}`, true);
       } else {
         view.sprite.stop();
-        view.sprite.setFrame(DIRECTIONS.indexOf(view.facing));
+        view.sprite.setFrame(column);
       }
     });
+  }
+
+  /** Asks the server for a swing; the button and the space or J key call this. */
+  attack() {
+    if (!this.views.get(this.room.sessionId)?.dead) {
+      this.room.send("attack");
+    }
+  }
+
+  /** Someone swung: their swing pose, a blade arc in front of them and its whoosh. */
+  showSwing(sessionId: string, dirX: number, dirY: number) {
+    const view = this.views.get(sessionId);
+    if (!view) {
+      return;
+    }
+
+    view.facing = dirX > 0 ? "right" : dirX < 0 ? "left" : dirY < 0 ? "up" : "down";
+    view.attackUntil = this.time.now + SWING_MS;
+    const slash = this.add
+      .sprite(view.container.x + dirX * 34, view.container.y - 20 + dirY * 30, "slash")
+      .setScale(2.2)
+      .setRotation(Math.atan2(dirY, dirX))
+      .setDepth(view.container.y + 2)
+      .setBlendMode(Phaser.BlendModes.ADD);
+    slash.play("slash");
+    slash.once("animationcomplete", () => slash.destroy());
+    this.playNear("swing", view, 0.25);
+  }
+
+  /** A hit lands: a red flash, a jolt, a floating number, and for the one hurt a shaking screen. */
+  showHit(event: HitEvent) {
+    const view = this.views.get(event.target);
+    if (!view) {
+      return;
+    }
+
+    const isMe = event.target === this.room.sessionId;
+    if (event.blocked) {
+      this.floatText(view, "อมตะ!", "#ffd60a", 18);
+      return;
+    }
+
+    view.sprite.setTintFill(0xffffff);
+    this.time.delayedCall(70, () => view.sprite.setTint(0xff6b6b));
+    this.time.delayedCall(180, () => view.sprite.clearTint());
+    this.tweens.add({ targets: view.sprite, x: { from: Phaser.Math.Between(-4, 4), to: 0 }, duration: 120 });
+
+    const text = event.crit ? `${event.damage}!` : `${event.damage}`;
+    this.floatText(view, text, event.crit ? "#ffd60a" : isMe ? "#ff5c5c" : "#ffffff", event.crit ? 26 : 19);
+    this.playNear("hit", view, 0.35);
+    if (isMe) {
+      this.cameras.main.shake(event.killed ? 300 : 120, event.killed ? 0.012 : 0.005);
+    }
+
+    if (event.killed) {
+      const smoke = this.add.sprite(view.container.x, view.container.y - 18, "smoke").setScale(2.5).setDepth(view.container.y + 3);
+      smoke.play("smoke");
+      smoke.once("animationcomplete", () => smoke.destroy());
+      if (isMe) {
+        this.sound.play("dead", { volume: 0.35 });
+      }
+    }
+  }
+
+  /** A golden ring and a "LEVEL UP" over a player who just grew stronger (or was healed by a GM). */
+  showLevelUp(sessionId: string) {
+    const view = this.views.get(sessionId);
+    if (!view) {
+      return;
+    }
+
+    const ring = this.add
+      .circle(view.container.x, view.container.y - 16, 12)
+      .setStrokeStyle(4, 0xffd60a)
+      .setDepth(LABEL_DEPTH - 2);
+    this.tweens.add({ targets: ring, scale: 5, alpha: 0, duration: 700, ease: "Cubic.easeOut", onComplete: () => ring.destroy() });
+    this.floatText(view, "LEVEL UP!", "#ffd60a", 22);
+    this.playNear("levelup", view, 0.4);
+  }
+
+  private floatText(view: PlayerView, text: string, color: string, size: number) {
+    const label = this.add
+      .text(view.container.x + Phaser.Math.Between(-10, 10), view.container.y - 50, text, {
+        fontFamily: FONT,
+        fontSize: `${size}px`,
+        fontStyle: "bold",
+        color,
+        stroke: "#140b1f",
+        strokeThickness: 5,
+      })
+      .setOrigin(0.5)
+      .setDepth(LABEL_DEPTH + 2)
+      .setScale(0.6);
+    this.tweens.add({ targets: label, scale: 1, duration: 120, ease: "Back.easeOut" });
+    this.tweens.add({
+      targets: label,
+      y: label.y - 46,
+      alpha: 0,
+      delay: 350,
+      duration: 650,
+      ease: "Cubic.easeIn",
+      onComplete: () => label.destroy(),
+    });
+  }
+
+  /** Plays a sound only for things happening on screen, so far-off fights stay quiet. */
+  private playNear(key: string, view: PlayerView, volume: number) {
+    if (this.cameras.main.worldView.contains(view.container.x, view.container.y)) {
+      this.sound.play(key, { volume });
+    }
+  }
+
+  /** Level, health, death and GM marks, whenever the server changes them. */
+  private onPlayerState(
+    sessionId: string,
+    player: { name: string; level: number; xp: number; hp: number; maxHp: number; dead: boolean; gm: boolean; god: boolean },
+  ) {
+    const view = this.views.get(sessionId);
+    if (!view) {
+      return;
+    }
+
+    const label = `${player.gm ? "[GM] " : ""}Lv.${player.level} ${player.name}`;
+    if (view.label !== label) {
+      view.label = label;
+      view.name.setText(label);
+      if (player.gm) {
+        view.name.setColor("#ff4d6d");
+      }
+    }
+
+    if (view.hpShown !== player.hp / player.maxHp) {
+      view.hpShown = player.hp / player.maxHp;
+      this.drawHpBar(view);
+    }
+
+    if (view.dead !== player.dead) {
+      view.dead = player.dead;
+      view.container.setAlpha(player.dead ? 0.55 : 1);
+      view.hpBar.setVisible(!player.dead);
+      if (!player.dead) {
+        // Back on their feet: fade in.
+        view.container.setAlpha(0);
+        this.tweens.add({ targets: view.container, alpha: 1, duration: 400 });
+      }
+    }
+
+    if (player.god && !view.aura) {
+      view.aura = this.add.ellipse(view.container.x, view.container.y + 2, 54, 20, 0xffd60a, 0.35).setBlendMode(Phaser.BlendModes.ADD);
+      this.tweens.add({ targets: view.aura, scaleX: 1.25, scaleY: 1.25, alpha: 0.12, duration: 800, yoyo: true, repeat: -1 });
+    } else if (!player.god && view.aura) {
+      view.aura.destroy();
+      view.aura = undefined;
+    }
+
+    if (sessionId === this.room.sessionId) {
+      this.onSelf({ ...player });
+    }
+  }
+
+  private drawHpBar(view: PlayerView) {
+    const share = Phaser.Math.Clamp(view.hpShown, 0, 1);
+    const color = share > 0.5 ? 0x52d273 : share > 0.25 ? 0xf4c542 : 0xff4d4d;
+    const left = -HP_BAR.width / 2;
+    view.hpBar
+      .clear()
+      .fillStyle(0x140b1f, 0.75)
+      .fillRoundedRect(left - 2, -2, HP_BAR.width + 4, HP_BAR.height + 4, 3)
+      .fillStyle(color, 1)
+      .fillRoundedRect(left, 0, Math.max(2, HP_BAR.width * share), HP_BAR.height, 2)
+      .fillStyle(0xffffff, 0.35)
+      .fillRect(left + 1, 0, Math.max(0, HP_BAR.width * share - 2), 1);
+  }
+
+  /** Leaves or petals drifting across the screen, in front of the world. */
+  private addAmbience() {
+    const texture = AMBIENT[this.regionId];
+    if (!texture) {
+      return;
+    }
+
+    this.add
+      .particles(0, 0, texture, {
+        frame: [0, 1, 2, 3, 4, 5],
+        x: { min: -50, max: this.scale.width + 50 },
+        y: -20,
+        lifespan: 9000,
+        speedX: { min: -30, max: 25 },
+        speedY: { min: 35, max: 70 },
+        rotate: { min: -40, max: 40 },
+        scale: { min: 2.6, max: 3.2 },
+        alpha: { start: 0.95, end: 0.6 },
+        frequency: 420,
+        quantity: 1,
+      })
+      .setScrollFactor(0)
+      .setDepth(LABEL_DEPTH - 3);
   }
 
   showBubble(sessionId: string, text: string) {
@@ -339,7 +606,23 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
-  private addPlayer(sessionId: string, player: { name: string; x: number; y: number; skin: number; title: string }) {
+  private addPlayer(
+    sessionId: string,
+    player: {
+      name: string;
+      x: number;
+      y: number;
+      skin: number;
+      title: string;
+      level: number;
+      xp: number;
+      hp: number;
+      maxHp: number;
+      dead: boolean;
+      gm: boolean;
+      god: boolean;
+    },
+  ) {
     const isMe = sessionId === this.room.sessionId;
     const skin = SKINS[player.skin] ?? SKINS[0];
 
@@ -383,7 +666,13 @@ export class WorldScene extends Phaser.Scene {
       .setVisible(false);
 
     const container = this.add.container(player.x, player.y, [shadow, sprite]);
+    const hpBar = this.add.graphics({ x: player.x, y: player.y + HP_BAR.y });
     this.views.set(sessionId, {
+      hpBar,
+      attackUntil: 0,
+      dead: false,
+      label: "",
+      hpShown: -1,
       sprite,
       container,
       name,
@@ -400,6 +689,7 @@ export class WorldScene extends Phaser.Scene {
     });
 
     this.setTitle(sessionId, player.title);
+    this.onPlayerState(sessionId, player);
     if (isMe) {
       this.cameras.main.startFollow(container, true, 0.12, 0.12);
     }
@@ -407,7 +697,7 @@ export class WorldScene extends Phaser.Scene {
 
   private prepareTextures() {
     // Crisp pixels for the art only; the Thai text stays smooth.
-    for (const key of [...SKINS, "floor", "water", "nature", "village", "field", "shadow"]) {
+    for (const key of [...SKINS, "floor", "water", "nature", "village", "field", "shadow", "slash", "smoke", "leaf", "leaf-pink"]) {
       this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
     }
 
@@ -425,6 +715,9 @@ export class WorldScene extends Phaser.Scene {
     for (const [name, [sheet, column, row, width, height]] of Object.entries(PROPS)) {
       this.textures.get(sheet).add(name, 0, column * 16, row * 16, width * 16, height * 16);
     }
+
+    this.anims.create({ key: "slash", frames: this.anims.generateFrameNumbers("slash"), frameRate: 24 });
+    this.anims.create({ key: "smoke", frames: this.anims.generateFrameNumbers("smoke"), frameRate: 14 });
 
     // A four-pointed star for the sparkles around grand titles.
     this.make

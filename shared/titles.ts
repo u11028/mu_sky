@@ -19,6 +19,10 @@ export type LifeStat =
   | "nightChats"
   /** Different looks worn. */
   | "skins"
+  /** Other players defeated. */
+  | "kills"
+  /** Times defeated. */
+  | "deaths"
   /** Other titles earned. */
   | "titles";
 
@@ -44,6 +48,8 @@ export interface Title {
   /** The counter and the value it must reach; no stat = everyone has it. */
   stat?: LifeStat;
   goal: number;
+  /** Only a GM can give it. */
+  grantOnly?: boolean;
   style: TitleStyle;
 }
 
@@ -203,6 +209,33 @@ export const TITLES: readonly Title[] = [
     style: { color: "#ffffff", glow: "#ffd23f", bubbleFill: "#2a2108", bubbleBorder: "#ffe066", bubbleText: "#fff4c7" },
   },
   {
+    id: "bloody",
+    name: "มือเปื้อนเลือด",
+    rarity: "epic",
+    hint: "ล้มผู้เล่นคนอื่น 10 ครั้ง",
+    stat: "kills",
+    goal: 10,
+    style: { color: "#ff6b6b", glow: "#c1121f", bubbleFill: "#2b0606", bubbleBorder: "#e5383b", bubbleText: "#ffd6d6" },
+  },
+  {
+    id: "reaper",
+    name: "ยมทูตประจำสยาม",
+    rarity: "legendary",
+    hint: "ล้มผู้เล่นคนอื่น 100 ครั้ง",
+    stat: "kills",
+    goal: 100,
+    style: { color: "#ffffff", glow: "#7b2cbf", bubbleFill: "#10001f", bubbleBorder: "#9d4edd", bubbleText: "#ead6ff" },
+  },
+  {
+    id: "regular",
+    name: "ตายบ่อยจนยมบาลจำหน้าได้",
+    rarity: "epic",
+    hint: "ถูกล้ม 50 ครั้ง",
+    stat: "deaths",
+    goal: 50,
+    style: { color: "#d0d0d0", glow: "#6c757d", bubbleFill: "#1e1e1e", bubbleBorder: "#adb5bd", bubbleText: "#f1f1f1" },
+  },
+  {
     id: "tireless",
     name: "ผู้ไม่เคยหยุดพัก",
     rarity: "mythic",
@@ -219,6 +252,15 @@ export const TITLES: readonly Title[] = [
     stat: "titles",
     goal: 15,
     style: { color: "#f15bb5", glow: "#00bbf9", bubbleFill: "#140021", bubbleBorder: "#fee440", bubbleText: "#fff6d6" },
+  },
+  {
+    id: "skykeeper",
+    name: "ผู้คุมกฎแห่งฟ้า",
+    rarity: "mythic",
+    hint: "มอบโดย GM เท่านั้น",
+    goal: 1,
+    grantOnly: true,
+    style: { color: "#ffd60a", glow: "#ff0054", bubbleFill: "#1a0008", bubbleBorder: "#ffd60a", bubbleText: "#fff3c4" },
   },
 ];
 
