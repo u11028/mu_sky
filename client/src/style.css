@@ -3,7 +3,7 @@
   --text: #f4f1e8;
   --muted: #b9c2b4;
   --accent: #e9c46a;
-  font-family: Tahoma, "Noto Sans Thai", "Leelawadee UI", sans-serif;
+  font-family: Kanit, Tahoma, "Noto Sans Thai", "Leelawadee UI", sans-serif;
   color: var(--text);
 }
 
@@ -128,53 +128,6 @@ button {
 #join-form p {
   margin: 0;
   color: var(--muted);
-}
-
-#join-skins {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
-  gap: 6px;
-  max-height: 230px;
-  overflow-y: auto;
-  margin: 0;
-  padding: 2px;
-  border: 0;
-  touch-action: pan-y;
-}
-
-#join-skins legend {
-  margin-bottom: 8px;
-  color: var(--muted);
-}
-
-#join-skins label {
-  display: grid;
-  place-items: center;
-  padding: 4px;
-  border-radius: 10px;
-  border: 2px solid transparent;
-  background: rgba(255, 255, 255, 0.06);
-  cursor: pointer;
-}
-
-#join-skins label:has(input:checked) {
-  border-color: var(--accent);
-  color: var(--text);
-}
-
-#join-skins input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* The first frame (facing down) of a 64x112 sheet, shown three times bigger. */
-.skin-preview {
-  width: 48px;
-  height: 48px;
-  background-size: 192px 336px;
-  background-position: 0 0;
-  image-rendering: pixelated;
 }
 
 #join-error {
@@ -847,4 +800,362 @@ button {
 button.secondary {
   background: rgba(255, 255, 255, 0.12);
   color: var(--text);
+}
+
+/* ---- 3D world ---- */
+
+#game .world-canvas,
+#game .world-labels {
+  position: absolute;
+  inset: 0;
+}
+
+#game .world-canvas {
+  display: block;
+  touch-action: none;
+}
+
+#game .world-labels {
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* The label sits on a zero-size point over the head; its stack grows upwards from there. */
+.actor-anchor {
+  width: 0;
+  height: 0;
+}
+
+.actor-stack {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.actor-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 2px #000, 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+.actor-name.me {
+  color: #ffe08a;
+}
+
+.actor-name.gm {
+  color: #ff6b81;
+}
+
+.actor-name.tough {
+  color: #ffb35c;
+}
+
+.actor-name.danger {
+  color: #ff5c5c;
+}
+
+.actor-name.boss {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffb703;
+}
+
+.actor-title .title-badge {
+  font-size: 13px;
+  margin: 0;
+}
+
+/* Epic and finer titles sparkle. */
+.actor-title .title-badge.rarity-epic,
+.actor-title .title-badge.rarity-legendary,
+.actor-title .title-badge.rarity-mythic {
+  position: relative;
+}
+
+.actor-title .title-badge.rarity-epic::after,
+.actor-title .title-badge.rarity-legendary::after,
+.actor-title .title-badge.rarity-mythic::after {
+  content: "✦";
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  font-size: 11px;
+  color: #fff;
+  text-shadow: 0 0 6px var(--title-glow, #fff);
+  animation: twinkle 1.4s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1) rotate(90deg);
+  }
+}
+
+.actor-hp {
+  width: 46px;
+  height: 6px;
+  padding: 1px;
+  border-radius: 999px;
+  background: rgba(20, 11, 31, 0.75);
+}
+
+.boss .actor-hp {
+  width: 110px;
+  height: 9px;
+}
+
+.actor-hp span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, #8ef0a0, #2fb14b);
+  transition: width 0.2s ease-out;
+}
+
+.actor-hp.mid span {
+  background: linear-gradient(180deg, #ffe17a, #e0a500);
+}
+
+.actor-hp.low span {
+  background: linear-gradient(180deg, #ff9a9a, #e02424);
+}
+
+.monster .actor-hp span,
+.boss .actor-hp span {
+  background: linear-gradient(180deg, #ff8a8a, #d62839);
+}
+
+/* Speech bubbles take the colours of the speaker's title. */
+.bubble {
+  position: relative;
+  max-width: 220px;
+  margin-bottom: 8px;
+  padding: 6px 12px;
+  border: 2px solid var(--bubble-border, #cfd8dc);
+  border-radius: 14px;
+  background: var(--bubble-fill, #fff);
+  color: var(--bubble-text, #1b1b1b);
+  font-size: 14px;
+  white-space: normal;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  animation: pop 0.18s ease-out;
+}
+
+.bubble[hidden] {
+  display: none;
+}
+
+.bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 12px;
+  height: 12px;
+  background: inherit;
+  border-right: inherit;
+  border-bottom: inherit;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.bubble.rarity-epic,
+.bubble.rarity-legendary,
+.bubble.rarity-mythic {
+  border-width: 3px;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35) inset, 0 0 14px var(--bubble-border);
+}
+
+.bubble.rarity-legendary {
+  animation: pop 0.18s ease-out, rainbow-border 3s linear infinite;
+}
+
+.bubble.rarity-mythic {
+  animation: pop 0.18s ease-out, glitch 1.6s steps(1) infinite;
+}
+
+@keyframes rainbow-border {
+  0% {
+    border-color: #ff9cf0;
+  }
+  33% {
+    border-color: #9cf0ff;
+  }
+  66% {
+    border-color: #fff59c;
+  }
+  100% {
+    border-color: #ff9cf0;
+  }
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+}
+
+/* Damage numbers and other words that float up from someone. */
+.float-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 0 #140b1f, 0 0 6px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  animation: pop 0.15s ease-out;
+}
+
+.float-text.hurt {
+  color: #ff6b6b;
+}
+
+.float-text.crit {
+  font-size: 28px;
+  color: #ffd60a;
+}
+
+.float-text.immortal,
+.float-text.levelup {
+  font-size: 22px;
+  color: #ffd60a;
+}
+
+.float-text.xp {
+  font-size: 16px;
+  color: #8ecbff;
+}
+
+.portal-sign {
+  padding: 4px 12px;
+  border: 1px solid rgba(125, 249, 255, 0.7);
+  border-radius: 999px;
+  background: rgba(10, 40, 60, 0.75);
+  color: #e9fdff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 0 12px rgba(125, 249, 255, 0.45);
+}
+
+.region-banner {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  pointer-events: none;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
+  animation: banner 4s ease-in-out forwards;
+}
+
+.region-banner strong {
+  font-size: clamp(30px, 6vw, 52px);
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.region-banner span {
+  font-size: clamp(15px, 2.4vw, 20px);
+}
+
+@keyframes banner {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  15%,
+  70% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+#loading {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  background: radial-gradient(ellipse at center, #2a5a3b, #10261a);
+  color: var(--text);
+  text-align: center;
+}
+
+#loading[hidden] {
+  display: none;
+}
+
+.loading-bar {
+  width: min(320px, 70vw);
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+.loading-bar span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #e9c46a, #f4a261);
+  transition: width 0.2s;
+}
+
+/* ---- Hero picker on the join screen ---- */
+
+#hero-picker {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 6px;
+}
+
+#hero-stage {
+  height: 220px;
+  border-radius: 14px;
+  background: radial-gradient(ellipse at 50% 85%, rgba(233, 196, 106, 0.25), transparent 60%),
+    linear-gradient(180deg, #2e5a40, #1d3b2a);
+  overflow: hidden;
+}
+
+#hero-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#hero-picker > button {
+  padding: 10px 12px;
+  font-size: 18px;
+}
+
+#hero-name {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent) !important;
 }

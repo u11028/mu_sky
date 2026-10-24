@@ -179,9 +179,9 @@ export const TITLES: readonly Title[] = [
     id: "faces",
     name: "พันหน้าพันตา",
     rarity: "epic",
-    hint: "เข้าเกมด้วยชุดที่ต่างกัน 30 ชุด",
+    hint: "เข้าเกมด้วยตัวละครครบทั้ง 10 แบบ",
     stat: "skins",
-    goal: 30,
+    goal: 10,
     style: { color: "#ffb0f5", glow: "#d23cff", bubbleFill: "#2e0a33", bubbleBorder: "#e07bff", bubbleText: "#fbe0ff" },
   },
   {

@@ -4,82 +4,38 @@ import type { RegionId } from "./regions.ts";
 
 export interface MonsterKind {
   name: string;
-  /** Art: a 4x4 sheet in assets/monsters, or a boss's idle strip in assets/bosses. */
-  sprite: string;
+  /** Model file in assets/3d/monsters. */
+  model: string;
   level: number;
   boss?: boolean;
-  /** Boss strips: frame size and count. */
-  frame?: { width: number; height: number; count: number };
-  /** How much bigger than the 16 px art it is drawn. */
-  scale: number;
+  /** How tall it stands, in world units (a hero is about 2). */
+  height: number;
 }
 
 export const MONSTER_KINDS = {
-  slime: { name: "สไลม์เขียว", sprite: "Slime", level: 1, scale: 3 },
-  mushroom: { name: "เห็ดซน", sprite: "Mushroom", level: 2, scale: 3 },
-  larva: { name: "หนอนนา", sprite: "Larva", level: 3, scale: 3 },
-  mole: { name: "ตุ่นขุดนา", sprite: "Mole", level: 3, scale: 3 },
-  snake: { name: "งูเขียวหางไหม้", sprite: "Snake", level: 4, scale: 3 },
-  owl: { name: "นกฮูกดอย", sprite: "Owl", level: 4, scale: 3 },
-  spirit: { name: "ภูตหมอก", sprite: "Spirit", level: 5, scale: 3 },
-  racoon: { name: "แรคคูนขโมยผลไม้", sprite: "Racoon", level: 5, scale: 3 },
-  octopus: { name: "หมึกแดงชายหาด", sprite: "RedOctopus", level: 6, scale: 3 },
-  axolot: { name: "ซาลาแมนเดอร์", sprite: "Axolot", level: 6, scale: 3 },
-  bamboo: { name: "ไผ่เดินได้", sprite: "Bamboo", level: 6, scale: 3 },
-  kappa: { name: "กัปปะริมน้ำ", sprite: "KappaGreen", level: 7, scale: 3 },
-  snake2: { name: "งูจงอาง", sprite: "Snake2", level: 7, scale: 3 },
-  skull: { name: "หัวกะโหลกหลอน", sprite: "Skull", level: 8, scale: 3 },
-  spider: { name: "แมงมุมพิษ", sprite: "SpiderRed", level: 8, scale: 3 },
-  cyclope: { name: "ไซคลอปส์จิ๋ว", sprite: "Cyclope", level: 9, scale: 3 },
+  slime: { name: "สไลม์เขียว", model: "GreenBlob", level: 1, height: 1.1 },
+  mushroom: { name: "เห็ดซน", model: "Mushnub", level: 2, height: 1.3 },
+  larva: { name: "กระต่ายทุ่งนา", model: "Bunny", level: 3, height: 1.5 },
+  mole: { name: "กบนาตัวโต", model: "Frog", level: 3, height: 1.4 },
+  snake: { name: "กระบองเพชรจอมซน", model: "Cactoro", level: 4, height: 1.6 },
+  owl: { name: "นกดอยฟูฟ่อง", model: "Birb", level: 4, height: 1.3 },
+  spirit: { name: "ภูตหมอก", model: "Ghost", level: 5, height: 1.7 },
+  racoon: { name: "ผึ้งเกราะสวนผลไม้", model: "Armabee", level: 5, height: 1.5 },
+  octopus: { name: "หมึกปีกชายหาด", model: "Squidle", level: 6, height: 1.6 },
+  axolot: { name: "ปลาบินทะเลตะวันออก", model: "Glub", level: 6, height: 1.5 },
+  bamboo: { name: "ภูตลมทะเลใต้", model: "Hywirl", level: 6, height: 1.7 },
+  kappa: { name: "ไดโนจอมซน", model: "Dino", level: 7, height: 1.8 },
+  snake2: { name: "ค้างคาวถ้ำ", model: "Goleling", level: 7, height: 1.5 },
+  skull: { name: "ออร์คป่าตะวันตก", model: "Orc", level: 8, height: 2.1 },
+  spider: { name: "ปีศาจผาหิน", model: "Demon", level: 8, height: 2.1 },
+  cyclope: { name: "เยติภูเขา", model: "Yeti", level: 9, height: 2.3 },
 
-  kingSlime: {
-    name: "ราชาสไลม์",
-    sprite: "GiantSlime",
-    level: 6,
-    boss: true,
-    frame: { width: 62, height: 52, count: 5 },
-    scale: 2.4,
-  },
-  frogKing: {
-    name: "ราชากบทุ่งนา",
-    sprite: "GiantFrog",
-    level: 9,
-    boss: true,
-    frame: { width: 40, height: 40, count: 5 },
-    scale: 3,
-  },
-  mistSpirit: {
-    name: "วิญญาณดอยหลวง",
-    sprite: "GiantSpirit",
-    level: 10,
-    boss: true,
-    frame: { width: 50, height: 50, count: 5 },
-    scale: 2.6,
-  },
-  giantRacoon: {
-    name: "แรคคูนยักษ์แห่งสวน",
-    sprite: "GiantRacoon",
-    level: 11,
-    boss: true,
-    frame: { width: 60, height: 60, count: 6 },
-    scale: 2.4,
-  },
-  giantBamboo: {
-    name: "อสูรไผ่ยักษ์",
-    sprite: "GiantBamboo",
-    level: 12,
-    boss: true,
-    frame: { width: 62, height: 62, count: 6 },
-    scale: 2.4,
-  },
-  demonCyclop: {
-    name: "ยักษ์ตาเดียวแห่งผาหิน",
-    sprite: "DemonCyclop",
-    level: 14,
-    boss: true,
-    frame: { width: 50, height: 50, count: 5 },
-    scale: 2.8,
-  },
+  kingSlime: { name: "ราชาเห็ดยักษ์", model: "MushroomKing", level: 6, boss: true, height: 4.2 },
+  frogKing: { name: "ราชาอัลปากาแห่งอีสาน", model: "AlpakingEvolved", level: 9, boss: true, height: 4.4 },
+  mistSpirit: { name: "วิญญาณดอยหลวง", model: "GhostSkull", level: 10, boss: true, height: 4.6 },
+  giantRacoon: { name: "มังกรทะเลตะวันออก", model: "Dragon", level: 11, boss: true, height: 4.6 },
+  giantBamboo: { name: "ราชาค้างคาวถ้ำใต้", model: "GolelingEvolved", level: 12, boss: true, height: 4.6 },
+  demonCyclop: { name: "มังกรเพลิงผาหิน", model: "DragonEvolved", level: 14, boss: true, height: 5.2 },
 } as const satisfies Record<string, MonsterKind>;
 
 export type MonsterKindId = keyof typeof MONSTER_KINDS;

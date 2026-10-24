@@ -7,7 +7,7 @@ import {
   type ChatMessage,
   NAME_MAX_LENGTH,
   PLAYER_SPEED,
-  SKINS,
+  HEROES,
   WORLD_HEIGHT,
   WORLD_WIDTH,
 } from "../../shared/world.ts";
@@ -241,7 +241,7 @@ export class WorldRoom extends Room<WorldState> {
     const player = new Player();
     player.name = cleanText(options?.name, NAME_MAX_LENGTH) || `ผู้เล่น${Math.floor(1000 + Math.random() * 9000)}`;
     const skin = Number(options?.skin);
-    player.skin = Number.isInteger(skin) && skin >= 0 && skin < SKINS.length ? skin : 0;
+    player.skin = Number.isInteger(skin) && skin >= 0 && skin < HEROES.length ? skin : 0;
 
     // Without a valid id the progress still counts, but only for this visit.
     const playerId = validPlayerId(options?.playerId) ?? `guest-${client.sessionId}`;
@@ -881,7 +881,7 @@ export class WorldRoom extends Room<WorldState> {
         return;
       }
 
-      // Same rule as the client uses to pick which way the sprite looks.
+      // Snapped to the four main directions: where a swing lands.
       if (Math.abs(dx) > Math.abs(dy)) {
         movement.facingX = Math.sign(dx);
         movement.facingY = 0;

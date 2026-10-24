@@ -1,11 +1,12 @@
 import "./style.css";
-import Phaser from "phaser";
 import { Client, type Room } from "colyseus.js";
-import { ROOM_NAME, SERVER_PORT, SKINS, type ChatMessage } from "../../shared/world.ts";
+import { ROOM_NAME, SERVER_PORT, type ChatMessage } from "../../shared/world.ts";
+import { HEROES } from "../../shared/heroes.ts";
 import { isRegionId, REGIONS, type RegionId, START_REGION } from "../../shared/regions.ts";
 import type { Achievement, ProgressView } from "../../shared/quests.ts";
 import { decorateTitle, findTitle, type Title, TITLES } from "../../shared/titles.ts";
-import { type SelfState, WorldScene } from "./WorldScene.ts";
+import { type SelfState, World3D } from "./three/World3D.ts";
+import { HeroPicker } from "./three/HeroPicker.ts";
 import { RESPAWN_MS, type HitEvent, isSkillId, SKILLS, type SkillId, xpToNext } from "../../shared/combat.ts";
 import { BAN_DAYS, type GmAction, type GmList, type GmPlayer } from "../../shared/gm.ts";
 
@@ -18,7 +19,6 @@ const joinDialog = document.querySelector<HTMLDivElement>("#join")!;
 const joinForm = document.querySelector<HTMLFormElement>("#join-form")!;
 const joinName = document.querySelector<HTMLInputElement>("#join-name")!;
 const joinError = document.querySelector<HTMLParagraphElement>("#join-error")!;
-const joinSkins = document.querySelector<HTMLFieldSetElement>("#join-skins")!;
 const chatLog = document.querySelector<HTMLOListElement>("#chat-log")!;
 const chatForm = document.querySelector<HTMLFormElement>("#chat-form")!;
 const chatInput = document.querySelector<HTMLInputElement>("#chat-input")!;
@@ -50,8 +50,7 @@ const protocol = location.protocol === "https:" ? "wss" : "ws";
 const endpoint = import.meta.env.DEV ? `${protocol}://${location.hostname}:${SERVER_PORT}` : `${protocol}://${location.host}`;
 
 let room: Room | undefined;
-let game: Phaser.Game | undefined;
-let scene: WorldScene | undefined;
+let scene: World3D | undefined;
 /** Who the player is; sent again whenever they enter another region. */
 let player = { name: "", skin: 0, playerId: loadPlayerId() };
 /** True while switching regions, so leaving the old room doesn't count as a disconnect. */
@@ -87,21 +86,14 @@ try {
   // Private windows may block storage; the choice just isn't remembered.
 }
 
-SKINS.forEach((skin, index) => {
-  const label = document.createElement("label");
-  const input = Object.assign(document.createElement("input"), { type: "radio", name: "skin", value: String(index) });
-  input.checked = index === (savedSkin < SKINS.length ? savedSkin : 0);
-  const preview = document.createElement("span");
-  preview.className = "skin-preview";
-  preview.style.backgroundImage = `url(assets/characters/${skin}.png)`;
-  label.title = skin;
-  label.append(input, preview);
-  joinSkins.append(label);
-  if (input.checked) {
-    // Show the remembered look even when it sits far down the list.
-    requestAnimationFrame(() => label.scrollIntoView({ block: "nearest" }));
-  }
+const heroSkin = document.querySelector<HTMLInputElement>("#hero-skin")!;
+const heroName = document.querySelector<HTMLParagraphElement>("#hero-name")!;
+const picker = new HeroPicker(document.querySelector("#hero-stage")!, savedSkin % HEROES.length, (index) => {
+  heroSkin.value = String(index);
+  heroName.textContent = HEROES[index].name;
 });
+document.querySelector("#hero-prev")!.addEventListener("click", () => picker.step(-1));
+document.querySelector("#hero-next")!.addEventListener("click", () => picker.step(1));
 
 // ---- Accounts ----
 
@@ -160,10 +152,8 @@ async function account(path: "login" | "register") {
     if (result.name) {
       joinName.value = result.name;
     }
-    const look = joinSkins.querySelector<HTMLInputElement>(`input[value="${result.skin}"]`);
-    if (look && result.name) {
-      look.checked = true;
-      look.parentElement?.scrollIntoView({ block: "nearest" });
+    if (result.name) {
+      picker.show(result.skin);
     }
     renderAccount();
   } catch {
@@ -225,8 +215,7 @@ async function travel(to: RegionId, from: RegionId) {
   travelling = true;
   const leaving = room;
   room = undefined;
-  game?.destroy(true);
-  game = undefined;
+  scene?.destroy();
   scene = undefined;
   online.textContent = `กำลังเดินทางไป${REGIONS[to].name}...`;
   await leaving?.leave();
@@ -257,9 +246,11 @@ function showJoinDialog(message: string) {
 }
 
 function startGame(joined: Room, region: RegionId) {
-  // The scene shows the count once its art has loaded.
+  // The world shows the count once its models have loaded.
   online.textContent = "กำลังโหลด...";
-  scene = new WorldScene(
+  showLoading(0);
+  scene = new World3D(
+    document.querySelector<HTMLDivElement>("#game")!,
     joined,
     region,
     chatInput,
@@ -267,15 +258,8 @@ function startGame(joined: Room, region: RegionId) {
       online.textContent = `${REGIONS[region].name} · ออนไลน์ ${count} คน`;
     },
     renderSelf,
+    showLoading,
   );
-
-  game = new Phaser.Game({
-    type: Phaser.AUTO,
-    parent: "game",
-    backgroundColor: "#1d3b2a",
-    scale: { mode: Phaser.Scale.RESIZE, width: window.innerWidth, height: window.innerHeight },
-    scene,
-  });
 
   joined.onMessage("chat-history", (messages: ChatMessage[]) => messages.forEach(addChatLine));
   joined.onMessage("chat", (message: ChatMessage) => {
@@ -317,13 +301,21 @@ function startGame(joined: Room, region: RegionId) {
       return;
     }
 
-    game?.destroy(true);
-    game = undefined;
+    scene?.destroy();
     scene = undefined;
     room = undefined;
     showJoinDialog(removedReason || "หลุดจากเซิร์ฟเวอร์ เข้าเกมใหม่ได้เลย");
     removedReason = "";
   });
+}
+
+const loading = document.querySelector<HTMLDivElement>("#loading")!;
+
+/** A loading bar while a region's models arrive; gone at 100%. */
+function showLoading(share: number) {
+  loading.hidden = share >= 1;
+  loading.querySelector<HTMLElement>("span")!.style.width = `${Math.round(share * 100)}%`;
+  loading.querySelector("b")!.textContent = `กำลังสร้างโลก ${Math.round(share * 100)}%`;
 }
 
 function addChatLine(message: ChatMessage) {

@@ -4,10 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#1d3b2a" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet" />
     <title>MU Sky</title>
   </head>
   <body>
     <div id="game"></div>
+
+    <div id="loading" hidden>
+      <b>กำลังสร้างโลก 0%</b>
+      <div class="loading-bar"><span></span></div>
+    </div>
 
     <div id="hud">
       <span id="online">ออฟไลน์</span>
@@ -113,9 +121,13 @@
         <h1 id="join-title">MU Sky</h1>
         <p>ตั้งชื่อตัวละครของคุณ</p>
         <input id="join-name" maxlength="16" placeholder="ชื่อตัวละคร" required />
-        <fieldset id="join-skins">
-          <legend>เลือกชุด</legend>
-        </fieldset>
+        <div id="hero-picker">
+          <button type="button" id="hero-prev" class="secondary" aria-label="ตัวละครก่อนหน้า">◀</button>
+          <div id="hero-stage"></div>
+          <button type="button" id="hero-next" class="secondary" aria-label="ตัวละครถัดไป">▶</button>
+          <p id="hero-name"></p>
+          <input type="hidden" name="skin" id="hero-skin" value="0" />
+        </div>
         <button type="submit">เข้าเกม</button>
         <p id="join-error" role="alert"></p>
         <details id="account">

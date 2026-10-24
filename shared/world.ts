@@ -18,7 +18,7 @@ export const CHAT_HISTORY_SIZE = 30;
 export const ROOM_NAME = "world";
 export const SERVER_PORT = 2567;
 
-export { SKINS } from "./skins.ts";
+export { HEROES } from "./heroes.ts";
 
 export interface ChatMessage {
   from: string;
