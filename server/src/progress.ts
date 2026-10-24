@@ -52,8 +52,9 @@ interface Progress {
   /** Unix time in ms until which the player may not join; 0 = not banned. */
   bannedUntil: number;
   banReason: string;
-  /** Last name and address seen, to find and ban players. */
+  /** Last name, look and address seen: to find and ban players, and to fill in the join form after a login. */
   name: string;
+  skin: number;
   ip: string;
 }
 
@@ -132,6 +133,7 @@ function newProgress(): Progress {
     bannedUntil: 0,
     banReason: "",
     name: "",
+    skin: 0,
     ip: "",
   };
 }
@@ -371,9 +373,10 @@ export function setPower(playerId: string, power: "gm" | "god" | "oneHit", on: b
 }
 
 /** Remembers who a player last was, so a GM can find and ban them. */
-export function remember(playerId: string, name: string, ip: string) {
+export function remember(playerId: string, name: string, skin: number, ip: string) {
   const record = get(playerId);
   record.name = name;
+  record.skin = skin;
   record.ip = ip;
   scheduleSave();
 }
@@ -434,4 +437,10 @@ export function recordMonsterKill(playerId: string, boss: boolean) {
       life.bosses++;
     }
   });
+}
+
+/** The name and look a player last used, for the join form. */
+export function summary(playerId: string) {
+  const record = players.get(playerId);
+  return { name: record?.name ?? "", skin: record?.skin ?? 0 };
 }

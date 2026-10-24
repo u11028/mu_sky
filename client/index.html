@@ -118,6 +118,19 @@
         </fieldset>
         <button type="submit">เข้าเกม</button>
         <p id="join-error" role="alert"></p>
+        <details id="account">
+          <summary>บัญชี: เล่นต่อได้ทุกเครื่อง</summary>
+          <p id="account-status"></p>
+          <div id="account-fields">
+            <input id="account-user" maxlength="16" placeholder="ชื่อบัญชี" autocomplete="username" />
+            <input id="account-pass" type="password" maxlength="64" placeholder="รหัสผ่าน (6 ตัวขึ้นไป)" autocomplete="current-password" />
+            <div class="account-buttons">
+              <button id="account-login" type="button">เข้าสู่ระบบ</button>
+              <button id="account-register" type="button" class="secondary">สมัครใหม่</button>
+            </div>
+          </div>
+          <button id="account-logout" type="button" class="secondary" hidden>ออกจากระบบ</button>
+        </details>
       </form>
     </div>
 

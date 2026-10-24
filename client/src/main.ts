@@ -12,6 +12,7 @@ import { BAN_DAYS, type GmAction, type GmList, type GmPlayer } from "../../share
 const NAME_KEY = "mu-sky.name";
 const SKIN_KEY = "mu-sky.skin";
 const ID_KEY = "mu-sky.id";
+const USER_KEY = "mu-sky.user";
 
 const joinDialog = document.querySelector<HTMLDivElement>("#join")!;
 const joinForm = document.querySelector<HTMLFormElement>("#join-form")!;
@@ -58,10 +59,14 @@ let travelling = false;
 /** Why the server removed us (kicked or banned), shown once the connection closes. */
 let removedReason = "";
 
+/** A new random player id. getRandomValues, unlike randomUUID, also works on plain http:// over the LAN. */
+function freshPlayerId() {
+  return Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 /** A random id this browser keeps, so the server remembers its quests and titles. */
 function loadPlayerId() {
-  // getRandomValues, unlike randomUUID, also works on plain http:// over the LAN.
-  const fresh = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("");
+  const fresh = freshPlayerId;
   try {
     let id = localStorage.getItem(ID_KEY);
     if (!id || !/^[A-Za-z0-9_-]{16,64}$/.test(id)) {
@@ -97,6 +102,85 @@ SKINS.forEach((skin, index) => {
     requestAnimationFrame(() => label.scrollIntoView({ block: "nearest" }));
   }
 });
+
+// ---- Accounts ----
+
+const accountStatus = document.querySelector<HTMLParagraphElement>("#account-status")!;
+const accountFields = document.querySelector<HTMLDivElement>("#account-fields")!;
+const accountUser = document.querySelector<HTMLInputElement>("#account-user")!;
+const accountPass = document.querySelector<HTMLInputElement>("#account-pass")!;
+const accountLogout = document.querySelector<HTMLButtonElement>("#account-logout")!;
+
+function storage(key: string, value?: string | null) {
+  try {
+    if (value === undefined) {
+      return localStorage.getItem(key);
+    }
+    if (value === null) {
+      localStorage.removeItem(key);
+    } else {
+      localStorage.setItem(key, value);
+    }
+  } catch {
+    // Private windows may block storage.
+  }
+  return null;
+}
+
+function renderAccount() {
+  const user = storage(USER_KEY);
+  accountFields.hidden = Boolean(user);
+  accountLogout.hidden = !user;
+  accountStatus.textContent = user
+    ? `เข้าสู่ระบบเป็น ${user} แล้ว: เลเวล ฉายา และภารกิจตามไปทุกเครื่อง`
+    : "ยังไม่ได้เข้าสู่ระบบ: ความคืบหน้าเก็บไว้ในเบราว์เซอร์นี้เท่านั้น สมัครเพื่อเล่นต่อบนเครื่องอื่น";
+}
+
+async function account(path: "login" | "register") {
+  accountStatus.textContent = "กำลังตรวจสอบ...";
+  try {
+    const response = await fetch(`api/${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: accountUser.value.trim(), password: accountPass.value, playerId: player.playerId }),
+    });
+    const result = (await response.json()) as
+      | { ok: true; playerId: string; username: string; name: string; skin: number }
+      | { ok: false; error: string };
+    if (!result.ok) {
+      accountStatus.textContent = result.error;
+      return;
+    }
+
+    player.playerId = result.playerId;
+    storage(ID_KEY, result.playerId);
+    storage(USER_KEY, result.username);
+    accountPass.value = "";
+    // Pick up where this account left off: its name and look.
+    if (result.name) {
+      joinName.value = result.name;
+    }
+    const look = joinSkins.querySelector<HTMLInputElement>(`input[value="${result.skin}"]`);
+    if (look && result.name) {
+      look.checked = true;
+      look.parentElement?.scrollIntoView({ block: "nearest" });
+    }
+    renderAccount();
+  } catch {
+    accountStatus.textContent = "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง";
+  }
+}
+
+document.querySelector("#account-login")!.addEventListener("click", () => void account("login"));
+document.querySelector("#account-register")!.addEventListener("click", () => void account("register"));
+accountLogout.addEventListener("click", () => {
+  // A fresh, empty identity: the account's progress stays safe on the server.
+  player.playerId = freshPlayerId();
+  storage(ID_KEY, player.playerId);
+  storage(USER_KEY, null);
+  renderAccount();
+});
+renderAccount();
 
 joinForm.addEventListener("submit", async (event) => {
   event.preventDefault();

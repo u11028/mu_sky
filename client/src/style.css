@@ -809,3 +809,42 @@ button {
     left: 12px;
   }
 }
+
+/* ---- Accounts ---- */
+
+#account {
+  text-align: left;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+#account summary {
+  cursor: pointer;
+  color: var(--accent);
+}
+
+#account p {
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+#account-fields {
+  display: grid;
+  gap: 8px;
+}
+
+#account-fields[hidden],
+#account-logout[hidden] {
+  display: none;
+}
+
+.account-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+button.secondary {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+}

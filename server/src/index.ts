@@ -5,7 +5,8 @@ import express from "express";
 import colyseus from "colyseus";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { ROOM_NAME, SERVER_PORT } from "../../shared/world.ts";
-import { saveNow } from "./progress.ts";
+import * as accounts from "./accounts.ts";
+import { saveNow, summary } from "./progress.ts";
 import { WorldRoom } from "./WorldRoom.ts";
 
 // colyseus 0.15 is CommonJS: Node's ESM loader only sees its default export.
@@ -21,6 +22,17 @@ if (existsSync(clientDist)) {
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
+});
+
+// Accounts: the reply carries the player id, plus the name and look last used, to fill in the join form.
+app.use("/api", express.json({ limit: "2kb" }));
+app.post("/api/register", (req, res) => {
+  const result = accounts.register(req.body?.username, req.body?.password, req.body?.playerId);
+  res.status(result.ok ? 200 : 400).json(result.ok ? { ...result, ...summary(result.playerId) } : result);
+});
+app.post("/api/login", (req, res) => {
+  const result = accounts.login(req.body?.username, req.body?.password, req.socket.remoteAddress ?? "");
+  res.status(result.ok ? 200 : 401).json(result.ok ? { ...result, ...summary(result.playerId) } : result);
 });
 
 const gameServer = new Server({

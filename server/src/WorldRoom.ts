@@ -246,7 +246,7 @@ export class WorldRoom extends Room<WorldState> {
     // Without a valid id the progress still counts, but only for this visit.
     const playerId = validPlayerId(options?.playerId) ?? `guest-${client.sessionId}`;
     player.title = progress.equippedTitle(playerId);
-    progress.remember(playerId, player.name, (client.auth as { ip?: string } | undefined)?.ip ?? "");
+    progress.remember(playerId, player.name, player.skin, (client.auth as { ip?: string } | undefined)?.ip ?? "");
 
     // A little spread, so a group arriving together doesn't stand on one spot.
     // A player a GM sent here appears where the GM chose instead.
