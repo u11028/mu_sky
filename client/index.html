@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#1d3b2a" />
+    <title>MU Sky</title>
+  </head>
+  <body>
+    <div id="game"></div>
+
+    <div id="hud">
+      <span id="online">ออฟไลน์</span>
+    </div>
+
+    <section id="chat" aria-label="แชท">
+      <ol id="chat-log" aria-live="polite"></ol>
+      <form id="chat-form" autocomplete="off">
+        <input id="chat-input" maxlength="120" placeholder="พิมพ์แล้วกด Enter เพื่อคุย..." enterkeyhint="send" />
+        <button type="submit">ส่ง</button>
+      </form>
+    </section>
+
+    <div id="join" role="dialog" aria-labelledby="join-title">
+      <form id="join-form" autocomplete="off">
+        <h1 id="join-title">MU Sky</h1>
+        <p>ตั้งชื่อตัวละครของคุณ</p>
+        <input id="join-name" maxlength="16" placeholder="ชื่อตัวละคร" required />
+        <button type="submit">เข้าเกม</button>
+        <p id="join-error" role="alert"></p>
+      </form>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

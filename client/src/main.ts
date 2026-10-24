@@ -1,0 +1,129 @@
+import "./style.css";
+import Phaser from "phaser";
+import { Client, type Room } from "colyseus.js";
+import { ROOM_NAME, SERVER_PORT, type ChatMessage } from "../../shared/world.ts";
+import { WorldScene } from "./WorldScene.ts";
+
+const NAME_KEY = "mu-sky.name";
+
+const joinDialog = document.querySelector<HTMLDivElement>("#join")!;
+const joinForm = document.querySelector<HTMLFormElement>("#join-form")!;
+const joinName = document.querySelector<HTMLInputElement>("#join-name")!;
+const joinError = document.querySelector<HTMLParagraphElement>("#join-error")!;
+const chatLog = document.querySelector<HTMLOListElement>("#chat-log")!;
+const chatForm = document.querySelector<HTMLFormElement>("#chat-form")!;
+const chatInput = document.querySelector<HTMLInputElement>("#chat-input")!;
+const online = document.querySelector<HTMLSpanElement>("#online")!;
+
+// In development Vite serves the page and the game server runs on its own port;
+// after `npm run build` the game server serves the page itself.
+const protocol = location.protocol === "https:" ? "wss" : "ws";
+const endpoint = import.meta.env.DEV ? `${protocol}://${location.hostname}:${SERVER_PORT}` : `${protocol}://${location.host}`;
+
+let room: Room | undefined;
+let game: Phaser.Game | undefined;
+let scene: WorldScene | undefined;
+
+try {
+  joinName.value = localStorage.getItem(NAME_KEY) ?? "";
+} catch {
+  // Private windows may block storage; the name just isn't remembered.
+}
+
+joinForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const name = joinName.value.trim();
+  joinError.textContent = "กำลังเชื่อมต่อ...";
+
+  try {
+    room = await new Client(endpoint).joinOrCreate(ROOM_NAME, { name });
+  } catch {
+    joinError.textContent = "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง";
+    return;
+  }
+
+  try {
+    localStorage.setItem(NAME_KEY, name);
+  } catch {
+    // See above.
+  }
+
+  joinError.textContent = "";
+  joinDialog.hidden = true;
+  startGame(room);
+});
+
+function startGame(joined: Room) {
+  scene = new WorldScene(joined, chatInput, (count) => {
+    online.textContent = `ออนไลน์ ${count} คน`;
+  });
+
+  game = new Phaser.Game({
+    type: Phaser.AUTO,
+    parent: "game",
+    backgroundColor: "#1d3b2a",
+    scale: { mode: Phaser.Scale.RESIZE, width: window.innerWidth, height: window.innerHeight },
+    scene,
+  });
+
+  joined.onMessage("chat-history", (messages: ChatMessage[]) => messages.forEach(addChatLine));
+  joined.onMessage("chat", (message: ChatMessage) => {
+    addChatLine(message);
+    if (message.senderId && !message.system) {
+      scene?.showBubble(message.senderId, message.text);
+    }
+  });
+
+  joined.onLeave(() => {
+    game?.destroy(true);
+    game = undefined;
+    scene = undefined;
+    room = undefined;
+    online.textContent = "ออฟไลน์";
+    joinError.textContent = "หลุดจากเซิร์ฟเวอร์ เข้าเกมใหม่ได้เลย";
+    joinDialog.hidden = false;
+  });
+}
+
+function addChatLine(message: ChatMessage) {
+  const line = document.createElement("li");
+  if (message.system) {
+    line.className = "system";
+    line.textContent = message.text;
+  } else {
+    const name = document.createElement("span");
+    name.className = "name";
+    name.textContent = `${message.from}: `;
+    line.append(name, message.text);
+  }
+
+  chatLog.append(line);
+  while (chatLog.children.length > 60) {
+    chatLog.firstElementChild?.remove();
+  }
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+chatForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const text = chatInput.value.trim();
+  if (text && room) {
+    room.send("chat", { text });
+  }
+  chatInput.value = "";
+  chatInput.blur();
+});
+
+// Enter opens the chat on a keyboard; Escape gives the keys back to walking.
+window.addEventListener("keydown", (event) => {
+  if (!room) {
+    return;
+  }
+
+  if (event.key === "Enter" && document.activeElement !== chatInput) {
+    event.preventDefault();
+    chatInput.focus();
+  } else if (event.key === "Escape" && document.activeElement === chatInput) {
+    chatInput.blur();
+  }
+});

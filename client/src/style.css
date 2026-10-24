@@ -1,0 +1,137 @@
+:root {
+  --panel: rgba(16, 24, 20, 0.72);
+  --text: #f4f1e8;
+  --muted: #b9c2b4;
+  --accent: #e9c46a;
+  font-family: Tahoma, "Noto Sans Thai", "Leelawadee UI", sans-serif;
+  color: var(--text);
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #1d3b2a;
+  touch-action: none;
+}
+
+#game {
+  position: fixed;
+  inset: 0;
+}
+
+#hud {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  right: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--panel);
+  font-size: 14px;
+}
+
+#chat {
+  position: fixed;
+  left: 12px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  width: min(380px, calc(100vw - 24px));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#chat-log {
+  list-style: none;
+  margin: 0;
+  padding: 8px 10px;
+  max-height: 160px;
+  overflow-y: auto;
+  border-radius: 10px;
+  background: var(--panel);
+  font-size: 14px;
+  line-height: 1.45;
+  touch-action: pan-y;
+}
+
+#chat-log:empty {
+  display: none;
+}
+
+#chat-log .name {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+#chat-log .system {
+  color: var(--muted);
+  font-style: italic;
+}
+
+#chat-form {
+  display: flex;
+  gap: 6px;
+}
+
+input,
+button {
+  font: inherit;
+  font-size: 16px; /* 16px keeps iOS from zooming into the field */
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1b1b1b;
+}
+
+button {
+  padding: 10px 16px;
+  background: var(--accent);
+  color: #2b2105;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#join {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 20, 14, 0.78);
+}
+
+#join[hidden] {
+  display: none;
+}
+
+#join-form {
+  display: grid;
+  gap: 12px;
+  width: min(320px, calc(100vw - 48px));
+  padding: 28px 24px;
+  border-radius: 16px;
+  background: #24402f;
+  text-align: center;
+}
+
+#join-form h1 {
+  margin: 0;
+  font-size: 28px;
+  color: var(--accent);
+}
+
+#join-form p {
+  margin: 0;
+  color: var(--muted);
+}
+
+#join-error {
+  min-height: 1.2em;
+  color: #ff8a80 !important;
+  font-size: 14px;
+}
