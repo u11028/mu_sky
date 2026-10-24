@@ -18,12 +18,7 @@ export const CHAT_HISTORY_SIZE = 30;
 export const ROOM_NAME = "world";
 export const SERVER_PORT = 2567;
 
-/** Character looks a player can pick; the index is what the server stores. */
-export const SKINS = [
-  { key: "ninja_blue", label: "นินจาฟ้า" },
-  { key: "samurai_blue", label: "ซามูไรฟ้า" },
-  { key: "samurai_green", label: "ซามูไรเขียว" },
-] as const;
+export { SKINS } from "./skins.ts";
 
 export interface ChatMessage {
   from: string;

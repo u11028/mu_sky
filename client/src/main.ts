@@ -40,9 +40,14 @@ SKINS.forEach((skin, index) => {
   input.checked = index === (savedSkin < SKINS.length ? savedSkin : 0);
   const preview = document.createElement("span");
   preview.className = "skin-preview";
-  preview.style.backgroundImage = `url(assets/ninja/${skin.key}.png)`;
-  label.append(input, preview, skin.label);
+  preview.style.backgroundImage = `url(assets/characters/${skin}.png)`;
+  label.title = skin;
+  label.append(input, preview);
   joinSkins.append(label);
+  if (input.checked) {
+    // Show the remembered look even when it sits far down the list.
+    requestAnimationFrame(() => label.scrollIntoView({ block: "nearest" }));
+  }
 });
 
 joinForm.addEventListener("submit", async (event) => {
@@ -71,6 +76,8 @@ joinForm.addEventListener("submit", async (event) => {
 });
 
 function startGame(joined: Room) {
+  // The scene shows the count once its art has loaded.
+  online.textContent = "กำลังโหลด...";
   scene = new WorldScene(joined, chatInput, (count) => {
     online.textContent = `ออนไลน์ ${count} คน`;
   });

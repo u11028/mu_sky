@@ -68,7 +68,7 @@ export class WorldScene extends Phaser.Scene {
 
   preload() {
     for (const skin of SKINS) {
-      this.load.spritesheet(skin.key, `${ASSETS}/${skin.key}.png`, { frameWidth: 16, frameHeight: 16 });
+      this.load.spritesheet(skin, `assets/characters/${skin}.png`, { frameWidth: 16, frameHeight: 16 });
     }
     this.load.spritesheet("floor", `${ASSETS}/tileset_floor.png`, { frameWidth: 16, frameHeight: 16 });
     this.load.image("village", `${ASSETS}/tileset_village.png`);
@@ -175,7 +175,7 @@ export class WorldScene extends Phaser.Scene {
 
   private addPlayer(sessionId: string, player: { name: string; x: number; y: number; skin: number }) {
     const isMe = sessionId === this.room.sessionId;
-    const skin = (SKINS[player.skin] ?? SKINS[0]).key;
+    const skin = SKINS[player.skin] ?? SKINS[0];
 
     const shadow = this.add.image(0, 2, "shadow").setScale(SCALE).setAlpha(0.5);
     // Origin near the feet, so the container's position is where the character stands.
@@ -224,11 +224,11 @@ export class WorldScene extends Phaser.Scene {
 
   private createAnimations() {
     // Crisp pixels for the art only; the Thai text stays smooth.
-    for (const key of [...SKINS.map((s) => s.key), "floor", "village", "shadow"]) {
+    for (const key of [...SKINS, "floor", "village", "shadow"]) {
       this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
     }
 
-    for (const { key } of SKINS) {
+    for (const key of SKINS) {
       DIRECTIONS.forEach((direction, column) => {
         this.anims.create({
           key: `${key}-walk-${direction}`,
