@@ -4,3 +4,4 @@ dist/
 .env
 .claude/
 server/data/
+tools/
