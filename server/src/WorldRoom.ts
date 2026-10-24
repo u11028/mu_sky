@@ -7,6 +7,8 @@ import {
   NAME_MAX_LENGTH,
   PLAYER_SPEED,
   SKINS,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
 } from "../../shared/world.ts";
 import {
   isRegionId,
@@ -38,6 +40,9 @@ interface Movement {
   playerId: string;
   /** Pixels walked and not yet counted as steps. */
   walkedPx: number;
+  /** Time not yet counted, standing still and walking into the sea. */
+  idleMs: number;
+  shoreMs: number;
 }
 
 interface JoinOptions {
@@ -51,7 +56,7 @@ interface JoinOptions {
 
 /** Long and random enough that nobody guesses another player's id. */
 const PLAYER_ID = /^[A-Za-z0-9_-]{16,64}$/;
-/** Walked steps are counted towards quests once a second, not on every tick. */
+/** Steps and times are counted towards quests once a second, not on every tick. */
 const STEP_FLUSH_TICKS = 20;
 
 function clamp(value: number, min: number, max: number) {
@@ -118,7 +123,7 @@ export class WorldRoom extends Room<WorldState> {
 
       movement.lastChatAt = now;
       this.sendChat({ from: player.name, text, title: player.title || undefined }, client.sessionId);
-      this.celebrate(movement.playerId, progress.recordChat(movement.playerId));
+      this.celebrate(movement.playerId, progress.recordChat(movement.playerId, text));
     });
 
     this.onMessage("equip-title", (client, message: { id?: unknown }) => {
@@ -155,14 +160,25 @@ export class WorldRoom extends Room<WorldState> {
     player.title = progress.equippedTitle(playerId);
 
     this.state.players.set(client.sessionId, player);
-    this.movements.set(client.sessionId, { dirX: 0, dirY: 0, lastChatAt: 0, playerId, walkedPx: 0 });
+    this.movements.set(client.sessionId, {
+      dirX: 0,
+      dirY: 0,
+      lastChatAt: 0,
+      playerId,
+      walkedPx: 0,
+      idleMs: 0,
+      shoreMs: 0,
+    });
 
     client.send("chat-history", this.chatHistory);
     client.send("progress", progress.view(playerId));
     this.sendChat({ from: "ระบบ", text: `${player.name} มาถึง${this.region.name}แล้ว`, system: true });
 
     const travelled = isRegionId(options?.from);
-    this.celebrate(playerId, progress.recordVisit(playerId, this.regionId, travelled, regionOfTheDay(thaiDay())));
+    this.celebrate(
+      playerId,
+      progress.recordVisit(playerId, this.regionId, travelled, regionOfTheDay(thaiDay()), player.skin),
+    );
 
     // Everyone already here meets the newcomer, and the newcomer meets them.
     this.movements.forEach((other) => {
@@ -202,6 +218,21 @@ export class WorldRoom extends Room<WorldState> {
         this.sendChat({ from: "ระบบ", text: `${name} ได้รับฉายา「${title.name}」แล้ว!`, system: true });
       }
     }
+  }
+
+  /** Counts the steps and whole seconds gathered since the last time towards quests and titles. */
+  private flushActivity(movement: Movement) {
+    const steps = Math.floor(movement.walkedPx / STEP_PX);
+    const idle = Math.floor(movement.idleMs / 1000);
+    const shore = Math.floor(movement.shoreMs / 1000);
+    if (steps === 0 && idle === 0 && shore === 0) {
+      return;
+    }
+
+    movement.walkedPx -= steps * STEP_PX;
+    movement.idleMs -= idle * 1000;
+    movement.shoreMs -= shore * 1000;
+    this.celebrate(movement.playerId, progress.recordActivity(movement.playerId, { steps, idle, shore }));
   }
 
   private sendChat(message: ChatMessage, senderId?: string) {
@@ -244,18 +275,24 @@ export class WorldRoom extends Room<WorldState> {
         }
       }
 
-      if (flushSteps && movement.walkedPx >= STEP_PX) {
-        const steps = Math.floor(movement.walkedPx / STEP_PX);
-        movement.walkedPx -= steps * STEP_PX;
-        this.celebrate(movement.playerId, progress.recordSteps(movement.playerId, steps));
+      if (flushSteps) {
+        this.flushActivity(movement);
       }
 
       if (dx === 0 && dy === 0) {
+        movement.idleMs += deltaMs;
         return;
       }
 
       const x = clamp(player.x + dx, bounds.minX, bounds.maxX);
       const y = clamp(player.y + dy, bounds.minY, bounds.maxY);
+      // The east and south have the sea past their edge: walking into it gets nowhere.
+      const intoSea =
+        (dx > 0 && x === bounds.maxX && bounds.maxX < WORLD_WIDTH - 16) ||
+        (dy > 0 && y === bounds.maxY && bounds.maxY < WORLD_HEIGHT - 16);
+      if (intoSea) {
+        movement.shoreMs += deltaMs;
+      }
       // Only real distance counts; pushing against the shore doesn't.
       movement.walkedPx += Math.hypot(x - player.x, y - player.y);
       player.x = x;

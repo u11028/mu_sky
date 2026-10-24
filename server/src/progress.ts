@@ -23,6 +23,11 @@ interface Life {
   regions: RegionId[];
   met: string[];
   days: number;
+  idle: number;
+  shore: number;
+  laughs: number;
+  nightChats: number;
+  skins: number[];
 }
 
 interface Progress {
@@ -32,7 +37,7 @@ interface Progress {
 }
 
 /** Enough to earn every title; older ids are dropped first. */
-const MAX_MET = 50;
+const MAX_MET = 100;
 const SAVE_DELAY_MS = 2000;
 
 const file = process.env.PROGRESS_FILE ?? fileURLToPath(new URL("../data/progress.json", import.meta.url));
@@ -70,16 +75,30 @@ function newDaily(day: number): Daily {
   return { day, counts: {}, met: [], done: false };
 }
 
+function newLife(): Life {
+  return {
+    chats: 0,
+    steps: 0,
+    travels: 0,
+    regions: [],
+    met: [],
+    days: 0,
+    idle: 0,
+    shore: 0,
+    laughs: 0,
+    nightChats: 0,
+    skins: [],
+  };
+}
+
 function get(playerId: string): Progress {
   let progress = players.get(playerId);
   if (!progress) {
-    progress = {
-      daily: newDaily(thaiDay()),
-      life: { chats: 0, steps: 0, travels: 0, regions: [], met: [], days: 0 },
-      equipped: "rookie",
-    };
+    progress = { daily: newDaily(thaiDay()), life: newLife(), equipped: "rookie" };
     players.set(playerId, progress);
   }
+  // Players saved before a counter existed start it at zero.
+  progress.life = { ...newLife(), ...progress.life };
 
   // A new day brings fresh quests.
   const today = thaiDay();
@@ -93,9 +112,22 @@ function questProgress(daily: Daily, id: QuestId) {
   return id === "meet" ? daily.met.length : daily.counts[id] ?? 0;
 }
 
-function lifeValue(life: Life, stat: LifeStat) {
+function lifeValue(life: Life, stat: Exclude<LifeStat, "titles">) {
   const value = life[stat];
   return Array.isArray(value) ? value.length : value;
+}
+
+/** How far a player is towards each title; "titles" counts the others they own. */
+function titleStates(life: Life) {
+  const states = TITLES.map((title) => {
+    const value = !title.stat ? 0 : title.stat === "titles" ? 0 : lifeValue(life, title.stat);
+    return { id: title.id, progress: Math.min(title.goal, value), goal: title.goal };
+  });
+  const owned = states.filter((state, index) => TITLES[index].stat !== "titles" && state.progress >= state.goal).length;
+  return states.map((state, index) => {
+    const progress = TITLES[index].stat === "titles" ? Math.min(state.goal, owned) : state.progress;
+    return { ...state, progress, unlocked: progress >= state.goal };
+  });
 }
 
 export function view(playerId: string): ProgressView {
@@ -107,10 +139,7 @@ export function view(playerId: string): ProgressView {
     })),
     dailyDone: daily.done,
     days: life.days,
-    titles: TITLES.map((title) => {
-      const progress = title.stat ? Math.min(title.goal, lifeValue(life, title.stat)) : 0;
-      return { id: title.id, progress, goal: title.goal, unlocked: progress >= title.goal };
-    }),
+    titles: titleStates(life),
     equipped,
   };
 }
@@ -172,8 +201,17 @@ function update(playerId: string, change: (progress: Progress) => void): Achieve
   return achievements;
 }
 
-export function recordVisit(playerId: string, region: RegionId, travelled: boolean, regionOfTheDay: RegionId) {
+export function recordVisit(
+  playerId: string,
+  region: RegionId,
+  travelled: boolean,
+  regionOfTheDay: RegionId,
+  skin: number,
+) {
   return update(playerId, ({ daily, life }) => {
+    if (!life.skins.includes(skin)) {
+      life.skins.push(skin);
+    }
     if (!life.regions.includes(region)) {
       life.regions.push(region);
     }
@@ -186,18 +224,31 @@ export function recordVisit(playerId: string, region: RegionId, travelled: boole
   });
 }
 
-export function recordChat(playerId: string) {
+export function recordChat(playerId: string, text: string) {
   return update(playerId, ({ daily, life }) => {
     daily.counts.chat = (daily.counts.chat ?? 0) + 1;
     life.chats++;
+    if (text.includes("555")) {
+      life.laughs++;
+    }
+    if (thaiHour() < 5) {
+      life.nightChats++;
+    }
   });
 }
 
-export function recordSteps(playerId: string, steps: number) {
+/** What a player did in the last moments: steps walked, seconds standing still or pushing into the sea. */
+export function recordActivity(playerId: string, activity: { steps: number; idle: number; shore: number }) {
   return update(playerId, ({ daily, life }) => {
-    daily.counts.walk = (daily.counts.walk ?? 0) + steps;
-    life.steps += steps;
+    daily.counts.walk = (daily.counts.walk ?? 0) + activity.steps;
+    life.steps += activity.steps;
+    life.idle += activity.idle;
+    life.shore += activity.shore;
   });
+}
+
+function thaiHour() {
+  return (new Date().getUTCHours() + 7) % 24;
 }
 
 export function recordMeeting(playerId: string, otherId: string) {

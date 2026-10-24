@@ -46,6 +46,11 @@ function hex(color: string) {
   return Phaser.Display.Color.HexStringToColor(color).color;
 }
 
+/** Mythic titles flick between their two colours at random, like a broken screen. */
+function glitching(time: number) {
+  return Math.sin(time / 37) * Math.sin(time / 91) > 0.55;
+}
+
 /** A colour that slides around the colour wheel over time, for legendary titles. */
 function rainbow(time: number, offset = 0) {
   const hue = (time / 3000 + offset) % 1;
@@ -166,6 +171,18 @@ export class WorldScene extends Phaser.Scene {
         if (view.bubble.visible) {
           this.drawBubbleFrame(view, time);
         }
+      } else if (title?.rarity === "mythic") {
+        const glitch = glitching(time);
+        const color = glitch ? title.style.glow : title.style.color;
+        // Changing a text's colour redraws it, so only do it when the colour flips.
+        if (view.title.style.color !== color) {
+          view.title.setColor(color);
+        }
+        view.title.setX(view.title.x + (glitch ? Phaser.Math.Between(-3, 3) : 0));
+        view.title.setAngle(glitch ? Phaser.Math.FloatBetween(-4, 4) : Math.sin(time / 300) * 2);
+        if (view.bubble.visible) {
+          this.drawBubbleFrame(view, time);
+        }
       }
       view.bubble.setPosition(x, y + (title ? BUBBLE_Y_WITH_TITLE : BUBBLE_Y));
 
@@ -212,8 +229,9 @@ export class WorldScene extends Phaser.Scene {
       .setColor(title.style.color)
       .setShadow(0, 0, title.style.glow, title.rarity === "common" ? 4 : 10, true, true)
       .clearTint()
+      .setAngle(0)
       .setVisible(true);
-    if (title.rarity === "epic" || title.rarity === "legendary") {
+    if (title.rarity === "epic" || title.rarity === "legendary" || title.rarity === "mythic") {
       view.sparkles = this.addSparkles(view.title, title);
     }
     if (view.bubble.visible) {
@@ -231,8 +249,13 @@ export class WorldScene extends Phaser.Scene {
         speedX: { min: -6, max: 6 },
         scale: { start: 1.6, end: 0 },
         alpha: { start: 1, end: 0 },
-        frequency: title.rarity === "legendary" ? 90 : 180,
-        tint: title.rarity === "legendary" ? [0xff9cf0, 0x9cf0ff, 0xfff59c, 0xc792ff] : hex(title.style.glow),
+        frequency: title.rarity === "mythic" ? 50 : title.rarity === "legendary" ? 90 : 180,
+        tint:
+          title.rarity === "legendary"
+            ? [0xff9cf0, 0x9cf0ff, 0xfff59c, 0xc792ff]
+            : title.rarity === "mythic"
+              ? [hex(title.style.color), hex(title.style.glow), hex(title.style.bubbleBorder)]
+              : hex(title.style.glow),
         blendMode: "ADD",
         emitZone: { type: "random", source: new Phaser.Geom.Rectangle(-width / 2, -16, width, 18) } as any,
       })
@@ -244,8 +267,13 @@ export class WorldScene extends Phaser.Scene {
   private drawBubbleFrame(view: PlayerView, time: number) {
     const title = findTitle(view.titleId);
     const style = title?.style ?? PLAIN_BUBBLE;
-    const fancy = title?.rarity === "epic" || title?.rarity === "legendary";
-    const border = title?.rarity === "legendary" ? rainbow(time) : hex(style.bubbleBorder);
+    const fancy = title?.rarity === "epic" || title?.rarity === "legendary" || title?.rarity === "mythic";
+    const border =
+      title?.rarity === "legendary"
+        ? rainbow(time)
+        : title?.rarity === "mythic" && glitching(time)
+          ? hex(style.glow)
+          : hex(style.bubbleBorder);
     const width = view.bubbleText.width + BUBBLE_PAD.x * 2;
     const height = view.bubbleText.height + BUBBLE_PAD.y * 2;
     const left = -width / 2;

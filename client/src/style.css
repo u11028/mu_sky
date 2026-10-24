@@ -364,6 +364,37 @@ button {
   }
 }
 
+/* Mythic: flicks between two colours and jumps a little, like a broken screen. */
+.title-badge.rarity-mythic {
+  display: inline-block;
+  text-shadow: 2px 0 var(--title-glow), -2px 0 #ff006e, 0 0 8px var(--title-glow);
+  animation: glitch 1.6s steps(1) infinite;
+}
+
+@keyframes glitch {
+  0%,
+  100% {
+    transform: none;
+  }
+  12% {
+    transform: translate(2px, -1px) skewX(-8deg);
+    color: var(--title-glow);
+  }
+  14% {
+    transform: translate(-2px, 1px);
+  }
+  16% {
+    transform: none;
+  }
+  62% {
+    transform: translate(-1px, 0) skewX(6deg);
+    color: #ffffff;
+  }
+  64% {
+    transform: none;
+  }
+}
+
 /* A chat line framed in the colour of the writer's title. */
 #chat-log li.framed {
   margin: 3px 0;
@@ -374,7 +405,8 @@ button {
 }
 
 #chat-log li.framed.rarity-epic,
-#chat-log li.framed.rarity-legendary {
+#chat-log li.framed.rarity-legendary,
+#chat-log li.framed.rarity-mythic {
   border: 1px solid var(--frame);
   border-left-width: 3px;
   box-shadow: 0 0 8px color-mix(in srgb, var(--frame) 45%, transparent);

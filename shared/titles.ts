@@ -2,9 +2,28 @@
 // Each one also dresses the player's speech bubble and chat line in its colours.
 
 /** Lifetime counters a title can ask for. */
-export type LifeStat = "chats" | "steps" | "travels" | "regions" | "met" | "days";
+export type LifeStat =
+  | "chats"
+  | "steps"
+  | "travels"
+  | "regions"
+  | "met"
+  | "days"
+  /** Seconds spent standing still. */
+  | "idle"
+  /** Seconds spent walking into the sea and getting nowhere. */
+  | "shore"
+  /** Chat messages with "555" in them. */
+  | "laughs"
+  /** Chat messages sent between midnight and 5 a.m. Thai time. */
+  | "nightChats"
+  /** Different looks worn. */
+  | "skins"
+  /** Other titles earned. */
+  | "titles";
 
-export type Rarity = "common" | "rare" | "epic" | "legendary";
+/** "mythic" is for the strangest, hardest titles: they flicker and glitch. */
+export type Rarity = "common" | "rare" | "epic" | "legendary" | "mythic";
 
 export interface TitleStyle {
   /** Text colour of the title; legendary titles shift through the rainbow instead. */
@@ -100,6 +119,107 @@ export const TITLES: readonly Title[] = [
     goal: 7,
     style: { color: "#ffffff", glow: "#b46bff", bubbleFill: "#1c1030", bubbleBorder: "#c792ff", bubbleText: "#f3e6ff" },
   },
+
+  // The odd ones: strange things to do, and a lot of them.
+  {
+    id: "tree",
+    name: "ร่างทรงต้นไม้",
+    rarity: "epic",
+    hint: "ยืนนิ่งๆ ไม่ขยับรวม 2 ชั่วโมง (นับเป็นวินาที)",
+    stat: "idle",
+    goal: 7200,
+    style: { color: "#b9e86f", glow: "#4f8a1b", bubbleFill: "#22320f", bubbleBorder: "#8fcf3c", bubbleText: "#e4f7c4" },
+  },
+  {
+    id: "swimmer",
+    name: "นักว่ายน้ำที่ว่ายไม่เป็น",
+    rarity: "epic",
+    hint: "เดินดันทะเลอยู่ที่ชายหาดรวม 10 นาที (นับเป็นวินาที)",
+    stat: "shore",
+    goal: 600,
+    style: { color: "#7fd8ff", glow: "#0077ff", bubbleFill: "#0a2240", bubbleBorder: "#4fb8ff", bubbleText: "#d6f0ff" },
+  },
+  {
+    id: "laugher",
+    name: "555 จนลมจับ",
+    rarity: "epic",
+    hint: "พิมพ์แชทที่มี 555 อยู่ด้วย 100 ข้อความ",
+    stat: "laughs",
+    goal: 100,
+    style: { color: "#fff27a", glow: "#ff9f1c", bubbleFill: "#3a2a00", bubbleBorder: "#ffd60a", bubbleText: "#fff7c2" },
+  },
+  {
+    id: "owl",
+    name: "นกฮูกไม่หลับไม่นอน",
+    rarity: "epic",
+    hint: "คุยในแชทช่วงเที่ยงคืนถึงตีห้า 50 ข้อความ",
+    stat: "nightChats",
+    goal: 50,
+    style: { color: "#c9b8ff", glow: "#5a3dff", bubbleFill: "#120c2e", bubbleBorder: "#8f7bff", bubbleText: "#e6deff" },
+  },
+  {
+    id: "warper",
+    name: "หัวร้อนกดวาร์ปรัวๆ",
+    rarity: "epic",
+    hint: "เดินผ่านประตูวาร์ป 200 ครั้ง",
+    stat: "travels",
+    goal: 200,
+    style: { color: "#ff9a7a", glow: "#ff3b1f", bubbleFill: "#3a0f06", bubbleBorder: "#ff6a3d", bubbleText: "#ffe0d6" },
+  },
+  {
+    id: "faces",
+    name: "พันหน้าพันตา",
+    rarity: "epic",
+    hint: "เข้าเกมด้วยชุดที่ต่างกัน 30 ชุด",
+    stat: "skins",
+    goal: 30,
+    style: { color: "#ffb0f5", glow: "#d23cff", bubbleFill: "#2e0a33", bubbleBorder: "#e07bff", bubbleText: "#fbe0ff" },
+  },
+  {
+    id: "firefeet",
+    name: "เท้าไฟ ส้นเท้าไหม้",
+    rarity: "legendary",
+    hint: "เดินรวม 100,000 ก้าว",
+    stat: "steps",
+    goal: 100000,
+    style: { color: "#ffffff", glow: "#ff5e00", bubbleFill: "#2b0d00", bubbleBorder: "#ff8a3d", bubbleText: "#ffe3cc" },
+  },
+  {
+    id: "chatterbox",
+    name: "ปากไม่มีหูรูด",
+    rarity: "legendary",
+    hint: "คุยในแชทรวม 1,000 ข้อความ",
+    stat: "chats",
+    goal: 1000,
+    style: { color: "#ffffff", glow: "#ff3d9a", bubbleFill: "#2e0718", bubbleBorder: "#ff7ac0", bubbleText: "#ffe0f0" },
+  },
+  {
+    id: "celebrity",
+    name: "คนดังประจำหมู่บ้าน",
+    rarity: "legendary",
+    hint: "พบผู้เล่นคนอื่น 50 คน",
+    stat: "met",
+    goal: 50,
+    style: { color: "#ffffff", glow: "#ffd23f", bubbleFill: "#2a2108", bubbleBorder: "#ffe066", bubbleText: "#fff4c7" },
+  },
+  {
+    id: "tireless",
+    name: "ผู้ไม่เคยหยุดพัก",
+    rarity: "mythic",
+    hint: "ทำภารกิจประจำวันครบ 30 วัน",
+    stat: "days",
+    goal: 30,
+    style: { color: "#ff4d6d", glow: "#00f5d4", bubbleFill: "#0b0b12", bubbleBorder: "#ff4d6d", bubbleText: "#f1f1ff" },
+  },
+  {
+    id: "weirdking",
+    name: "ราชาแห่งความเพี้ยน",
+    rarity: "mythic",
+    hint: "สะสมฉายาอื่นให้ได้ 15 ฉายา",
+    stat: "titles",
+    goal: 15,
+    style: { color: "#f15bb5", glow: "#00bbf9", bubbleFill: "#140021", bubbleBorder: "#fee440", bubbleText: "#fff6d6" },
+  },
 ];
 
 export function findTitle(id: unknown) {
@@ -109,6 +229,8 @@ export function findTitle(id: unknown) {
 /** The marks around a title's name, grander for rarer titles. */
 export function decorateTitle(title: Title) {
   switch (title.rarity) {
+    case "mythic":
+      return `⚡ ${title.name} ⚡`;
     case "legendary":
       return `♛ ${title.name} ♛`;
     case "epic":
