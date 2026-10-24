@@ -1,0 +1,13 @@
+{
+  // GitHub Codespaces: builds the game and starts its server; port 2567 is the game.
+  // Set the port's visibility to Public (Ports tab) so friends can open the link.
+  "name": "MU Sky",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "postCreateCommand": "npm ci && npm run build",
+  "postAttachCommand": "npm start",
+  "forwardPorts": [2567],
+  "portsAttributes": {
+    "2567": { "label": "MU Sky", "onAutoForward": "openBrowser" }
+  },
+  "containerEnv": { "TRUST_PROXY": "1" }
+}
