@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#1d3b2a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -90,6 +96,8 @@
       <h3>ผู้เล่นที่ถูกแบน</h3>
       <ul id="gm-bans"></ul>
     </aside>
+
+    <button id="fullscreen-button" type="button" hidden aria-label="เต็มจอ">⛶</button>
 
     <button id="quest-button" type="button" hidden aria-controls="quests">
       📜 ภารกิจ <span id="quest-count"></span>

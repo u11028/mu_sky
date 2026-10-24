@@ -21,10 +21,7 @@ import {
   START_REGION,
 } from "../../shared/regions.ts";
 import {
-  ATTACK_COOLDOWN_MS,
-  ATTACK_RANGE,
   attackPower,
-  CRIT_CHANCE,
   CRIT_MULTIPLIER,
   type HitEvent,
   killXp,
@@ -38,7 +35,8 @@ import {
   SPAWN_SHIELD_MS,
 } from "../../shared/combat.ts";
 import { monsterXp } from "../../shared/monsters.ts";
-import { regionLayout, type RegionLayout, slide } from "../../shared/regionThemes.ts";
+import { isBlocked, regionLayout, type RegionLayout, slide } from "../../shared/regionThemes.ts";
+import { heroOf, type ShotEvent } from "../../shared/heroes.ts";
 import { MonsterSystem } from "./MonsterSystem.ts";
 import { type GmAction, type GmList, PERMANENT_BAN_DAYS } from "../../shared/gm.ts";
 import { type Achievement, regionOfTheDay, STEP_PX, thaiDay } from "../../shared/quests.ts";
@@ -100,6 +98,17 @@ const PLAYER_ID = /^[A-Za-z0-9_-]{16,64}$/;
 const STEP_FLUSH_TICKS = 20;
 const MAX_GM_TRIES = 5;
 
+/** An arrow, crossbow bolt or magic orb in flight. */
+interface Projectile extends ShotEvent {
+  travelled: number;
+  /** Shot at a monster: flies past other players instead of hitting whoever stands in the way. */
+  monstersOnly: boolean;
+}
+
+/** How close a shot must pass to hit: about a body's width; bosses are bigger. */
+const SHOT_RADIUS = 26;
+const BOSS_SHOT_RADIUS = 56;
+
 /** Every open region room, so a GM can reach players anywhere. */
 const rooms = new Set<WorldRoom>();
 /** Where a player sent by a GM appears in the next region, instead of beside the portal. */
@@ -138,6 +147,8 @@ export class WorldRoom extends Room<WorldState> {
   private movements = new Map<string, Movement>();
   private chatHistory: ChatMessage[] = [];
   private ticks = 0;
+  private projectiles: Projectile[] = [];
+  private nextShotId = 1;
   private layout!: RegionLayout;
   private monsters!: MonsterSystem;
 
@@ -374,7 +385,8 @@ export class WorldRoom extends Room<WorldState> {
     const { level, xp } = progress.profile(playerId);
     player.level = level;
     player.xp = xp;
-    player.maxHp = maxHp(level);
+    // Each class is tougher or frailer than the level alone says.
+    player.maxHp = Math.round(maxHp(level) * heroOf(player.skin).hp);
     player.hp = Math.min(player.hp, player.maxHp);
   }
 
@@ -395,21 +407,132 @@ export class WorldRoom extends Room<WorldState> {
     return player && movement && !player.dead && !movement.travelling ? { player, movement } : undefined;
   }
 
-  /** A swing in the way the player faces; it hits everyone in reach in front of them. */
+  /**
+   * Turns the player towards the nearest foe within reach, as mobile games do: monsters first,
+   * other players only when no monster is near, so fighting in town stays a choice.
+   */
+  private aim(sessionId: string, player: Player, movement: Movement, reach: number): "monster" | "player" | undefined {
+    let best: { x: number; y: number } | undefined;
+    let bestDistance = Infinity;
+    this.state.monsters.forEach((monster) => {
+      const distance = Math.hypot(monster.x - player.x, monster.y - player.y);
+      const extra = this.monsters.kind(monster).boss ? 40 : 0;
+      if (!monster.dead && distance <= reach + extra && distance < bestDistance) {
+        best = monster;
+        bestDistance = distance;
+      }
+    });
+    if (!best) {
+      this.state.players.forEach((other, otherId) => {
+        const otherMovement = this.movements.get(otherId);
+        const distance = Math.hypot(other.x - player.x, other.y - player.y);
+        if (otherId !== sessionId && !other.dead && otherMovement && !otherMovement.travelling && distance <= reach && distance < bestDistance) {
+          best = other;
+          bestDistance = distance;
+        }
+      });
+    }
+    if (best && bestDistance > 1) {
+      movement.facingX = (best.x - player.x) / bestDistance;
+      movement.facingY = (best.y - player.y) / bestDistance;
+    }
+    return best ? ("kind" in best ? "monster" : "player") : undefined;
+  }
+
+  /** The class's basic attack: a swing in front, or a shot that flies. */
   private attack(sessionId: string) {
     const attacker = this.fighter(sessionId);
     const now = Date.now();
-    if (!attacker || now - attacker.movement.lastAttackAt < ATTACK_COOLDOWN_MS) {
+    if (!attacker) {
+      return;
+    }
+    const { player, movement } = attacker;
+    const hero = heroOf(player.skin);
+    if (now - movement.lastAttackAt < hero.cooldownMs) {
       return;
     }
 
-    attacker.movement.lastAttackAt = now;
+    movement.lastAttackAt = now;
     // Attacking ends the arrival shield.
-    attacker.movement.shieldUntil = 0;
-    const { facingX, facingY } = attacker.movement;
+    movement.shieldUntil = 0;
+    const aimedAt = this.aim(sessionId, player, movement, hero.attack.range * 1.15);
+    const { facingX, facingY } = movement;
     this.broadcast("swing", { id: sessionId, x: facingX, y: facingY });
-    this.strikeAround(sessionId, ATTACK_RANGE, 1, (dx, dy, distance) => {
-      return distance < 20 || (dx * facingX + dy * facingY) / distance > 0.25;
+
+    if (hero.attack.kind === "melee") {
+      const { arc } = hero.attack;
+      this.strikeAround(sessionId, hero.attack.range, 1, (dx, dy, distance) => {
+        return distance < 20 || (dx * facingX + dy * facingY) / distance > arc;
+      });
+      return;
+    }
+
+    const shot: Projectile = {
+      id: this.nextShotId++,
+      by: sessionId,
+      // From the hands, a little in front of the body.
+      x: player.x + facingX * 16,
+      y: player.y + facingY * 16,
+      dx: facingX,
+      dy: facingY,
+      speed: hero.attack.speed,
+      range: hero.attack.range,
+      projectile: hero.attack.projectile,
+      travelled: 0,
+      monstersOnly: aimedAt === "monster",
+    };
+    this.projectiles.push(shot);
+    const { travelled: _travelled, monstersOnly: _monstersOnly, ...event } = shot;
+    this.broadcast("shot", event satisfies ShotEvent);
+  }
+
+  /** Moves every shot on; one ends on the first player or monster it touches, a solid prop, or its range. */
+  private updateProjectiles(deltaMs: number) {
+    const now = Date.now();
+    this.projectiles = this.projectiles.filter((shot) => {
+      const shooter = this.fighter(shot.by);
+      const step = (shot.speed * deltaMs) / 1000;
+      // Checked in small steps so a fast arrow can't skip over a target.
+      for (let moved = 0; moved < step; moved += 12) {
+        const advance = Math.min(12, step - moved);
+        shot.x += shot.dx * advance;
+        shot.y += shot.dy * advance;
+        shot.travelled += advance;
+
+        let ended = false;
+        this.state.monsters.forEach((monster, monsterId) => {
+          const radius = this.monsters.kind(monster).boss ? BOSS_SHOT_RADIUS : SHOT_RADIUS;
+          if (!ended && !monster.dead && Math.hypot(monster.x - shot.x, monster.y - 14 - shot.y) <= radius) {
+            ended = true;
+            if (shooter) {
+              this.hitMonster(shot.by, shooter.player, shooter.movement, monsterId, monster, 1);
+            }
+          }
+        });
+        this.state.players.forEach((target, targetId) => {
+          const targetMovement = this.movements.get(targetId);
+          if (
+            ended ||
+            shot.monstersOnly ||
+            targetId === shot.by ||
+            target.dead ||
+            !targetMovement ||
+            targetMovement.travelling ||
+            Math.hypot(target.x - shot.x, target.y - 14 - shot.y) > SHOT_RADIUS
+          ) {
+            return;
+          }
+          ended = true;
+          if (shooter && now >= targetMovement.shieldUntil) {
+            this.hit(shot.by, shooter.player, shooter.movement, targetId, target, targetMovement);
+          }
+        });
+        if (ended || shot.travelled >= shot.range || isBlocked(this.layout, shot.x, shot.y + 10, 4)) {
+          this.broadcast("shot-end", { id: shot.id, x: shot.x, y: shot.y });
+          return false;
+        }
+      }
+      return true;
     });
   }
 
@@ -432,6 +555,7 @@ export class WorldRoom extends Room<WorldState> {
 
     if (skillId === "strike") {
       const { distance, radius, multiplier } = SKILLS.strike;
+      this.aim(sessionId, player, movement, distance + radius);
       const aimX = movement.facingX * distance;
       const aimY = movement.facingY * distance;
       this.broadcast("skill", { id: skillId, by: sessionId, x: player.x + aimX, y: player.y + aimY });
@@ -499,10 +623,12 @@ export class WorldRoom extends Room<WorldState> {
     });
   }
 
-  /** Damage from the attacker's level, a little random, sometimes critical. */
+  /** Damage from the attacker's level and class, a little random, sometimes critical. */
   private rollDamage(attacker: Player, multiplier: number) {
-    const crit = Math.random() < CRIT_CHANCE;
-    const rolled = attackPower(attacker.level) * multiplier * (0.85 + Math.random() * 0.3) * (crit ? CRIT_MULTIPLIER : 1);
+    const hero = heroOf(attacker.skin);
+    const crit = Math.random() < hero.crit;
+    const rolled =
+      attackPower(attacker.level) * hero.power * multiplier * (0.85 + Math.random() * 0.3) * (crit ? CRIT_MULTIPLIER : 1);
     return { damage: Math.max(1, Math.round(rolled)), crit };
   }
 
@@ -852,6 +978,7 @@ export class WorldRoom extends Room<WorldState> {
     const flushSteps = ++this.ticks % STEP_FLUSH_TICKS === 0;
     const now = Date.now();
     this.monsters.update(deltaMs);
+    this.updateProjectiles(deltaMs);
 
     this.movements.forEach((movement, sessionId) => {
       const player = this.state.players.get(sessionId);

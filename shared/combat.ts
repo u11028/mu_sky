@@ -1,10 +1,6 @@
 // Fighting between players: health, attacks, levels. The server decides every hit.
 
-/** How far in front of a player a swing reaches. */
-export const ATTACK_RANGE = 72;
-export const ATTACK_COOLDOWN_MS = 450;
-/** A tenth of hits are critical and deal this much more. */
-export const CRIT_CHANCE = 0.1;
+/** Critical hits (each class has its own chance, see heroes.ts) deal this much more. */
 export const CRIT_MULTIPLIER = 1.8;
 
 export const RESPAWN_MS = 5000;

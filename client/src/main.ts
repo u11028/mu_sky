@@ -1,7 +1,7 @@
 import "./style.css";
 import { Client, type Room } from "colyseus.js";
 import { ROOM_NAME, SERVER_PORT, type ChatMessage } from "../../shared/world.ts";
-import { HEROES } from "../../shared/heroes.ts";
+import { HEROES, type ShotEvent } from "../../shared/heroes.ts";
 import { isRegionId, REGIONS, type RegionId, START_REGION } from "../../shared/regions.ts";
 import type { Achievement, ProgressView } from "../../shared/quests.ts";
 import { decorateTitle, findTitle, type Title, TITLES } from "../../shared/titles.ts";
@@ -91,7 +91,11 @@ const heroSkin = document.querySelector<HTMLInputElement>("#hero-skin")!;
 const heroName = document.querySelector<HTMLParagraphElement>("#hero-name")!;
 const picker = new HeroPicker(document.querySelector("#hero-stage")!, savedSkin % HEROES.length, (index) => {
   heroSkin.value = String(index);
-  heroName.textContent = HEROES[index].name;
+  const name = document.createElement("strong");
+  name.textContent = HEROES[index].name;
+  const role = document.createElement("small");
+  role.textContent = HEROES[index].role;
+  heroName.replaceChildren(name, role);
 });
 document.querySelector("#hero-prev")!.addEventListener("click", () => picker.step(-1));
 document.querySelector("#hero-next")!.addEventListener("click", () => picker.step(1));
@@ -173,8 +177,36 @@ accountLogout.addEventListener("click", () => {
 });
 renderAccount();
 
+// ---- Full screen ----
+
+const fullscreenButton = document.querySelector<HTMLButtonElement>("#fullscreen-button")!;
+const canFullscreen = document.fullscreenEnabled && !matchMedia("(display-mode: fullscreen)").matches;
+const touchScreen = matchMedia("(pointer: coarse)").matches;
+
+/** Hides the browser's bars, so the game fills a phone's whole screen. */
+function enterFullscreen() {
+  if (canFullscreen && !document.fullscreenElement) {
+    document.documentElement.requestFullscreen({ navigationUI: "hide" }).catch(() => {
+      // Some browsers refuse; the game still works with their bars showing.
+    });
+  }
+}
+
+fullscreenButton.hidden = !canFullscreen;
+fullscreenButton.addEventListener("click", () => {
+  if (document.fullscreenElement) {
+    void document.exitFullscreen();
+  } else {
+    enterFullscreen();
+  }
+});
+
 joinForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+  // Tapping "join" counts as the gesture browsers need before going full screen.
+  if (touchScreen) {
+    enterFullscreen();
+  }
   const name = joinName.value.trim();
   const skin = Number(new FormData(joinForm).get("skin")) || 0;
   joinError.textContent = "กำลังเชื่อมต่อ...";
@@ -277,6 +309,8 @@ function startGame(joined: Room, region: RegionId) {
   joined.onMessage("hit", (event: HitEvent) => scene?.showHit(event));
   joined.onMessage("levelup", (message: { id: string }) => scene?.showLevelUp(message.id));
   joined.onMessage("mattack", (message: { id: string }) => scene?.showMonsterAttack(message.id));
+  joined.onMessage("shot", (shot: ShotEvent) => scene?.showShot(shot));
+  joined.onMessage("shot-end", (message: { id: number; x: number; y: number }) => scene?.endShot(message.id, message.x, message.y));
   joined.onMessage("xp", (message: { amount: number }) => scene?.showXp(message.amount));
   joined.onMessage("skill", (message: { id: SkillId; by: string; fromX?: number; fromY?: number; x?: number; y?: number; amount?: number }) => {
     scene?.showSkill(message);

@@ -6,9 +6,10 @@ import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 import type { Room } from "colyseus.js";
 import { REGIONS, type RegionId } from "../../../shared/regions.ts";
 import { type HitEvent, SKILLS, type SkillId } from "../../../shared/combat.ts";
-import { heroOf } from "../../../shared/heroes.ts";
+import { type Hero, heroOf, type ShotEvent } from "../../../shared/heroes.ts";
+import { regionLayout, slide } from "../../../shared/regionThemes.ts";
 import { BOSS_ATTACK_RANGE, monsterKind, REGION_MONSTERS } from "../../../shared/monsters.ts";
-import { WORLD_HEIGHT, WORLD_WIDTH } from "../../../shared/world.ts";
+import { PLAYER_SPEED, WORLD_HEIGHT, WORLD_WIDTH } from "../../../shared/world.ts";
 import { Actor, heroActor, monsterActor } from "./actors.ts";
 import { preload } from "./assets.ts";
 import { Effects } from "./effects.ts";
@@ -101,6 +102,17 @@ export class World3D {
   private sentDir = { x: 0, y: 0 };
   /** The on-screen joystick's direction; wins over the keys while pushed. */
   private stick = { x: 0, y: 0 };
+  /** Each player's class, for how their attacks look. */
+  private heroes = new Map<string, Hero>();
+  /** Arrows, bolts and orbs in flight, by the server's shot id. */
+  private shots = new Map<number, { object: THREE.Object3D; dx: number; dz: number; speed: number; left: number }>();
+  /**
+   * Where the local player is drawn, in world pixels: moved at once by the player's own input
+   * and gently kept in step with the server, so walking never waits for the network.
+   */
+  private predicted?: { x: number; y: number };
+  private server = { x: 0, y: 0 };
+  private tapTarget?: { x: number; y: number };
   private zoom = 1;
   private focus = new THREE.Vector3(WORLD_WIDTH / PX / 2, 0, WORLD_HEIGHT / PX / 2);
   private myLevel = 1;
@@ -210,7 +222,9 @@ export class World3D {
 
   private async addPlayer(id: string, player: PlayerState) {
     this.loading.add(id);
-    const actor = await heroActor(heroOf(player.skin));
+    const hero = heroOf(player.skin);
+    this.heroes.set(id, hero);
+    const actor = await heroActor(hero);
     if (!this.loading.delete(id) || this.disposed) {
       actor.dispose();
       return;
@@ -251,8 +265,18 @@ export class World3D {
       return;
     }
     const now = performance.now();
-    actor.moveTo(player.x / PX, player.y / PX, now);
     const isMe = id === this.room.sessionId;
+    if (isMe) {
+      this.server = { x: player.x, y: player.y };
+      // First sight, a respawn, a dash or a GM's teleport: jump to where the server says.
+      if (!this.predicted || player.dead || Math.hypot(player.x - this.predicted.x, player.y - this.predicted.y) > 140) {
+        this.predicted = { x: player.x, y: player.y };
+        this.tapTarget = undefined;
+        actor.moveTo(player.x / PX, player.y / PX, now);
+      }
+    } else {
+      actor.moveTo(player.x / PX, player.y / PX, now);
+    }
     actor.setName(`${player.gm ? "[GM] " : ""}Lv.${player.level} ${player.name}`, player.gm ? "gm" : isMe ? "me" : "");
     actor.setHp(player.hp / player.maxHp);
     actor.setTitle(player.title);
@@ -351,7 +375,10 @@ export class World3D {
     }
     actor.face(dirX, dirY);
     actor.once("attack");
-    this.effects.slash(actor.root.position, Math.atan2(dirX, dirY));
+    // Archers and mages shoot instead; their shot arrives as its own message.
+    if (this.heroes.get(id)?.attack.kind !== "ranged") {
+      this.effects.slash(actor.root.position, Math.atan2(dirX, dirY));
+    }
     this.playNear("swing", actor, 0.25);
   }
 
@@ -389,6 +416,32 @@ export class World3D {
         this.shake(0.8);
       }
     }
+  }
+
+  /** A shot leaves someone's hands: an arrow, a crossbow bolt or a glowing orb. */
+  showShot(shot: ShotEvent) {
+    const object = projectileModel(shot.projectile);
+    object.position.set(shot.x / PX, 1.15, shot.y / PX);
+    object.rotation.y = Math.atan2(shot.dx, shot.dy);
+    this.scene.add(object);
+    this.shots.set(shot.id, {
+      object,
+      dx: shot.dx,
+      dz: shot.dy,
+      speed: shot.speed / PX,
+      left: shot.range / PX,
+    });
+  }
+
+  /** A shot hit something or flew its full range. */
+  endShot(id: number, x: number, y: number) {
+    const shot = this.shots.get(id);
+    if (!shot) {
+      return;
+    }
+    shot.object.removeFromParent();
+    this.shots.delete(id);
+    this.effects.sparks(new THREE.Vector3(x / PX, 1.1, y / PX), shot.object.userData.color ?? "#fff3b0", 6);
   }
 
   showMonsterAttack(id: string) {
@@ -503,6 +556,7 @@ export class World3D {
       const hit = raycaster.intersectObject(ground)[0];
       if (hit) {
         this.room.send("target", { x: hit.point.x * PX, y: hit.point.z * PX });
+        this.tapTarget = { x: hit.point.x * PX, y: hit.point.z * PX };
         this.marker.position.set(hit.point.x, hit.point.y + 0.08, hit.point.z);
         this.marker.scale.setScalar(1.4);
         (this.marker.material as THREE.MeshBasicMaterial).opacity = 1;
@@ -568,25 +622,80 @@ export class World3D {
     this.stick = { x, y };
   }
 
-  private sendKeyboardDirection() {
-    let x = 0;
-    let y = 0;
+  /** Where the player is steering, from the joystick or the keys; 0, 0 when neither. */
+  private inputDirection() {
     if (Math.hypot(this.stick.x, this.stick.y) > 0.2) {
       // Rounded, so a resting thumb doesn't send a message every frame.
-      x = Math.round(this.stick.x * 20) / 20;
-      y = Math.round(this.stick.y * 20) / 20;
-    } else if (document.activeElement !== this.chatInput) {
+      return { x: Math.round(this.stick.x * 20) / 20, y: Math.round(this.stick.y * 20) / 20 };
+    }
+    let x = 0;
+    let y = 0;
+    if (document.activeElement !== this.chatInput) {
       for (const code of this.keys) {
         x += KEY_DIRECTIONS[code][0];
         y += KEY_DIRECTIONS[code][1];
       }
-      x = Math.sign(x);
-      y = Math.sign(y);
     }
+    return { x: Math.sign(x), y: Math.sign(y) };
+  }
+
+  private sendKeyboardDirection() {
+    const { x, y } = this.inputDirection();
     if (x !== this.sentDir.x || y !== this.sentDir.y) {
       this.sentDir = { x, y };
       this.room.send("dir", { x, y });
     }
+  }
+
+  /**
+   * Moves the local player right away, the way the server will: same speed, same props in the way,
+   * same edges. Far from the server's position it is pulled back; at rest it settles onto it.
+   */
+  private predictMe(me: Actor, delta: number, now: number) {
+    if (!this.predicted || me.dead) {
+      return;
+    }
+    const position = this.predicted;
+    const step = (PLAYER_SPEED * delta) / 1000;
+    const input = this.inputDirection();
+    let dx = 0;
+    let dy = 0;
+    if (input.x !== 0 || input.y !== 0) {
+      const length = Math.hypot(input.x, input.y);
+      dx = (input.x / length) * step;
+      dy = (input.y / length) * step;
+      this.tapTarget = undefined;
+    } else if (this.tapTarget) {
+      const toX = this.tapTarget.x - position.x;
+      const toY = this.tapTarget.y - position.y;
+      const distance = Math.hypot(toX, toY);
+      if (distance <= step) {
+        dx = toX;
+        dy = toY;
+        this.tapTarget = undefined;
+      } else {
+        dx = (toX / distance) * step;
+        dy = (toY / distance) * step;
+      }
+    }
+
+    if (dx !== 0 || dy !== 0) {
+      const { bounds } = REGIONS[this.regionId];
+      const next = slide(regionLayout(this.regionId), position.x, position.y, dx, dy);
+      position.x = THREE.MathUtils.clamp(next.x, bounds.minX, bounds.maxX);
+      position.y = THREE.MathUtils.clamp(next.y, bounds.minY, bounds.maxY);
+      // The server is a little behind while walking; only a real disagreement pulls back.
+      const off = Math.hypot(this.server.x - position.x, this.server.y - position.y);
+      if (off > 90) {
+        position.x += (this.server.x - position.x) * 0.1;
+        position.y += (this.server.y - position.y) * 0.1;
+      }
+    } else {
+      const blend = Math.min(1, delta / 150);
+      position.x += (this.server.x - position.x) * blend;
+      position.y += (this.server.y - position.y) * blend;
+    }
+    me.moveTo(position.x / PX, position.y / PX, now);
   }
 
   // ---- Every frame ----
@@ -607,7 +716,26 @@ export class World3D {
     this.last = now;
 
     this.sendKeyboardDirection();
+    const mine = this.players.get(this.room.sessionId);
+    if (mine) {
+      this.predictMe(mine, delta, now);
+    }
     this.players.forEach((actor) => actor.update(delta, now));
+    this.shots.forEach((shot, id) => {
+      const travel = Math.min(shot.left, (shot.speed * delta) / 1000);
+      shot.object.position.x += shot.dx * travel;
+      shot.object.position.z += shot.dz * travel;
+      shot.left -= travel;
+      shot.object.rotation.z += shot.object.userData.spin ?? 0;
+      // The server says where it ends; this only tidies up one whose end message was missed.
+      if (shot.left <= 0 && shot.left > -1) {
+        shot.left = -1;
+        setTimeout(() => {
+          shot.object.removeFromParent();
+          this.shots.delete(id);
+        }, 300);
+      }
+    });
     this.monsters.forEach(({ actor }) => actor.update(delta, now));
     this.auras.forEach((ring) => {
       ring.scale.setScalar(1 + Math.sin(now / 250) * 0.12);
@@ -719,4 +847,56 @@ export class World3D {
     this.renderer.domElement.remove();
     this.labels.domElement.remove();
   }
+}
+
+/** The look of a shot: a feathered arrow, a short steel bolt, or a glowing orb. */
+function projectileModel(kind: ShotEvent["projectile"]) {
+  const group = new THREE.Group();
+  if (kind === "magic") {
+    const core = new THREE.Mesh(
+      new THREE.SphereGeometry(0.22, 16, 12),
+      new THREE.MeshBasicMaterial({ color: "#f0e1ff" }),
+    );
+    const glow = new THREE.Mesh(
+      new THREE.SphereGeometry(0.45, 16, 12),
+      new THREE.MeshBasicMaterial({ color: "#a66bff", transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false }),
+    );
+    const light = new THREE.PointLight("#b88cff", 6, 5);
+    group.add(core, glow, light);
+    group.userData.color = "#c9a6ff";
+    return group;
+  }
+
+  const long = kind === "arrow";
+  const length = long ? 1.1 : 0.7;
+  const shaft = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.03, 0.03, length, 6),
+    new THREE.MeshStandardMaterial({ color: long ? "#8b5a2b" : "#5b5f66", metalness: long ? 0 : 0.6 }),
+  );
+  shaft.rotation.x = Math.PI / 2;
+  const head = new THREE.Mesh(
+    new THREE.ConeGeometry(0.08, 0.22, 6),
+    new THREE.MeshStandardMaterial({ color: "#d9dde3", metalness: 0.8, roughness: 0.3 }),
+  );
+  head.rotation.x = Math.PI / 2;
+  head.position.z = length / 2 + 0.1;
+  group.add(shaft, head);
+  if (long) {
+    const feathers = new THREE.Mesh(
+      new THREE.BoxGeometry(0.16, 0.02, 0.22),
+      new THREE.MeshStandardMaterial({ color: "#f4f1e8" }),
+    );
+    feathers.position.z = -length / 2 + 0.1;
+    group.add(feathers);
+  }
+  // A faint streak behind it, so a fast shot is easy to follow.
+  const streak = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.12, 1.6),
+    new THREE.MeshBasicMaterial({ color: "#fff6d6", transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }),
+  );
+  streak.rotation.x = Math.PI / 2;
+  streak.position.z = -length / 2 - 0.6;
+  group.add(streak);
+  group.userData.color = "#fff3b0";
+  return group;
 }
