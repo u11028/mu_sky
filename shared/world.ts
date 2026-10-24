@@ -27,4 +27,6 @@ export interface ChatMessage {
   system?: boolean;
   /** Session of the player who wrote it, to show the speech bubble over them. */
   senderId?: string;
+  /** Title the writer wore, to colour their chat line. */
+  title?: string;
 }

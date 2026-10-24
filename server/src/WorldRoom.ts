@@ -17,6 +17,9 @@ import {
   spawnPoint,
   START_REGION,
 } from "../../shared/regions.ts";
+import { type Achievement, regionOfTheDay, STEP_PX, thaiDay } from "../../shared/quests.ts";
+import { findTitle } from "../../shared/titles.ts";
+import * as progress from "./progress.ts";
 import { Player, WorldState } from "./schema.ts";
 
 // colyseus 0.15 is CommonJS: Node's ESM loader only sees its default export.
@@ -31,6 +34,10 @@ interface Movement {
   lastChatAt: number;
   /** Set once the player stepped on a portal; they are leaving this room. */
   travelling?: boolean;
+  /** Who the player is across rooms and visits, for their quests and titles. */
+  playerId: string;
+  /** Pixels walked and not yet counted as steps. */
+  walkedPx: number;
 }
 
 interface JoinOptions {
@@ -38,7 +45,14 @@ interface JoinOptions {
   skin?: unknown;
   /** The region the player comes from, to appear next to the portal back there. */
   from?: unknown;
+  /** Random id the browser keeps, so progress follows the player. */
+  playerId?: unknown;
 }
+
+/** Long and random enough that nobody guesses another player's id. */
+const PLAYER_ID = /^[A-Za-z0-9_-]{16,64}$/;
+/** Walked steps are counted towards quests once a second, not on every tick. */
+const STEP_FLUSH_TICKS = 20;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
@@ -61,6 +75,7 @@ export class WorldRoom extends Room<WorldState> {
   private region: Region = REGIONS[START_REGION];
   private movements = new Map<string, Movement>();
   private chatHistory: ChatMessage[] = [];
+  private ticks = 0;
 
   onCreate(options: { region?: unknown }) {
     this.regionId = isRegionId(options?.region) ? options.region : START_REGION;
@@ -102,7 +117,20 @@ export class WorldRoom extends Room<WorldState> {
       }
 
       movement.lastChatAt = now;
-      this.sendChat({ from: player.name, text }, client.sessionId);
+      this.sendChat({ from: player.name, text, title: player.title || undefined }, client.sessionId);
+      this.celebrate(movement.playerId, progress.recordChat(movement.playerId));
+    });
+
+    this.onMessage("equip-title", (client, message: { id?: unknown }) => {
+      const movement = this.movements.get(client.sessionId);
+      const player = this.state.players.get(client.sessionId);
+      const id = typeof message?.id === "string" ? message.id : "";
+      if (!movement || !player || !progress.equip(movement.playerId, id)) {
+        return;
+      }
+
+      player.title = id;
+      client.send("progress", progress.view(movement.playerId));
     });
 
     this.setSimulationInterval((deltaMs) => this.update(deltaMs), 50);
@@ -119,11 +147,30 @@ export class WorldRoom extends Room<WorldState> {
     player.x = spawn.x + (Math.random() - 0.5) * 60;
     player.y = spawn.y + (Math.random() - 0.5) * 60;
 
+    // Without a valid id the progress still counts, but only for this visit.
+    const playerId =
+      typeof options?.playerId === "string" && PLAYER_ID.test(options.playerId)
+        ? options.playerId
+        : `guest-${client.sessionId}`;
+    player.title = progress.equippedTitle(playerId);
+
     this.state.players.set(client.sessionId, player);
-    this.movements.set(client.sessionId, { dirX: 0, dirY: 0, lastChatAt: 0 });
+    this.movements.set(client.sessionId, { dirX: 0, dirY: 0, lastChatAt: 0, playerId, walkedPx: 0 });
 
     client.send("chat-history", this.chatHistory);
+    client.send("progress", progress.view(playerId));
     this.sendChat({ from: "ระบบ", text: `${player.name} มาถึง${this.region.name}แล้ว`, system: true });
+
+    const travelled = isRegionId(options?.from);
+    this.celebrate(playerId, progress.recordVisit(playerId, this.regionId, travelled, regionOfTheDay(thaiDay())));
+
+    // Everyone already here meets the newcomer, and the newcomer meets them.
+    this.movements.forEach((other) => {
+      if (other.playerId !== playerId) {
+        this.celebrate(playerId, progress.recordMeeting(playerId, other.playerId));
+        this.celebrate(other.playerId, progress.recordMeeting(other.playerId, playerId));
+      }
+    });
   }
 
   onLeave(client: Client) {
@@ -134,6 +181,26 @@ export class WorldRoom extends Room<WorldState> {
     if (player) {
       const text = movement?.travelling ? `${player.name} เดินทางต่อไปแล้ว` : `${player.name} ออกจากเกมแล้ว`;
       this.sendChat({ from: "ระบบ", text, system: true });
+    }
+  }
+
+  /** Tells a player what they just achieved and sends their updated progress. */
+  private celebrate(playerId: string, achievements: Achievement[]) {
+    const entry = [...this.movements].find(([, movement]) => movement.playerId === playerId);
+    const client = entry && this.clients.find((c) => c.sessionId === entry[0]);
+    if (!client) {
+      return;
+    }
+
+    client.send("progress", progress.view(playerId));
+    for (const achievement of achievements) {
+      client.send("achievement", achievement);
+      const title = achievement.titleId && findTitle(achievement.titleId);
+      if (title) {
+        // A new title is news for everyone around.
+        const name = this.state.players.get(client.sessionId)?.name;
+        this.sendChat({ from: "ระบบ", text: `${name} ได้รับฉายา「${title.name}」แล้ว!`, system: true });
+      }
     }
   }
 
@@ -149,6 +216,7 @@ export class WorldRoom extends Room<WorldState> {
   private update(deltaMs: number) {
     const step = (PLAYER_SPEED * deltaMs) / 1000;
     const { bounds, portals } = this.region;
+    const flushSteps = ++this.ticks % STEP_FLUSH_TICKS === 0;
 
     this.movements.forEach((movement, sessionId) => {
       const player = this.state.players.get(sessionId);
@@ -176,12 +244,22 @@ export class WorldRoom extends Room<WorldState> {
         }
       }
 
+      if (flushSteps && movement.walkedPx >= STEP_PX) {
+        const steps = Math.floor(movement.walkedPx / STEP_PX);
+        movement.walkedPx -= steps * STEP_PX;
+        this.celebrate(movement.playerId, progress.recordSteps(movement.playerId, steps));
+      }
+
       if (dx === 0 && dy === 0) {
         return;
       }
 
-      player.x = clamp(player.x + dx, bounds.minX, bounds.maxX);
-      player.y = clamp(player.y + dy, bounds.minY, bounds.maxY);
+      const x = clamp(player.x + dx, bounds.minX, bounds.maxX);
+      const y = clamp(player.y + dy, bounds.minY, bounds.maxY);
+      // Only real distance counts; pushing against the shore doesn't.
+      movement.walkedPx += Math.hypot(x - player.x, y - player.y);
+      player.x = x;
+      player.y = y;
 
       const portal = portals.find((p) => Math.hypot(p.x - player.x, p.y - player.y) < PORTAL_RADIUS);
       if (portal) {

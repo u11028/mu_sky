@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import type { Room } from "colyseus.js";
 import { SKINS, WORLD_HEIGHT, WORLD_WIDTH } from "../../shared/world.ts";
 import { PORTAL_RADIUS, REGIONS, type RegionId } from "../../shared/regions.ts";
+import { decorateTitle, findTitle, type Title, type TitleStyle } from "../../shared/titles.ts";
 import { PROPS, type PropName, seededRandom, THEMES } from "./regionThemes.ts";
 
 const FONT = 'Tahoma, "Noto Sans Thai", "Leelawadee UI", sans-serif';
@@ -24,11 +25,44 @@ type Direction = (typeof DIRECTIONS)[number];
 /** Names, speech bubbles and portal signs stay readable even behind a house. */
 const LABEL_DEPTH = 1_000_000;
 
+/** Heights above the feet: the name, the title over it, and the bottom of the speech bubble. */
+const NAME_Y = -46;
+const TITLE_Y = -65;
+const BUBBLE_Y = -66;
+const BUBBLE_Y_WITH_TITLE = -88;
+const BUBBLE_TAIL = 8;
+const BUBBLE_PAD = { x: 10, y: 6 };
+
+/** The bubble of a player without a title. */
+const PLAIN_BUBBLE: TitleStyle = {
+  color: "#ffffff",
+  glow: "#ffffff",
+  bubbleFill: "#ffffff",
+  bubbleBorder: "#cfd8dc",
+  bubbleText: "#1b1b1b",
+};
+
+function hex(color: string) {
+  return Phaser.Display.Color.HexStringToColor(color).color;
+}
+
+/** A colour that slides around the colour wheel over time, for legendary titles. */
+function rainbow(time: number, offset = 0) {
+  const hue = (time / 3000 + offset) % 1;
+  return Phaser.Display.Color.HSVToRGB(hue, 0.55, 1).color as number;
+}
+
 interface PlayerView {
   sprite: Phaser.GameObjects.Sprite;
   container: Phaser.GameObjects.Container;
   name: Phaser.GameObjects.Text;
-  bubble: Phaser.GameObjects.Text;
+  /** The title over the name, and the sparkles around a rare one. */
+  title: Phaser.GameObjects.Text;
+  titleId: string;
+  sparkles?: Phaser.GameObjects.Particles.ParticleEmitter;
+  bubble: Phaser.GameObjects.Container;
+  bubbleFrame: Phaser.GameObjects.Graphics;
+  bubbleText: Phaser.GameObjects.Text;
   bubbleTimer?: Phaser.Time.TimerEvent;
   skin: string;
   facing: Direction;
@@ -92,7 +126,10 @@ export class WorldScene extends Phaser.Scene {
     const players = this.room.state.players;
     players.onAdd((player: any, sessionId: string) => {
       this.addPlayer(sessionId, player);
-      player.onChange(() => this.onPlayerMoved(sessionId, player.x, player.y));
+      player.onChange(() => {
+        this.onPlayerMoved(sessionId, player.x, player.y);
+        this.setTitle(sessionId, player.title);
+      });
       // players.size isn't updated yet inside onAdd, so count what is on screen.
       this.onPlayerCount(this.views.size);
     });
@@ -100,6 +137,8 @@ export class WorldScene extends Phaser.Scene {
       const view = this.views.get(sessionId);
       view?.container.destroy();
       view?.name.destroy();
+      view?.title.destroy();
+      view?.sparkles?.destroy();
       view?.bubble.destroy();
       this.views.delete(sessionId);
       this.onPlayerCount(this.views.size);
@@ -115,8 +154,20 @@ export class WorldScene extends Phaser.Scene {
       view.container.x += (view.targetX - view.container.x) * blend;
       view.container.y += (view.targetY - view.container.y) * blend;
       view.container.setDepth(view.container.y);
-      view.name.setPosition(view.container.x, view.container.y - 46);
-      view.bubble.setPosition(view.container.x, view.container.y - 66);
+      const { x, y } = view.container;
+      view.name.setPosition(x, y + NAME_Y);
+
+      const title = findTitle(view.titleId);
+      // Rarer titles float gently; legendary ones also run through the rainbow.
+      const bob = title && title.rarity !== "common" ? Math.sin(time / 400) * 2 : 0;
+      view.title.setPosition(x, y + TITLE_Y + bob);
+      if (title?.rarity === "legendary") {
+        view.title.setTint(rainbow(time), rainbow(time, 0.25), rainbow(time, 0.5), rainbow(time, 0.75));
+        if (view.bubble.visible) {
+          this.drawBubbleFrame(view, time);
+        }
+      }
+      view.bubble.setPosition(x, y + (title ? BUBBLE_Y_WITH_TITLE : BUBBLE_Y));
 
       if (time - view.movedAt < WALK_HOLD_MS) {
         view.sprite.play(`${view.skin}-walk-${view.facing}`, true);
@@ -133,9 +184,104 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
 
-    view.bubble.setText(text).setVisible(true);
+    view.bubbleText.setText(text);
+    this.drawBubbleFrame(view, this.time.now);
+    view.bubble.setVisible(true);
     view.bubbleTimer?.remove();
     view.bubbleTimer = this.time.delayedCall(BUBBLE_MS, () => view.bubble.setVisible(false));
+  }
+
+  /** Puts a title over a player's name, or takes it off with "". */
+  private setTitle(sessionId: string, titleId: string) {
+    const view = this.views.get(sessionId);
+    if (!view || view.titleId === titleId) {
+      return;
+    }
+
+    view.titleId = titleId;
+    view.sparkles?.destroy();
+    view.sparkles = undefined;
+    const title = findTitle(titleId);
+    if (!title) {
+      view.title.setVisible(false);
+      return;
+    }
+
+    view.title
+      .setText(decorateTitle(title))
+      .setColor(title.style.color)
+      .setShadow(0, 0, title.style.glow, title.rarity === "common" ? 4 : 10, true, true)
+      .clearTint()
+      .setVisible(true);
+    if (title.rarity === "epic" || title.rarity === "legendary") {
+      view.sparkles = this.addSparkles(view.title, title);
+    }
+    if (view.bubble.visible) {
+      this.drawBubbleFrame(view, this.time.now);
+    }
+  }
+
+  /** Little stars twinkling around an epic or legendary title. */
+  private addSparkles(target: Phaser.GameObjects.Text, title: Title) {
+    const width = target.width;
+    return this.add
+      .particles(0, 0, "spark", {
+        lifespan: 900,
+        speedY: { min: -18, max: -6 },
+        speedX: { min: -6, max: 6 },
+        scale: { start: 1.6, end: 0 },
+        alpha: { start: 1, end: 0 },
+        frequency: title.rarity === "legendary" ? 90 : 180,
+        tint: title.rarity === "legendary" ? [0xff9cf0, 0x9cf0ff, 0xfff59c, 0xc792ff] : hex(title.style.glow),
+        blendMode: "ADD",
+        emitZone: { type: "random", source: new Phaser.Geom.Rectangle(-width / 2, -16, width, 18) } as any,
+      })
+      .startFollow(target)
+      .setDepth(LABEL_DEPTH - 1);
+  }
+
+  /** The speech bubble's frame, in the colours of the speaker's title. */
+  private drawBubbleFrame(view: PlayerView, time: number) {
+    const title = findTitle(view.titleId);
+    const style = title?.style ?? PLAIN_BUBBLE;
+    const fancy = title?.rarity === "epic" || title?.rarity === "legendary";
+    const border = title?.rarity === "legendary" ? rainbow(time) : hex(style.bubbleBorder);
+    const width = view.bubbleText.width + BUBBLE_PAD.x * 2;
+    const height = view.bubbleText.height + BUBBLE_PAD.y * 2;
+    const left = -width / 2;
+    const top = -BUBBLE_TAIL - height;
+    const lineWidth = fancy ? 3 : 2;
+
+    view.bubbleText.setColor(style.bubbleText).setPosition(0, -BUBBLE_TAIL - BUBBLE_PAD.y);
+    const frame = view.bubbleFrame.clear();
+    frame.fillStyle(hex(style.bubbleFill), 0.96).fillRoundedRect(left, top, width, height, 10);
+    frame.fillTriangle(-7, -BUBBLE_TAIL - 1, 7, -BUBBLE_TAIL - 1, 0, 0);
+    frame.lineStyle(lineWidth, border, 1).strokeRoundedRect(left, top, width, height, 10);
+    // Open the frame where the tail joins it, then outline the tail.
+    frame.fillStyle(hex(style.bubbleFill), 1).fillRect(-6, -BUBBLE_TAIL - lineWidth, 12, lineWidth + 1);
+    frame.lineBetween(-7, -BUBBLE_TAIL, 0, 0).lineBetween(7, -BUBBLE_TAIL, 0, 0);
+
+    if (fancy) {
+      // A second, thin frame inside and a gem on each corner.
+      frame.lineStyle(1, border, 0.55).strokeRoundedRect(left + 4, top + 4, width - 8, height - 8, 7);
+      frame.fillStyle(border, 1);
+      for (const [cx, cy] of [
+        [left, top],
+        [left + width, top],
+        [left, top + height],
+        [left + width, top + height],
+      ]) {
+        frame.fillPoints(
+          [
+            { x: cx, y: cy - 5 },
+            { x: cx + 5, y: cy },
+            { x: cx, y: cy + 5 },
+            { x: cx - 5, y: cy },
+          ],
+          true,
+        );
+      }
+    }
   }
 
   private onPlayerMoved(sessionId: string, x: number, y: number) {
@@ -165,7 +311,7 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
-  private addPlayer(sessionId: string, player: { name: string; x: number; y: number; skin: number }) {
+  private addPlayer(sessionId: string, player: { name: string; x: number; y: number; skin: number; title: string }) {
     const isMe = sessionId === this.room.sessionId;
     const skin = SKINS[player.skin] ?? SKINS[0];
 
@@ -173,7 +319,7 @@ export class WorldScene extends Phaser.Scene {
     // Origin near the feet, so the container's position is where the character stands.
     const sprite = this.add.sprite(0, 0, skin, 0).setScale(SCALE).setOrigin(0.5, 0.9);
     const name = this.add
-      .text(player.x, player.y - 46, player.name, {
+      .text(player.x, player.y + NAME_Y, player.name, {
         fontFamily: FONT,
         fontSize: "14px",
         color: isMe ? "#e9c46a" : "#ffffff",
@@ -182,17 +328,29 @@ export class WorldScene extends Phaser.Scene {
       })
       .setOrigin(0.5, 1)
       .setDepth(LABEL_DEPTH);
-    const bubble = this.add
-      .text(player.x, player.y - 66, "", {
+    const title = this.add
+      .text(player.x, player.y + TITLE_Y, "", {
+        fontFamily: FONT,
+        fontSize: "15px",
+        fontStyle: "bold",
+        stroke: "#140b1f",
+        strokeThickness: 4,
+        padding: { x: 6, y: 4 },
+      })
+      .setOrigin(0.5, 1)
+      .setDepth(LABEL_DEPTH)
+      .setVisible(false);
+    const bubbleText = this.add
+      .text(0, 0, "", {
         fontFamily: FONT,
         fontSize: "14px",
-        color: "#1b1b1b",
-        backgroundColor: "#ffffffee",
-        padding: { x: 8, y: 5 },
         wordWrap: { width: 200, useAdvancedWrap: true },
         align: "center",
       })
-      .setOrigin(0.5, 1)
+      .setOrigin(0.5, 1);
+    const bubbleFrame = this.add.graphics();
+    const bubble = this.add
+      .container(player.x, player.y + BUBBLE_Y, [bubbleFrame, bubbleText])
       .setDepth(LABEL_DEPTH)
       .setVisible(false);
 
@@ -201,7 +359,11 @@ export class WorldScene extends Phaser.Scene {
       sprite,
       container,
       name,
+      title,
+      titleId: "",
       bubble,
+      bubbleFrame,
+      bubbleText,
       skin,
       facing: "down",
       movedAt: 0,
@@ -209,6 +371,7 @@ export class WorldScene extends Phaser.Scene {
       targetY: player.y,
     });
 
+    this.setTitle(sessionId, player.title);
     if (isMe) {
       this.cameras.main.startFollow(container, true, 0.12, 0.12);
     }
@@ -234,6 +397,23 @@ export class WorldScene extends Phaser.Scene {
     for (const [name, [sheet, column, row, width, height]] of Object.entries(PROPS)) {
       this.textures.get(sheet).add(name, 0, column * 16, row * 16, width * 16, height * 16);
     }
+
+    // A four-pointed star for the sparkles around grand titles.
+    this.make
+      .graphics({}, false)
+      .fillStyle(0xffffff)
+      .fillPoints([
+        { x: 4, y: 0 },
+        { x: 5, y: 3 },
+        { x: 8, y: 4 },
+        { x: 5, y: 5 },
+        { x: 4, y: 8 },
+        { x: 3, y: 5 },
+        { x: 0, y: 4 },
+        { x: 3, y: 3 },
+      ], true)
+      .generateTexture("spark", 8, 8)
+      .destroy();
   }
 
   private drawGround() {

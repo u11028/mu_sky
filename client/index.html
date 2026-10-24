@@ -13,6 +13,29 @@
       <span id="online">ออฟไลน์</span>
     </div>
 
+    <button id="quest-button" type="button" hidden aria-controls="quests">
+      📜 ภารกิจ <span id="quest-count"></span>
+    </button>
+
+    <aside id="quests" hidden aria-labelledby="quests-title">
+      <header>
+        <h2 id="quests-title">ภารกิจและฉายา</h2>
+        <button id="quests-close" type="button" aria-label="ปิด">✕</button>
+      </header>
+      <section>
+        <h3>ภารกิจประจำวัน</h3>
+        <ol id="quest-list"></ol>
+        <p id="quest-days"></p>
+      </section>
+      <section>
+        <h3>ฉายา</h3>
+        <p class="muted">แตะฉายาที่ได้แล้วเพื่อแสดงบนหัว</p>
+        <ul id="title-list"></ul>
+      </section>
+    </aside>
+
+    <div id="toasts" aria-live="polite"></div>
+
     <section id="chat" aria-label="แชท">
       <ol id="chat-log" aria-live="polite"></ol>
       <form id="chat-form" autocomplete="off">

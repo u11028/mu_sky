@@ -5,6 +5,7 @@ import express from "express";
 import colyseus from "colyseus";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { ROOM_NAME, SERVER_PORT } from "../../shared/world.ts";
+import { saveNow } from "./progress.ts";
 import { WorldRoom } from "./WorldRoom.ts";
 
 // colyseus 0.15 is CommonJS: Node's ESM loader only sees its default export.
@@ -31,3 +32,11 @@ gameServer.define(ROOM_NAME, WorldRoom).filterBy(["region"]);
 
 await gameServer.listen(port);
 console.log(`Game server listening on port ${port}`);
+
+// Keep the last few seconds of progress when the server is stopped.
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+  process.once(signal, () => {
+    saveNow();
+    process.exit(0);
+  });
+}
