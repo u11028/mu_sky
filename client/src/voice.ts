@@ -1,14 +1,17 @@
-// Team voice chat. Each teammate with their microphone on gets a direct audio link (WebRTC) to every
-// other one; the game server only passes on the few messages that set a link up.
+// Team voice chat. Whoever has their microphone on is heard by every teammate: each pair of
+// teammates where at least one talks gets a direct audio link (WebRTC); the game server only passes
+// on the few messages that set a link up.
 //
-// Who to link with comes from the team status the server sends every second: teammates who are
-// online with their microphone on. Of each pair, the one with the smaller voice tag makes the offer.
+// Who to link with comes from the team status the server sends every second. Of each pair, the one
+// with the smaller voice tag makes the offer; a link is made again whenever either side turns their
+// microphone on or off, since what it carries changes.
 
 export interface VoiceMate {
   voice: string;
   talking: boolean;
   online: boolean;
   me: boolean;
+  name: string;
 }
 
 type Signal = { offer: RTCSessionDescriptionInit } | { answer: RTCSessionDescriptionInit } | { ice: RTCIceCandidateInit };
@@ -18,6 +21,10 @@ interface Link {
   audio: HTMLAudioElement;
   /** How loud they are now, for the "speaking" light. */
   level?: AnalyserNode;
+  /** Who talked when the link was made: when that changes, it is made again. */
+  mineOn: boolean;
+  theirsOn: boolean;
+  name: string;
 }
 
 // Public STUN servers let two phones behind home routers find a way to each other.
@@ -25,21 +32,40 @@ const ICE_SERVERS: RTCIceServer[] = [{ urls: ["stun:stun.l.google.com:19302", "s
 /** Loudness (0 to 1) above which someone counts as speaking. */
 const SPEAKING = 0.04;
 
+export interface VoiceEvents {
+  /** Who is speaking now (voice tags; "me" for the local player), a few times a second. */
+  speaking(tags: Set<string>): void;
+  /** The browser would not play a teammate's voice before a touch: ask for one. */
+  blocked(): void;
+  /** No route between the two browsers could be found (some mobile networks need a relay server). */
+  failed(name: string): void;
+}
+
 export class Voice {
   private microphone?: MediaStream;
   private links = new Map<string, Link>();
   private myTag = "";
   private audioContext?: AudioContext;
   private meter?: AnalyserNode;
+  /** Voices the browser refused to start; tried again on the next touch or key. */
+  private waiting = new Set<HTMLAudioElement>();
 
   constructor(
     private readonly send: (type: string, message: unknown) => void,
-    /** Called a few times a second with who is speaking (voice tags; "me" for the local player). */
-    private readonly onSpeaking: (speaking: Set<string>) => void,
+    private readonly events: VoiceEvents,
   ) {
     setInterval(() => this.measure(), 200);
+    const unblock = () => {
+      void this.audioContext?.resume();
+      for (const audio of this.waiting) {
+        void audio.play().then(() => this.waiting.delete(audio), () => undefined);
+      }
+    };
+    addEventListener("pointerdown", unblock, true);
+    addEventListener("keydown", unblock, true);
   }
 
+  /** Whether the microphone is on. */
   get on() {
     return this.microphone !== undefined;
   }
@@ -52,21 +78,27 @@ export class Voice {
     this.microphone = await navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
     });
-    this.audioContext ??= new AudioContext();
-    void this.audioContext.resume();
     this.meter = this.analyse(this.microphone);
     this.send("voice", { on: true });
   }
 
+  /** Turns the microphone off; teammates who talk are still heard. */
   stop() {
-    this.send("voice", { on: false });
+    if (this.microphone) {
+      this.send("voice", { on: false });
+    }
     this.microphone?.getTracks().forEach((track) => track.stop());
     this.microphone = undefined;
     this.meter = undefined;
+  }
+
+  /** Off the team: no microphone, no links. */
+  leave() {
+    this.stop();
     for (const tag of [...this.links.keys()]) {
       this.close(tag);
     }
-    this.onSpeaking(new Set());
+    this.events.speaking(new Set());
   }
 
   /** The server lost track of us (a new connection after travelling or reconnecting): say again that we talk. */
@@ -76,36 +108,34 @@ export class Voice {
     }
   }
 
-  /** The team as it is now: links to teammates who talk, none to anyone else. */
+  /** The team as it is now: a link to each teammate when either of us talks, none otherwise. */
   syncTeam(mates: VoiceMate[]) {
     const me = mates.find((mate) => mate.me);
     if (me) {
       this.myTag = me.voice;
     }
-    const wanted = new Set(
-      this.microphone ? mates.filter((mate) => !mate.me && mate.online && mate.talking).map((mate) => mate.voice) : [],
-    );
-    for (const tag of [...this.links.keys()]) {
-      if (!wanted.has(tag)) {
+    const others = new Map(mates.filter((mate) => !mate.me && mate.online).map((mate) => [mate.voice, mate]));
+    for (const [tag, link] of [...this.links]) {
+      const mate = others.get(tag);
+      const stale = !mate || link.mineOn !== this.on || link.theirsOn !== mate.talking;
+      if (stale) {
         this.close(tag);
       }
     }
-    for (const tag of wanted) {
-      if (!this.links.has(tag) && this.myTag && this.myTag < tag) {
-        void this.call(tag);
+    for (const [tag, mate] of others) {
+      if ((this.on || mate.talking) && !this.links.has(tag) && this.myTag && this.myTag < tag) {
+        void this.call(tag, mate).catch(() => this.close(tag));
       }
     }
   }
 
-  async receive(from: string, data: Signal) {
-    if (!this.microphone) {
-      return;
-    }
+  async receive(from: string, data: Signal, mate?: VoiceMate) {
     if ("offer" in data) {
-      // A teammate calls: answer on a fresh link.
+      // A teammate calls: answer on a fresh link, sending our voice too if the microphone is on.
       this.close(from);
-      const link = this.open(from);
+      const link = this.open(from, mate);
       await link.connection.setRemoteDescription(data.offer);
+      this.microphone?.getTracks().forEach((track) => link.connection.addTrack(track, this.microphone!));
       const answer = await link.connection.createAnswer();
       await link.connection.setLocalDescription(answer);
       this.send("voice-signal", { to: from, data: { answer } });
@@ -116,37 +146,42 @@ export class Voice {
     }
   }
 
-  private async call(tag: string) {
-    const link = this.open(tag);
+  private async call(tag: string, mate: VoiceMate) {
+    const link = this.open(tag, mate);
+    if (this.microphone) {
+      this.microphone.getTracks().forEach((track) => link.connection.addTrack(track, this.microphone!));
+    } else {
+      // Only listening: ask for their voice without sending any.
+      link.connection.addTransceiver("audio", { direction: "recvonly" });
+    }
     const offer = await link.connection.createOffer();
     await link.connection.setLocalDescription(offer);
     this.send("voice-signal", { to: tag, data: { offer } });
   }
 
-  private open(tag: string): Link {
+  private open(tag: string, mate?: VoiceMate): Link {
     const connection = new RTCPeerConnection({ iceServers: ICE_SERVERS });
     const audio = new Audio();
     audio.autoplay = true;
-    const link: Link = { connection, audio };
+    const link: Link = { connection, audio, mineOn: this.on, theirsOn: mate?.talking ?? true, name: mate?.name ?? "" };
     this.links.set(tag, link);
-    this.microphone?.getTracks().forEach((track) => connection.addTrack(track, this.microphone!));
     connection.onicecandidate = (event) => {
       if (event.candidate) {
         this.send("voice-signal", { to: tag, data: { ice: event.candidate.toJSON() } });
       }
     };
     connection.ontrack = (event) => {
-      const [stream] = event.streams;
-      audio.srcObject = stream;
-      void audio.play().catch(() => undefined);
-      link.level = this.analyse(stream);
+      audio.srcObject = event.streams[0] ?? new MediaStream([event.track]);
+      void audio.play().catch(() => {
+        this.waiting.add(audio);
+        this.events.blocked();
+      });
+      link.level = this.analyse(audio.srcObject as MediaStream);
     };
     connection.onconnectionstatechange = () => {
-      // A link that broke is dropped; the next team status brings it back if the teammate still talks.
-      if (connection.connectionState === "failed" || connection.connectionState === "closed") {
-        if (this.links.get(tag) === link) {
-          this.close(tag);
-        }
+      if (connection.connectionState === "failed" && this.links.get(tag) === link) {
+        this.events.failed(link.name);
+        this.close(tag);
       }
     };
     return link;
@@ -159,21 +194,26 @@ export class Voice {
     }
     this.links.delete(tag);
     link.connection.close();
+    this.waiting.delete(link.audio);
     link.audio.srcObject = null;
   }
 
   private analyse(stream: MediaStream) {
-    if (!this.audioContext) {
+    try {
+      this.audioContext ??= new AudioContext();
+      void this.audioContext.resume();
+      const analyser = this.audioContext.createAnalyser();
+      analyser.fftSize = 512;
+      this.audioContext.createMediaStreamSource(stream).connect(analyser);
+      return analyser;
+    } catch {
+      // No light for this voice; it is still heard.
       return undefined;
     }
-    const analyser = this.audioContext.createAnalyser();
-    analyser.fftSize = 512;
-    this.audioContext.createMediaStreamSource(stream).connect(analyser);
-    return analyser;
   }
 
   private measure() {
-    if (!this.microphone) {
+    if (!this.microphone && this.links.size === 0) {
       return;
     }
     const loud = (analyser?: AnalyserNode) => {
@@ -197,6 +237,6 @@ export class Voice {
         speaking.add(tag);
       }
     }
-    this.onSpeaking(speaking);
+    this.events.speaking(speaking);
   }
 }

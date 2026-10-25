@@ -1,5 +1,6 @@
 // Team voice chat: the sound goes straight between the players' browsers (WebRTC); the server only
-// passes on the messages that let two browsers find each other, and only between teammates.
+// passes on the messages that let two browsers find each other, and only between teammates. Whoever
+// has their microphone on is heard by the whole team; the others only listen.
 //
 // Browsers know each other by a voice tag, never by player id: a player id opens that player's
 // progress, so it is not handed to anyone else.

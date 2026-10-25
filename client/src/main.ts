@@ -369,10 +369,8 @@ if (import.meta.env.DEV) {
 
 function showJoinDialog(message: string) {
   online.textContent = "ออฟไลน์";
-  if (voice.on) {
-    voice.stop();
-    renderVoiceButton();
-  }
+  voice.leave();
+  renderVoiceButton();
   voiceButton.hidden = true;
   questButton.hidden = true;
   questPanel.hidden = true;
@@ -458,7 +456,8 @@ function startGame(joined: Room, region: RegionId) {
   joined.onMessage("bag", renderBag);
   joined.onMessage("daily-gift", showDailyGift);
   joined.onMessage("voice-signal", (message: { from: string; data: Parameters<Voice["receive"]>[1] }) => {
-    void voice.receive(message.from, message.data).catch(() => undefined);
+    const mate = teamNow.find((member) => member.voice === message.from);
+    void voice.receive(message.from, message.data, mate).catch(() => undefined);
   });
   voice.announce();
   joined.onMessage("world-boss", (event: WorldBossEvent) => showWorldBoss(event, true));
@@ -1261,19 +1260,30 @@ interface TeamMember {
   online: boolean;
 }
 
-// Team voice chat: 🎤 turns the microphone on and links up with teammates who have theirs on.
+// Team voice chat: teammates who talk are heard by everyone in the team; 🎤 turns one's own microphone on.
 const voiceButton = document.querySelector<HTMLButtonElement>("#voice-button")!;
 let speakingNow = new Set<string>();
-const voice = new Voice(
-  (type, message) => room?.send(type, message),
-  (speaking) => {
+let teamNow: TeamMember[] = [];
+let voiceFailures = new Set<string>();
+const voice = new Voice((type, message) => room?.send(type, message), {
+  speaking(speaking) {
     speakingNow = speaking;
     voiceButton.classList.toggle("speaking", speaking.has("me"));
     document.querySelectorAll<HTMLElement>(".team-member[data-voice]").forEach((row) => {
       row.classList.toggle("speaking", speaking.has(row.dataset.voice!));
     });
   },
-);
+  blocked() {
+    showToast({ kind: "title", text: "🔈 แตะจอหนึ่งครั้งเพื่อฟังเสียงเพื่อนในทีม" });
+  },
+  failed(name) {
+    // Once per teammate: some mobile networks need a relay server for voice.
+    if (!voiceFailures.has(name)) {
+      voiceFailures.add(name);
+      showToast({ kind: "title", text: `📶 ต่อเสียงกับ ${name || "เพื่อน"} ไม่สำเร็จ: เครือข่ายนี้อาจต้องใช้เซิร์ฟเวอร์ส่งต่อเสียง` });
+    }
+  },
+});
 
 function renderVoiceButton() {
   voiceButton.classList.toggle("on", voice.on);
@@ -1286,13 +1296,13 @@ voiceButton.addEventListener("click", async () => {
   if (voice.on) {
     voice.stop();
     renderVoiceButton();
-    showToast({ kind: "title", text: "🔇 ปิดไมค์แล้ว" });
+    showToast({ kind: "title", text: "🔇 ปิดไมค์แล้ว (ยังได้ยินเพื่อนอยู่)" });
     return;
   }
   try {
     await voice.start();
     renderVoiceButton();
-    showToast({ kind: "quest", text: "🎙 เปิดไมค์แล้ว คุยกับเพื่อนในทีมที่เปิดไมค์ได้เลย" });
+    showToast({ kind: "quest", text: "🎙 เปิดไมค์แล้ว เพื่อนในทีมได้ยินคุณ" });
   } catch {
     showToast({ kind: "title", text: "ใช้ไมค์ไม่ได้ ลองอนุญาตไมโครโฟนในเบราว์เซอร์ก่อน" });
   }
@@ -1303,10 +1313,14 @@ function renderTeam(list: TeamMember[]) {
   const inTeam = list.length > 1;
   teamFrames.hidden = !inTeam;
   voiceButton.hidden = !inTeam;
-  if (!inTeam && voice.on) {
-    // Voice is for the team: with the team gone, so is the microphone.
-    voice.stop();
-    renderVoiceButton();
+  teamNow = list;
+  if (!inTeam) {
+    // Voice is for the team: with the team gone, so is the microphone and every link.
+    if (voice.on) {
+      voice.leave();
+      renderVoiceButton();
+    }
+    voiceFailures = new Set();
   }
   voice.syncTeam(list);
   document.querySelector<HTMLElement>("#team-dot")!.hidden = !inTeam;

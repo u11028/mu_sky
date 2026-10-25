@@ -1344,7 +1344,8 @@ export class WorldRoom extends Room<WorldState> {
     const from = this.movements.get(client.sessionId)?.playerId;
     const to = voice.playerOf(message?.to);
     const team = from && teams.teamIdOf(from);
-    if (!from || !to || !team || teams.teamIdOf(to) !== team || !voice.isTalking(from) || !voice.isTalking(to)) {
+    // Teammates only, and only while one of the two talks: a listener needs a link too.
+    if (!from || !to || !team || teams.teamIdOf(to) !== team || !(voice.isTalking(from) || voice.isTalking(to))) {
       return;
     }
     if (JSON.stringify(message.data ?? null).length > voice.MAX_SIGNAL_LENGTH) {
