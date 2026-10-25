@@ -104,7 +104,12 @@ button {
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(10, 20, 14, 0.78);
+  overflow-y: auto;
+  /* Dusk over the hills: deep sky above, the last light along the horizon. */
+  background:
+    radial-gradient(ellipse 120% 60% at 50% 105%, rgba(255, 183, 3, 0.35), transparent 60%),
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(199, 125, 255, 0.28), transparent 70%),
+    linear-gradient(180deg, #0b1030 0%, #1b1f5a 38%, #3c2d6b 62%, #1d3b2a 100%);
 }
 
 #join[hidden] {
@@ -112,19 +117,110 @@ button {
 }
 
 #join-form {
+  position: relative;
   display: grid;
   gap: 12px;
   width: min(320px, calc(100vw - 48px));
-  padding: 28px 24px;
-  border-radius: 16px;
-  background: #24402f;
+  margin: 16px 0;
+  padding: 22px 24px 24px;
+  border: 1px solid rgba(233, 196, 106, 0.45);
+  border-radius: 18px;
+  background: rgba(20, 34, 28, 0.82);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
   text-align: center;
 }
 
 #join-form h1 {
   margin: 0;
-  font-size: 28px;
-  color: var(--accent);
+}
+
+/* ---- Logo ---- */
+
+.logo {
+  display: grid;
+  justify-items: center;
+  line-height: 1;
+}
+
+.logo-wings {
+  font-size: 22px;
+  filter: drop-shadow(0 0 8px rgba(255, 214, 10, 0.8));
+  animation: logo-float 3s ease-in-out infinite;
+}
+
+.logo-name {
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  background: linear-gradient(180deg, #fff6d5 0%, #ffd60a 45%, #c77700 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 0 #4a2a00) drop-shadow(0 0 14px rgba(255, 196, 0, 0.45));
+}
+
+.logo-sub {
+  margin-top: 4px;
+  color: #e0aaff;
+  font-size: 14px;
+  letter-spacing: 6px;
+  text-shadow: 0 0 10px rgba(199, 125, 255, 0.8);
+}
+
+@keyframes logo-float {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Specks of light drifting up through the dusk. */
+.sky-motes,
+.sky-motes::before,
+.sky-motes::after {
+  position: fixed;
+  inset: -50% 0 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(2px 2px at 10% 20%, #fff8 50%, transparent 51%),
+    radial-gradient(2px 2px at 30% 70%, #ffd60aaa 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 55% 35%, #fff9 50%, transparent 51%),
+    radial-gradient(2px 2px at 75% 80%, #e0aaffaa 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 90% 15%, #fff8 50%, transparent 51%),
+    radial-gradient(2px 2px at 45% 90%, #ffd60a88 50%, transparent 51%);
+  background-size: 320px 320px;
+  animation: motes-rise 40s linear infinite;
+}
+
+.sky-motes::before {
+  content: "";
+  inset: 0;
+  background-size: 210px 210px;
+  animation-duration: 28s;
+  opacity: 0.7;
+}
+
+.sky-motes::after {
+  content: "";
+  inset: 0;
+  background-size: 450px 450px;
+  animation-duration: 60s;
+  opacity: 0.5;
+}
+
+@keyframes motes-rise {
+  to {
+    background-position: 0 -960px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sky-motes,
+  .sky-motes::before,
+  .sky-motes::after,
+  .logo-wings {
+    animation: none;
+  }
 }
 
 #join-form p {
@@ -1128,10 +1224,39 @@ button.secondary {
   z-index: 3;
   display: grid;
   place-content: center;
+  justify-items: center;
   gap: 12px;
-  background: radial-gradient(ellipse at center, #2a5a3b, #10261a);
+  padding: 24px;
+  background:
+    radial-gradient(ellipse 120% 60% at 50% 105%, rgba(255, 183, 3, 0.25), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #1b1f5a 45%, #1d3b2a 100%);
   color: var(--text);
   text-align: center;
+}
+
+#loading p {
+  margin: 0;
+}
+
+#loading-region {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 0 16px rgba(255, 196, 0, 0.5);
+}
+
+#loading-tagline {
+  margin-top: -8px !important;
+}
+
+#loading-tip {
+  max-width: 340px;
+  margin-top: 8px !important;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  color: #e9e3d0;
+  font-size: 13px;
 }
 
 #loading[hidden] {
@@ -1919,4 +2044,327 @@ button.secondary {
     left: calc(env(safe-area-inset-left, 0px) + 176px);
     bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
   }
+}
+
+/* ---- Gear from monsters ---- */
+
+.gear-worn {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.gear-slot > p {
+  margin: 0;
+  padding: 10px 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.gear-card {
+  border-color: var(--rarity);
+  box-shadow: inset 0 0 14px color-mix(in srgb, var(--rarity) 30%, transparent);
+}
+
+.gear-card strong {
+  color: var(--rarity);
+}
+
+.gear-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.gear-buttons button {
+  flex: 1;
+}
+
+#bag-sell-junk {
+  width: 100%;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.menu-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff4d4d;
+  box-shadow: 0 0 6px #ff4d4d;
+}
+
+.float-text.loot {
+  font-size: 17px;
+  white-space: nowrap;
+}
+
+.float-text.rarity-0 { color: #d9dee3; }
+.float-text.rarity-1 { color: #4ade80; }
+.float-text.rarity-2 { color: #4aa8ff; }
+.float-text.rarity-3 { color: #c27bff; font-size: 20px; }
+.float-text.rarity-4 { color: #ff9a2e; font-size: 23px; text-shadow: 0 2px 0 #140b1f, 0 0 12px #ff9a2e; }
+
+.menu-dot[hidden] {
+  display: none;
+}
+
+/* ---- World boss ---- */
+
+#world-boss {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 60px);
+  left: 50%;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border: 1px solid #ff4d94;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(60, 9, 108, 0.92), rgba(120, 10, 70, 0.92));
+  box-shadow: 0 0 18px rgba(255, 0, 110, 0.55);
+  color: #ffe0ee;
+  font-size: 13px;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: none;
+  animation: world-boss-pulse 1.6s ease-in-out infinite;
+}
+
+#world-boss[hidden] {
+  display: none;
+}
+
+#world-boss .wb-icon {
+  font-size: 18px;
+}
+
+#world-boss time {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #ffd60a;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+@keyframes world-boss-pulse {
+  50% {
+    box-shadow: 0 0 28px rgba(255, 0, 110, 0.85);
+  }
+}
+
+/* On phones the top row is full: sit below the stats panel. */
+@media (max-width: 600px) {
+  #world-boss {
+    top: calc(env(safe-area-inset-top, 0px) + 230px);
+    font-size: 12px;
+  }
+}
+
+/* ---- Daily gift ---- */
+
+#daily-gift {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 9;
+  width: min(92vw, 460px);
+  padding: 18px 16px;
+  border: 1px solid var(--accent);
+  border-radius: 16px;
+  background: radial-gradient(circle at 50% 0%, rgba(233, 196, 106, 0.18), transparent 60%), rgba(16, 24, 20, 0.97);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6);
+  text-align: center;
+  transform: translate(-50%, -50%);
+  animation: gift-in 0.25s ease-out;
+}
+
+@keyframes gift-in {
+  from {
+    transform: translate(-50%, -50%) scale(0.7);
+    opacity: 0;
+  }
+}
+
+#daily-gift[hidden] {
+  display: none;
+}
+
+#daily-gift h2 {
+  margin: 0 0 4px;
+  color: var(--accent);
+}
+
+#daily-gift-days {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+}
+
+#daily-gift-days li {
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  padding: 8px 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 11px;
+}
+
+/* The seventh day spans the last row's remaining space. */
+#daily-gift-days li:last-child {
+  grid-column: span 2;
+  border-color: #c77dff;
+  background: rgba(123, 44, 191, 0.25);
+}
+
+#daily-gift-days li.claimed {
+  opacity: 0.55;
+}
+
+#daily-gift-days li.today {
+  border-color: var(--accent);
+  background: rgba(233, 196, 106, 0.2);
+  box-shadow: 0 0 14px rgba(233, 196, 106, 0.6);
+  animation: world-boss-pulse 1.4s ease-in-out infinite;
+}
+
+.gift-icon {
+  font-size: 24px;
+}
+
+#daily-gift-got {
+  margin: 0 0 12px;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+#daily-gift-ok {
+  min-width: 160px;
+}
+
+/* ---- Leaderboards ---- */
+
+#board-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 8px;
+}
+
+#board-tabs button.on,
+#board-tabs button.selected {
+  background: var(--accent);
+  color: #1d1406;
+}
+
+#board-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#board-list li {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 13px;
+}
+
+#board-list li.top-1 {
+  background: linear-gradient(90deg, rgba(255, 214, 10, 0.25), rgba(255, 255, 255, 0.04));
+}
+
+#board-list li.top-2 {
+  background: linear-gradient(90deg, rgba(207, 216, 220, 0.2), rgba(255, 255, 255, 0.04));
+}
+
+#board-list li.top-3 {
+  background: linear-gradient(90deg, rgba(205, 127, 50, 0.22), rgba(255, 255, 255, 0.04));
+}
+
+#board-list .rank {
+  text-align: center;
+  font-weight: 700;
+}
+
+#board-list .who {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 6px;
+  align-items: center;
+  min-width: 0;
+}
+
+#board-list .who .title-badge {
+  font-size: 10px;
+}
+
+#board-list .value {
+  color: var(--accent);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ---- First-visit tutorial ---- */
+
+#tutorial {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+#tutorial[hidden],
+#tutorial-ring[hidden] {
+  display: none;
+}
+
+/* A bright frame around the control, the rest of the screen dimmed by its shadow. */
+#tutorial-ring {
+  position: fixed;
+  border: 2px solid var(--accent);
+  border-radius: 16px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55), 0 0 18px var(--accent);
+  pointer-events: none;
+  transition: all 0.25s ease;
+}
+
+#tutorial-bubble {
+  position: fixed;
+  left: 50%;
+  width: min(86vw, 340px);
+  padding: 14px 16px;
+  border: 1px solid var(--accent);
+  border-radius: 14px;
+  background: rgba(16, 24, 20, 0.97);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+#tutorial-bubble p {
+  margin: 0 0 12px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+#tutorial-bubble div {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
 }

@@ -10,6 +10,8 @@ export type GmAction =
   | { action: "gold"; target: string; amount: number }
   | { action: "potions"; target: string; amount: number }
   | { action: "cosmetics"; target: string }
+  | { action: "gear"; target: string }
+  | { action: "worldboss"; target: string }
   | { action: "title"; target: string; titleId: string }
   | { action: "goto"; target: string }
   | { action: "summon"; target: string }

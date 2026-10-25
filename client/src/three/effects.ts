@@ -200,6 +200,36 @@ export class Effects {
     this.sparks(at.clone().add(new THREE.Vector3(0, 1, 0)), "#ffe680", 18);
   }
 
+  /**
+   * A drop: a tall beam in the rarity's colour and a spinning gem that rises and fades.
+   * The rarer, the longer and brighter; the rarest also send out a ring.
+   */
+  loot(at: THREE.Vector3, color: string, rarity: number) {
+    const life = 1600 + rarity * 500;
+    const material = glowMaterial(color, 0.35 + rarity * 0.1);
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.5, 9, 16, 1, true), material);
+    beam.position.copy(at).add(new THREE.Vector3(0, 4.5, 0));
+    const startOpacity = material.opacity;
+    this.add(beam, life, (t) => {
+      beam.scale.set(1 + Math.sin(t * 30) * 0.06, Math.min(1, t * 6), 1 + Math.sin(t * 30) * 0.06);
+      material.opacity = startOpacity * (t < 0.7 ? 1 : (1 - t) / 0.3);
+    });
+    const gemMaterial = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.9, roughness: 0.3, transparent: true });
+    const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.32), gemMaterial);
+    const halo = glowSprite(color, 1.6);
+    gem.add(halo);
+    this.add(gem, life, (t) => {
+      gem.position.copy(at).add(new THREE.Vector3(0, 0.8 + t * 1.4, 0));
+      gem.rotation.y = t * 14;
+      gemMaterial.opacity = t < 0.75 ? 1 : (1 - t) / 0.25;
+      halo.material.opacity = gemMaterial.opacity;
+    });
+    this.sparks(at.clone().add(new THREE.Vector3(0, 0.8, 0)), color, 6 + rarity * 4);
+    if (rarity >= 3) {
+      this.shockwave(at, 3 + rarity, color);
+    }
+  }
+
   /** Puffs of dust or smoke. */
   dust(at: THREE.Vector3, size = 1, color = "#e8dcc8") {
     for (let i = 0; i < 5; i++) {
@@ -279,14 +309,14 @@ export class Effects {
   }
 
   /** A number or word that pops up over someone and floats away. */
-  floatText(at: THREE.Vector3, text: string, className: string) {
+  floatText(at: THREE.Vector3, text: string, className: string, life = 1000) {
     const element = document.createElement("div");
     element.className = `float-text ${className}`;
     element.textContent = text;
     const label = new CSS2DObject(element);
     const start = at.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.6, 0, 0));
     label.position.copy(start);
-    this.add(label, 1000, (t) => {
+    this.add(label, life, (t) => {
       label.position.y = start.y + t * 1.6;
       element.style.opacity = String(t < 0.4 ? 1 : 1 - (t - 0.4) / 0.6);
     });

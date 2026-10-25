@@ -1,13 +1,14 @@
 // Everything kept about a player: quests, titles, level, GM powers and bans.
-// It lives in a JSON file so it survives restarts.
+// It lives in MongoDB or a JSON file (see store.ts) so it survives restarts.
 // A player is known by the random id their browser keeps; accounts can replace it later.
 
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
 import type { RegionId } from "../../shared/regions.ts";
 import { MAX_LEVEL, xpToNext } from "../../shared/combat.ts";
 import { dataFile } from "./environment.ts";
+import { loadRecords, saveRecords } from "./store.ts";
 import type { GmBan } from "../../shared/gm.ts";
+import { BAG_SIZE, type BagView, type Gear, type GearSlot, sellPrice } from "../../shared/loot.ts";
+import { BOARD_SIZE, type BoardId, BOARDS, DAILY_GIFTS, type Leaderboards } from "../../shared/rewards.ts";
 import { type Achievement, dailyQuests, type ProgressView, type QuestId, thaiDay } from "../../shared/quests.ts";
 import { decorateTitle, findTitle, type LifeStat, TITLES } from "../../shared/titles.ts";
 
@@ -35,6 +36,8 @@ interface Life {
   deaths: number;
   monsters: number;
   bosses: number;
+  worldBosses: number;
+  worldBossTop: number;
 }
 
 interface Progress {
@@ -66,6 +69,13 @@ interface Progress {
   ownedMounts: number[];
   wing: number;
   mount: number;
+  /** Gear found on monsters, the ids of the pieces worn, and the number for the next id. */
+  bag: Gear[];
+  gearOn: Partial<Record<GearSlot, string>>;
+  nextGear: number;
+  /** The last Thai day a daily gift was given, and how many days in a row (1 to 7) so far. */
+  giftDay: number;
+  giftStreak: number;
 }
 
 /** Enough to earn every title; older ids are dropped first. */
@@ -73,23 +83,10 @@ const MAX_MET = 100;
 const SAVE_DELAY_MS = 2000;
 
 const file = process.env.PROGRESS_FILE ?? dataFile("progress.json");
-const players = load();
+const players = await loadRecords<Progress>("progress", file);
 let saveTimer: NodeJS.Timeout | undefined;
 /** Records that already have every field. */
 const complete = new WeakSet<Progress>();
-
-function load(): Map<string, Progress> {
-  if (!existsSync(file)) {
-    return new Map();
-  }
-
-  try {
-    return new Map(Object.entries(JSON.parse(readFileSync(file, "utf8"))));
-  } catch (error) {
-    console.error(`Could not read ${file}; starting with no progress.`, error);
-    return new Map();
-  }
-}
 
 function scheduleSave() {
   saveTimer ??= setTimeout(() => {
@@ -98,11 +95,10 @@ function scheduleSave() {
   }, SAVE_DELAY_MS);
 }
 
-/** Writes beside the file first, so a crash mid-write never leaves half a file. */
 export function saveNow() {
-  mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(`${file}.tmp`, JSON.stringify(Object.fromEntries(players)));
-  renameSync(`${file}.tmp`, file);
+  clearTimeout(saveTimer);
+  saveTimer = undefined;
+  saveRecords("progress", file, players);
 }
 
 function newDaily(day: number): Daily {
@@ -126,6 +122,8 @@ function newLife(): Life {
     deaths: 0,
     monsters: 0,
     bosses: 0,
+    worldBosses: 0,
+    worldBossTop: 0,
   };
 }
 
@@ -154,6 +152,11 @@ function newProgress(): Progress {
     ownedMounts: [0],
     wing: 0,
     mount: 0,
+    bag: [],
+    gearOn: {},
+    nextGear: 1,
+    giftDay: 0,
+    giftStreak: 0,
   };
 }
 
@@ -458,6 +461,16 @@ export function recordMonsterKill(playerId: string, boss: boolean) {
   });
 }
 
+/** A world boss beaten: everyone who hit it counts one; the hardest hitter also counts a top. */
+export function recordWorldBoss(playerId: string, top: boolean) {
+  return update(playerId, ({ life }) => {
+    life.worldBosses++;
+    if (top) {
+      life.worldBossTop++;
+    }
+  });
+}
+
 /** The name and look a player last used, for the join form. */
 export function summary(playerId: string) {
   const record = players.get(playerId);
@@ -498,4 +511,118 @@ export function addToWardrobe(playerId: string, kind: "wing" | "mount", index: n
 export function saveInventory(playerId: string, change: Partial<Inventory>) {
   Object.assign(get(playerId), change);
   scheduleSave();
+}
+
+// ---- Gear from monsters ----
+
+export function bag(playerId: string): BagView {
+  const { bag, gearOn } = get(playerId);
+  return { items: bag.map((gear) => ({ ...gear })), equipped: { ...gearOn } };
+}
+
+/** What the worn gear adds: damage and health multipliers, and the worn weapon's rarity (-1 for none). */
+export function gearBonus(playerId: string) {
+  const { bag, gearOn } = get(playerId);
+  const weapon = bag.find((gear) => gear.id === gearOn.weapon);
+  const charm = bag.find((gear) => gear.id === gearOn.charm);
+  return { power: weapon?.bonus ?? 1, hp: charm?.bonus ?? 1, weaponRarity: weapon?.rarity ?? -1 };
+}
+
+/** Puts a find in the bag; with the bag full it is sold instead, for the gold returned (the caller adds it). */
+export function addGear(playerId: string, found: Omit<Gear, "id">): { gear: Gear; sold?: number } {
+  const record = get(playerId);
+  const gear = { ...found, id: `g${record.nextGear++}` };
+  if (record.bag.length >= BAG_SIZE) {
+    return { gear, sold: sellPrice(gear) };
+  }
+  record.bag.push(gear);
+  scheduleSave();
+  return { gear };
+}
+
+/** Wears a piece from the bag in its slot; false when it isn't there. */
+export function wearGear(playerId: string, gearId: string) {
+  const record = get(playerId);
+  const gear = record.bag.find((item) => item.id === gearId);
+  if (!gear) {
+    return false;
+  }
+  record.gearOn[gear.slot] = gear.id;
+  scheduleSave();
+  return true;
+}
+
+export function takeOffGear(playerId: string, slot: GearSlot) {
+  delete get(playerId).gearOn[slot];
+  scheduleSave();
+}
+
+/** Sells a piece (taking it off first); the gold it brings (the caller adds it), or 0 when it isn't there. */
+export function sellGear(playerId: string, gearId: string) {
+  const record = get(playerId);
+  const index = record.bag.findIndex((item) => item.id === gearId);
+  if (index < 0) {
+    return 0;
+  }
+  const [gear] = record.bag.splice(index, 1);
+  if (record.gearOn[gear.slot] === gear.id) {
+    delete record.gearOn[gear.slot];
+  }
+  scheduleSave();
+  return sellPrice(gear);
+}
+
+// ---- Coming back ----
+
+/**
+ * The first visit of a Thai day: the streak goes on from yesterday (or starts over), and the
+ * day's gift is due. Returns which day of the streak (1 to 7), or 0 when today's was given already.
+ * The caller hands out the gift itself.
+ */
+export function claimDailyGift(playerId: string) {
+  const record = get(playerId);
+  const today = thaiDay();
+  if (record.giftDay === today) {
+    return 0;
+  }
+  record.giftStreak = record.giftDay === today - 1 ? (record.giftStreak % DAILY_GIFTS.length) + 1 : 1;
+  record.giftDay = today;
+  scheduleSave();
+  return record.giftStreak;
+}
+
+let boards: { at: number; value: Leaderboards } | undefined;
+const BOARDS_FRESH_MS = 30_000;
+
+/** The top players of each board; GMs, with their powers, and banned players don't take part. */
+export function leaderboards(): Leaderboards {
+  const now = Date.now();
+  if (boards && now - boards.at < BOARDS_FRESH_MS) {
+    return boards.value;
+  }
+  const entries = [...players].filter(([, record]) => record.name && !record.gm && !(record.bannedUntil > now));
+  const score: Record<BoardId, (record: Progress) => number> = {
+    // Level first, then experience within it.
+    level: (record) => (record.level ?? 1) * 1e9 + (record.xp ?? 0),
+    gold: (record) => record.gold ?? 0,
+    monsters: (record) => record.life?.monsters ?? 0,
+    worldBosses: (record) => record.life?.worldBosses ?? 0,
+  };
+  const value = Object.fromEntries(
+    BOARDS.map(({ id }) => [
+      id,
+      entries
+        .filter(([, record]) => score[id](record) > 0)
+        .sort((a, b) => score[id](b[1]) - score[id](a[1]))
+        .slice(0, BOARD_SIZE)
+        .map(([playerId, record]) => ({
+          name: record.name,
+          skin: record.skin ?? 0,
+          value: id === "level" ? record.level ?? 1 : score[id](record),
+          title: equippedTitle(playerId),
+        })),
+    ]),
+  ) as Leaderboards;
+  boards = { at: now, value };
+  return value;
 }

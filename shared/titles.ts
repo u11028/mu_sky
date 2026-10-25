@@ -26,6 +26,9 @@ export type LifeStat =
   /** Monsters and bosses defeated. */
   | "monsters"
   | "bosses"
+  /** World bosses beaten (hitting them counts), and times dealing the most damage to one. */
+  | "worldBosses"
+  | "worldBossTop"
   /** Other titles earned. */
   | "titles";
 
@@ -246,6 +249,33 @@ export const TITLES: readonly Title[] = [
     stat: "bosses",
     goal: 6,
     style: { color: "#ffb703", glow: "#fb8500", bubbleFill: "#2b1600", bubbleBorder: "#ffb703", bubbleText: "#ffe8c2" },
+  },
+  {
+    id: "rahu-witness",
+    name: "ผู้ร่วมสยบราหู",
+    rarity: "epic",
+    hint: "ร่วมล้มบอสโลก 1 ครั้ง",
+    stat: "worldBosses",
+    goal: 1,
+    style: { color: "#e0aaff", glow: "#7b2cbf", bubbleFill: "#1a0630", bubbleBorder: "#c77dff", bubbleText: "#f3e3ff" },
+  },
+  {
+    id: "rahu-slayer",
+    name: "หมัดเดียวราหูคายจันทร์",
+    rarity: "legendary",
+    hint: "ตีบอสโลกแรงที่สุดในการต่อสู้ 1 ครั้ง",
+    stat: "worldBossTop",
+    goal: 1,
+    style: { color: "#ffffff", glow: "#ff006e", bubbleFill: "#2b0016", bubbleBorder: "#ff4d94", bubbleText: "#ffe0ee" },
+  },
+  {
+    id: "eclipse",
+    name: "คนกินสุริยุปราคาเป็นมื้อเช้า",
+    rarity: "mythic",
+    hint: "ร่วมล้มบอสโลก 10 ครั้ง",
+    stat: "worldBosses",
+    goal: 10,
+    style: { color: "#ffd60a", glow: "#3c096c", bubbleFill: "#10002b", bubbleBorder: "#ffd60a", bubbleText: "#fff3b0" },
   },
   {
     id: "slayer",

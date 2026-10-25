@@ -19,12 +19,32 @@
     <div id="game"></div>
 
     <div id="loading" hidden>
+      <p id="loading-region"></p>
+      <p id="loading-tagline" class="muted"></p>
       <b>กำลังสร้างโลก 0%</b>
       <div class="loading-bar"><span></span></div>
+      <p id="loading-tip"></p>
+    </div>
+
+    <div id="tutorial" hidden>
+      <div id="tutorial-ring"></div>
+      <div id="tutorial-bubble" role="dialog" aria-live="polite">
+        <p id="tutorial-text"></p>
+        <div>
+          <button type="button" id="tutorial-skip" class="secondary">ข้าม</button>
+          <button type="button" id="tutorial-next">ถัดไป</button>
+        </div>
+      </div>
     </div>
 
     <div id="hud">
       <span id="online">ออฟไลน์</span>
+    </div>
+
+    <div id="world-boss" hidden role="status">
+      <span class="wb-icon">👹</span>
+      <span><b id="world-boss-name"></b> บุก<span id="world-boss-region"></span>!</span>
+      <time id="world-boss-time"></time>
     </div>
 
     <div id="party-badge" hidden>
@@ -60,7 +80,9 @@
     </div>
 
     <nav id="menu-bar" hidden aria-label="เมนู">
+      <button type="button" data-panel="bag-panel" title="กระเป๋า">🎒<span id="bag-dot" class="menu-dot" hidden></span></button>
       <button type="button" data-panel="shop-panel" title="ร้านค้า">🛒</button>
+      <button type="button" data-panel="board-panel" title="อันดับ">🏆</button>
       <button type="button" data-panel="team-panel" title="ทีม">👥<span id="team-dot" hidden></span></button>
       <button type="button" data-panel="settings-panel" title="ตั้งค่า">⚙</button>
       <button id="gm-button" type="button" hidden aria-controls="gm-panel" title="แผง GM">🛡</button>
@@ -94,6 +116,24 @@
       <p class="muted">ล้มมอนสเตอร์เพื่อเก็บทอง บอสให้ทองเยอะมาก</p>
     </aside>
 
+    <aside id="bag-panel" class="side-panel" hidden aria-labelledby="bag-title">
+      <header><h2 id="bag-title">🎒 กระเป๋า <small id="bag-count" class="muted"></small></h2><button type="button" class="panel-close" aria-label="ปิด">✕</button></header>
+      <p class="muted">มอนสเตอร์ดรอปของได้ บอสดรอปของหายากขึ้นไปทุกครั้ง · ของที่ใส่เสริมพลังจากร้านค้าอีกชั้น</p>
+      <div class="gear-worn">
+        <div class="gear-slot" id="worn-weapon"></div>
+        <div class="gear-slot" id="worn-charm"></div>
+      </div>
+      <div id="bag-items" class="shop-grid"></div>
+      <button type="button" id="bag-sell-junk" class="secondary">ขายของ "ธรรมดา" และ "ดี" ที่ไม่ได้ใส่ทั้งหมด</button>
+    </aside>
+
+    <aside id="board-panel" class="side-panel" hidden aria-labelledby="board-title">
+      <header><h2 id="board-title">🏆 อันดับ</h2><button type="button" class="panel-close" aria-label="ปิด">✕</button></header>
+      <div class="segmented" id="board-tabs"></div>
+      <ol id="board-list"></ol>
+      <p class="muted">อัปเดตทุก 30 วินาที · GM ไม่ร่วมจัดอันดับ</p>
+    </aside>
+
     <aside id="team-panel" class="side-panel" hidden aria-labelledby="team-title">
       <header><h2 id="team-title">👥 ทีม</h2><button type="button" class="panel-close" aria-label="ปิด">✕</button></header>
       <p class="muted">ทีมละ 4 คน · แบ่ง XP และทองกัน · ตีกันเองไม่โดน</p>
@@ -121,6 +161,14 @@
 
     <div id="team-frames" hidden></div>
 
+    <div id="daily-gift" hidden role="dialog" aria-labelledby="daily-gift-title">
+      <h2 id="daily-gift-title">🎁 รางวัลเข้าเกมรายวัน</h2>
+      <p class="muted">เข้าเกมทุกวันติดกัน รางวัลยิ่งใหญ่ขึ้น · วันที่ 7 ได้ของล้ำค่า!</p>
+      <ol id="daily-gift-days"></ol>
+      <p id="daily-gift-got"></p>
+      <button type="button" id="daily-gift-ok">รับรางวัล</button>
+    </div>
+
     <div id="team-invite" hidden role="dialog">
       <p><b id="team-invite-from"></b> ชวนคุณเข้าทีม</p>
       <div>
@@ -144,6 +192,8 @@
           <button type="button" data-self="level">⬆ +10 เลเวล</button>
           <button type="button" data-self="heal">💚 เลือดเต็ม</button>
           <button type="button" data-self="cosmetics">🪽 ปีก+สัตว์ขี่ครบ</button>
+          <button type="button" data-self="gear">🎁 ของดรอปหายาก</button>
+          <button type="button" data-self="worldboss">👹 เรียกบอสโลก</button>
         </div>
       </section>
       <form id="gm-announce" autocomplete="off">
@@ -227,8 +277,13 @@
     </section>
 
     <div id="join" role="dialog" aria-labelledby="join-title">
+      <div class="sky-motes" aria-hidden="true"></div>
       <form id="join-form" autocomplete="off">
-        <h1 id="join-title">MU Sky</h1>
+        <h1 id="join-title" class="logo">
+          <span class="logo-wings" aria-hidden="true">⚔</span>
+          <span class="logo-name">MU SKY</span>
+          <span class="logo-sub">ตำนานฟ้าสยาม</span>
+        </h1>
         <p>ตั้งชื่อตัวละครของคุณ</p>
         <input id="join-name" maxlength="16" placeholder="ชื่อตัวละคร" required />
         <div id="hero-picker">

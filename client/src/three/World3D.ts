@@ -19,6 +19,7 @@ import { loadSounds, play } from "./sfx.ts";
 import { playMusic } from "./music.ts";
 import { onSettings, type Settings } from "../settings.ts";
 import { WEAPON_TIERS } from "../../../shared/items.ts";
+import { type LootEvent, RARITIES } from "../../../shared/loot.ts";
 import { MOUNTS, WINGS } from "../../../shared/cosmetics.ts";
 import { loadModel } from "./assets.ts";
 
@@ -66,6 +67,7 @@ interface PlayerState {
   potions: number;
   weapon: number;
   armor: number;
+  gearRarity: number;
   team: string;
   wing: number;
   mount: number;
@@ -282,6 +284,7 @@ export class World3D {
       monster.onChange(() => this.updateMonster(id, monster));
     });
     state.monsters.onRemove((_monster: any, id: string) => {
+      this.auras.delete(id);
       this.monsters.get(id)?.actor.dispose();
       this.monsters.delete(id);
     });
@@ -322,7 +325,11 @@ export class World3D {
     actor.label.object.element.classList.add(kind.boss ? "boss" : "monster");
     this.scene.add(actor.root);
     this.monsters.set(id, { actor, boss: Boolean(kind.boss), level: kind.level });
-    actor.setName(`${kind.boss ? "👑 " : ""}Lv.${kind.level} ${kind.name}`, this.danger(kind.level, Boolean(kind.boss)));
+    actor.setName(`${kind.world ? "👹 บอสโลก " : kind.boss ? "👑 " : ""}Lv.${kind.level} ${kind.name}`, this.danger(kind.level, Boolean(kind.boss)));
+    if (kind.world) {
+      // A wide, throbbing ring of dark fire marks the world boss.
+      this.setAura(id, actor, true, "#b5179e", 4.2);
+    }
     this.updateMonster(id, monster);
   }
 
@@ -358,7 +365,8 @@ export class World3D {
       `${player.gm ? "[GM] " : ""}Lv.${player.level} ${player.name}`,
       player.gm ? "gm" : isMe ? "me" : mate ? "mate" : "",
     );
-    actor.setWeaponGlow(WEAPON_TIERS[player.weapon]?.color);
+    // A found weapon of rare or better outshines the shop's tiers.
+    actor.setWeaponGlow(player.gearRarity >= 2 ? RARITIES[player.gearRarity].color : WEAPON_TIERS[player.weapon]?.color);
     actor.setWings(player.wing, WINGS[player.wing]);
     this.setMount(actor, player.riding && !player.dead ? player.mount : 0);
     actor.setHp(player.hp, player.maxHp);
@@ -449,14 +457,14 @@ export class World3D {
     });
   }
 
-  /** The golden ring under an immortal GM. */
-  private setAura(id: string, actor: Actor, on: boolean) {
+  /** The golden ring under an immortal GM; other colours and sizes mark other things (the world boss). */
+  private setAura(id: string, actor: Actor, on: boolean, color = "#ffd60a", size = 1) {
     const aura = this.auras.get(id);
     if (on && !aura) {
       const ring = new THREE.Mesh(
-        new THREE.RingGeometry(0.8, 1.15, 40),
+        new THREE.RingGeometry(0.8 * size, 1.15 * size, 48),
         new THREE.MeshBasicMaterial({
-          color: "#ffd60a",
+          color,
           transparent: true,
           opacity: 0.7,
           blending: THREE.AdditiveBlending,
@@ -576,6 +584,18 @@ export class World3D {
     this.effects.sparks(at, "#ffd60a", 10);
     this.effects.floatText(at.clone().add(new THREE.Vector3(0, 0.6, 0)), `+${amount} 💰`, "gold");
     play("coin", 0.35);
+  }
+
+  /** A monster dropped gear: a beam of its colour for all to see, and its name for the finder. */
+  showLoot(event: LootEvent) {
+    const at = new THREE.Vector3(event.x / PX, 0, event.y / PX);
+    const { color, name } = RARITIES[event.rarity];
+    this.effects.loot(at, color, event.rarity);
+    if (event.by === this.room.sessionId) {
+      const text = event.sold ? `${event.name} (กระเป๋าเต็ม ขาย +${event.sold} 💰)` : `${event.name} · ${name}`;
+      this.effects.floatText(at.clone().add(new THREE.Vector3(0, 2.6, 0)), text, `loot rarity-${event.rarity}`, 2600);
+      play(event.rarity >= 3 ? "levelup" : "buy", event.rarity >= 3 ? 0.5 : 0.35);
+    }
   }
 
   /** A potion drunk: a green glow and the health it gave. */

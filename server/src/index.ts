@@ -7,7 +7,8 @@ import { WebSocketTransport } from "@colyseus/ws-transport";
 import { ROOM_NAME, SERVER_PORT } from "../../shared/world.ts";
 import * as accounts from "./accounts.ts";
 import { clientAddress } from "./environment.ts";
-import { saveNow, summary } from "./progress.ts";
+import { leaderboards, saveNow, summary } from "./progress.ts";
+import { flushed } from "./store.ts";
 import { WorldRoom } from "./WorldRoom.ts";
 
 // colyseus 0.15 is CommonJS: Node's ESM loader only sees its default export.
@@ -23,6 +24,10 @@ if (existsSync(clientDist)) {
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
+});
+
+app.get("/api/leaderboards", (_req, res) => {
+  res.json(leaderboards());
 });
 
 // Accounts: the reply carries the player id, plus the name and look last used, to fill in the join form.
@@ -47,10 +52,11 @@ gameServer.define(ROOM_NAME, WorldRoom).filterBy(["region", "party"]);
 await gameServer.listen(port);
 console.log(`Game server listening on port ${port}`);
 
-// Keep the last few seconds of progress when the server is stopped.
+// Keep the last few seconds of progress when the server is stopped (a free host stops it when it
+// sleeps), waiting up to a few seconds for the database to take it.
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.once(signal, () => {
     saveNow();
-    process.exit(0);
+    void Promise.race([flushed(), new Promise((done) => setTimeout(done, 8000))]).then(() => process.exit(0));
   });
 }

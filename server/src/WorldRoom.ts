@@ -36,7 +36,7 @@ import {
   type SkillId,
   SPAWN_SHIELD_MS,
 } from "../../shared/combat.ts";
-import { monsterXp } from "../../shared/monsters.ts";
+import { monsterKind, monsterXp, WORLD_BOSS, type WorldBossEnd, type WorldBossEvent } from "../../shared/monsters.ts";
 import { isBlocked, regionLayout, type RegionLayout, slide } from "../../shared/regionThemes.ts";
 import { heroOf, type ShotEvent } from "../../shared/heroes.ts";
 import { MonsterSystem } from "./MonsterSystem.ts";
@@ -49,6 +49,8 @@ import * as teams from "./teams.ts";
 import { ARMOR_TIERS, isShopItem, monsterGold, POTION, type ShopItem, WEAPON_TIERS } from "../../shared/items.ts";
 import { type CosmeticKind, cosmeticList, isCosmeticKind, MOUNTS, WINGS } from "../../shared/cosmetics.ts";
 import * as progress from "./progress.ts";
+import { type DropSource, LEGENDARY, type LootEvent, RARITIES, rollGear } from "../../shared/loot.ts";
+import { DAILY_GIFTS, type DailyGiftEvent } from "../../shared/rewards.ts";
 import { type Monster, Player, WorldState } from "./schema.ts";
 
 // colyseus 0.15 is CommonJS: Node's ESM loader only sees its default export.
@@ -128,6 +130,11 @@ const rooms = new Set<WorldRoom>();
 /** Where a player sent by a GM appears in the next region, instead of beside the portal. */
 const arrivals = new Map<string, { x: number; y: number }>();
 
+/** The world boss now up, if any: its room, its monster id and when it leaves. */
+let worldBoss: { room: WorldRoom; monsterId: string; endsAt: number } | undefined;
+let nextWorldBossAt = Date.now() + WORLD_BOSS.firstMs;
+let worldBossTimer: NodeJS.Timeout | undefined;
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
@@ -178,6 +185,7 @@ export class WorldRoom extends Room<WorldState> {
     this.region = REGIONS[this.regionId];
     this.setState(new WorldState());
     rooms.add(this);
+    worldBossTimer ??= setInterval(() => WorldRoom.worldBossTick(), 10_000);
     this.layout = regionLayout(this.regionId);
     this.monsters = new MonsterSystem({
       regionId: this.regionId,
@@ -256,6 +264,9 @@ export class WorldRoom extends Room<WorldState> {
       }
     });
     this.onMessage("potion", (client) => this.drinkPotion(client.sessionId));
+    this.onMessage("gear-wear", (client, message: { id?: unknown }) => this.changeGear(client, "wear", String(message?.id)));
+    this.onMessage("gear-off", (client, message: { slot?: unknown }) => this.changeGear(client, "off", String(message?.slot)));
+    this.onMessage("gear-sell", (client, message: { id?: unknown }) => this.changeGear(client, "sell", String(message?.id)));
     this.onMessage("buy-cosmetic", (client, message: { kind?: unknown; index?: unknown }) => {
       if (isCosmeticKind(message?.kind)) {
         this.buyCosmetic(client, message.kind, Number(message?.index));
@@ -292,6 +303,9 @@ export class WorldRoom extends Room<WorldState> {
 
   onDispose() {
     rooms.delete(this);
+    if (worldBoss?.room === this) {
+      worldBoss = undefined;
+    }
   }
 
   /** Banned players and anyone from a banned address are turned away before joining. */
@@ -328,6 +342,10 @@ export class WorldRoom extends Room<WorldState> {
     player.god = powers.god;
     Object.assign(player, progress.inventory(playerId));
     client.send("wardrobe", progress.wardrobe(playerId));
+    client.send("bag", progress.bag(playerId));
+    if (worldBoss && worldBoss.room.party === this.party) {
+      client.send("world-boss", worldBoss.room.worldBossEvent());
+    }
     player.team = teams.teamIdOf(playerId);
     this.applyLevel(player, playerId);
     player.hp = player.maxHp;
@@ -356,6 +374,7 @@ export class WorldRoom extends Room<WorldState> {
 
     client.send("chat-history", this.chatHistory);
     client.send("progress", progress.view(playerId));
+    this.giveDailyGift(client, player, playerId);
     this.sendChat({ from: "ระบบ", text: `${player.name} มาถึง${this.region.name}แล้ว`, system: true });
 
     const travelled = isRegionId(options?.from);
@@ -448,8 +467,11 @@ export class WorldRoom extends Room<WorldState> {
     const { level, xp } = progress.profile(playerId);
     player.level = level;
     player.xp = xp;
-    // Each class is tougher or frailer than the level alone says.
-    player.maxHp = Math.round(maxHp(level) * heroOf(player.skin).hp * (ARMOR_TIERS[player.armor]?.bonus ?? 1));
+    // Each class is tougher or frailer than the level alone says; armour and a charm add to it.
+    const gear = progress.gearBonus(playerId);
+    player.gearPower = gear.power;
+    player.gearRarity = gear.weaponRarity;
+    player.maxHp = Math.round(maxHp(level) * heroOf(player.skin).hp * (ARMOR_TIERS[player.armor]?.bonus ?? 1) * gear.hp);
     player.hp = Math.min(player.hp, player.maxHp);
   }
 
@@ -705,6 +727,7 @@ export class WorldRoom extends Room<WorldState> {
       attackPower(attacker.level) *
       hero.power *
       (WEAPON_TIERS[attacker.weapon]?.bonus ?? 1) *
+      attacker.gearPower *
       (WINGS[attacker.wing]?.power ?? 1) *
       multiplier *
       (0.85 + Math.random() * 0.3) *
@@ -764,6 +787,7 @@ export class WorldRoom extends Room<WorldState> {
    */
   private monsterDefeated(monsterId: string, monster: Monster) {
     const kind = this.monsters.kind(monster);
+    const damageBy = new Map(this.monsters.mind(monsterId)?.damageBy);
     const fighters = this.monsters.defeat(monsterId);
     const teamsThere = new Set(fighters.map((id) => this.state.players.get(id)?.team).filter(Boolean));
     this.state.players.forEach((player, sessionId) => {
@@ -772,6 +796,10 @@ export class WorldRoom extends Room<WorldState> {
         fighters.push(sessionId);
       }
     });
+    if (worldBoss?.room === this && worldBoss.monsterId === monsterId) {
+      this.worldBossDefeated(monsterId, monster, fighters, damageBy);
+      return;
+    }
     const names: string[] = [];
     const gold = monsterGold(kind.level, Boolean(kind.boss));
     fighters.forEach((sessionId, index) => {
@@ -788,6 +816,8 @@ export class WorldRoom extends Room<WorldState> {
       client.send("gold", { amount: coins, x: monster.x, y: monster.y });
       player.gold += coins;
       progress.saveInventory(movement.playerId, { gold: player.gold });
+      // Each fighter rolls for their own drop, so helping is worth it too.
+      this.dropGear(client, player, movement.playerId, kind.boss ? "boss" : "monster", kind.level, monster);
       this.levelChanged(player, movement.playerId, progress.addXp(movement.playerId, xp));
       this.celebrate(movement.playerId, progress.recordMonsterKill(movement.playerId, Boolean(kind.boss)));
     });
@@ -872,6 +902,197 @@ export class WorldRoom extends Room<WorldState> {
     player.hp = player.maxHp;
     player.dead = false;
     movement.shieldUntil = Date.now() + SPAWN_SHIELD_MS;
+  }
+
+  // ---- Coming back ----
+
+  /** The first visit of the day brings the next gift of the streak. */
+  private giveDailyGift(client: Client, player: Player, playerId: string) {
+    const day = progress.claimDailyGift(playerId);
+    if (day === 0) {
+      return;
+    }
+    const gift = DAILY_GIFTS[day - 1];
+    player.gold += gift.gold;
+    player.potions = Math.min(POTION.max, player.potions + gift.potions);
+    progress.saveInventory(playerId, { gold: player.gold, potions: player.potions });
+    let gearName: string | undefined;
+    if (gift.gear) {
+      const found = rollGear(gift.gear, Math.max(5, player.level));
+      if (found) {
+        const { gear, sold } = progress.addGear(playerId, found);
+        gearName = gear.name;
+        if (sold) {
+          player.gold += sold;
+          progress.saveInventory(playerId, { gold: player.gold });
+        }
+        client.send("bag", progress.bag(playerId));
+      }
+    }
+    client.send("daily-gift", { day, gearName } satisfies DailyGiftEvent);
+  }
+
+  // ---- The world boss ----
+
+  /** Every few seconds: send the world boss away when its time is up, or bring the next one. */
+  private static worldBossTick() {
+    const now = Date.now();
+    if (worldBoss) {
+      if (now >= worldBoss.endsAt) {
+        worldBoss.room.worldBossLeaves();
+      }
+      return;
+    }
+    if (now < nextWorldBossAt) {
+      return;
+    }
+    // A public region with players if there is one, else a private room with players.
+    const busy = [...rooms].filter((room) => room.clients.length > 0);
+    const choices = busy.some((room) => room.party === "") ? busy.filter((room) => room.party === "") : busy;
+    if (choices.length === 0) {
+      nextWorldBossAt = now + 60_000;
+      return;
+    }
+    choices[Math.floor(Math.random() * choices.length)].summonWorldBoss();
+  }
+
+  /** Rooms of the same world as this one: the public world, or this private room's regions. */
+  private sameWorld() {
+    return [...rooms].filter((room) => room.party === this.party);
+  }
+
+  private worldBossEvent(): WorldBossEvent {
+    const kind = monsterKind(WORLD_BOSS.kind)!;
+    return { region: this.regionId, name: kind.name, leftMs: Math.max(0, (worldBoss?.endsAt ?? 0) - Date.now()) };
+  }
+
+  /** Brings the world boss here now, as big as the number of players in this world asks. */
+  private summonWorldBoss() {
+    const world = this.sameWorld();
+    const players = world.reduce((count, room) => count + room.clients.length, 0);
+    const hp = Math.max(WORLD_BOSS.minHp, WORLD_BOSS.hpPerPlayer * players);
+    const monsterId = this.monsters.summon(WORLD_BOSS.kind, hp);
+    worldBoss = { room: this, monsterId, endsAt: Date.now() + WORLD_BOSS.lastsMs };
+    nextWorldBossAt = Date.now() + WORLD_BOSS.everyMs;
+    const event = this.worldBossEvent();
+    const minutes = Math.round(WORLD_BOSS.lastsMs / 60_000);
+    for (const room of world) {
+      room.broadcast("world-boss", event);
+      room.sendChat({
+        from: "ระบบ",
+        text: `👹 บอสโลก ${event.name} บุกมาที่${this.region.name}แล้ว! ใครตีด้วยได้ของล้ำค่าทุกคน (อยู่ ${minutes} นาที)`,
+        system: true,
+      });
+    }
+  }
+
+  private worldBossLeaves() {
+    if (!worldBoss) {
+      return;
+    }
+    this.monsters.remove(worldBoss.monsterId);
+    worldBoss = undefined;
+    const name = monsterKind(WORLD_BOSS.kind)!.name;
+    for (const room of this.sameWorld()) {
+      room.broadcast("world-boss-end", { beaten: false, name, top: [] } satisfies WorldBossEnd);
+      room.sendChat({ from: "ระบบ", text: `🌑 ${name} หนีกลับไปแล้ว... รอรอบหน้า!`, system: true });
+    }
+  }
+
+  /** Everyone who hit it gets gold, experience and a fine drop; the hardest hitter, a title too. */
+  private worldBossDefeated(monsterId: string, monster: Monster, fighters: string[], damageBy: Map<string, number>) {
+    worldBoss = undefined;
+    const kind = this.monsters.kind(monster);
+    const top: WorldBossEnd["top"] = [];
+    fighters.forEach((sessionId, index) => {
+      const player = this.state.players.get(sessionId);
+      const movement = this.movements.get(sessionId);
+      const client = this.clients.find((c) => c.sessionId === sessionId);
+      if (!player || !movement || !client) {
+        return;
+      }
+      if (top.length < 3) {
+        top.push({ name: player.name, damage: damageBy.get(sessionId) ?? 0 });
+      }
+      const xp = index === 0 ? monsterXp(kind) : Math.ceil(monsterXp(kind) / 2);
+      const coins = monsterGold(kind.level, true) * (index === 0 ? 3 : 1);
+      client.send("xp", { amount: xp });
+      client.send("gold", { amount: coins, x: monster.x, y: monster.y });
+      player.gold += coins;
+      progress.saveInventory(movement.playerId, { gold: player.gold });
+      this.levelChanged(player, movement.playerId, progress.addXp(movement.playerId, xp));
+      this.dropGear(client, player, movement.playerId, "world-boss", kind.level, monster);
+      this.celebrate(movement.playerId, progress.recordMonsterKill(movement.playerId, true));
+      this.celebrate(movement.playerId, progress.recordWorldBoss(movement.playerId, index === 0));
+    });
+    // Let it fall before it goes.
+    this.clock.setTimeout(() => this.monsters.remove(monsterId), 5000);
+
+    const medals = ["🥇", "🥈", "🥉"];
+    const ranking = top.map((entry, index) => `${medals[index]} ${entry.name} (${entry.damage.toLocaleString()})`).join("  ");
+    for (const room of this.sameWorld()) {
+      room.broadcast("world-boss-end", { beaten: true, name: kind.name, top } satisfies WorldBossEnd);
+      room.sendChat({ from: "ระบบ", text: `🏆 ปราบบอสโลก ${kind.name} สำเร็จ! ${ranking}`, system: true });
+    }
+  }
+
+  // ---- Gear from monsters ----
+
+  /** Rolls a drop for one player; a find shows as a beam of its colour where the monster fell. */
+  private dropGear(client: Client, player: Player, playerId: string, source: DropSource, level: number, at: { x: number; y: number }) {
+    const found = rollGear(source, level);
+    if (!found) {
+      return;
+    }
+    const { gear, sold } = progress.addGear(playerId, found);
+    if (sold) {
+      player.gold += sold;
+      progress.saveInventory(playerId, { gold: player.gold });
+    }
+    this.broadcast("loot", { by: client.sessionId, x: at.x, y: at.y, rarity: gear.rarity, name: gear.name, sold } satisfies LootEvent);
+    client.send("bag", progress.bag(playerId));
+    if (gear.rarity >= LEGENDARY - 1) {
+      this.sendChat({
+        from: "ระบบ",
+        text: `${gear.rarity === LEGENDARY ? "🌟" : "💜"} ${player.name} ได้รับ「${gear.name}」ระดับ${RARITIES[gear.rarity].name}!`,
+        system: true,
+      });
+    }
+  }
+
+  private changeGear(client: Client, change: "wear" | "off" | "sell", what: string) {
+    const player = this.state.players.get(client.sessionId);
+    const movement = this.movements.get(client.sessionId);
+    if (!player || !movement) {
+      return;
+    }
+    const { playerId } = movement;
+    if (change === "wear") {
+      if (!progress.wearGear(playerId, what)) {
+        return;
+      }
+      this.broadcast("upgrade", { id: client.sessionId });
+    } else if (change === "off") {
+      if (what !== "weapon" && what !== "charm") {
+        return;
+      }
+      progress.takeOffGear(playerId, what);
+    } else {
+      const price = progress.sellGear(playerId, what);
+      if (price === 0) {
+        return;
+      }
+      player.gold += price;
+      progress.saveInventory(playerId, { gold: player.gold });
+      client.send("notice", { text: `ขายได้ ${price} ทอง`, ok: true });
+    }
+    // A charm changes the health bar: keep the share of health the player had.
+    const share = player.hp / player.maxHp;
+    this.applyLevel(player, playerId);
+    if (!player.dead) {
+      player.hp = Math.max(1, Math.round(player.maxHp * share));
+    }
+    client.send("bag", progress.bag(playerId));
   }
 
   // ---- Shop and potions ----
@@ -1242,6 +1463,21 @@ export class WorldRoom extends Room<WorldState> {
         progress.saveInventory(targetMovement.playerId, { wing: target.wing, mount: target.mount });
         targetClient.send("wardrobe", progress.wardrobe(targetMovement.playerId));
         done(`${target.name}: ได้ปีกและสัตว์ขี่ครบทุกแบบ`);
+        return;
+      }
+      case "worldboss": {
+        if (worldBoss) {
+          done(`มีบอสโลกอยู่แล้วที่${worldBoss.room.region.name}`);
+        } else {
+          room.summonWorldBoss();
+          done(`เรียกบอสโลกมาที่${room.region.name}แล้ว`);
+        }
+        return;
+      }
+      case "gear": {
+        // A world boss's prize, dropped at the player's feet.
+        room.dropGear(targetClient, target, targetMovement.playerId, "world-boss", target.level, target);
+        done(`${target.name}: ได้ของดรอประดับล้ำค่าขึ้นไป 1 ชิ้น`);
         return;
       }
       case "title": {

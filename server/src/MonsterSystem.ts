@@ -17,6 +17,7 @@ import {
   monsterKind,
   monsterMaxHp,
   REGION_MONSTERS,
+  WORLD_BOSS,
 } from "../../shared/monsters.ts";
 import { type Region, type RegionId, spawnPoint } from "../../shared/regions.ts";
 import { isBlocked, type RegionLayout, slide } from "../../shared/regionThemes.ts";
@@ -48,6 +49,8 @@ interface Mind {
   diedAt: number;
   /** Damage each player dealt, to share the reward. */
   damageBy: Map<string, number>;
+  /** A one-off (the world boss): no leash, no healing on the way home, no coming back. */
+  once: boolean;
 }
 
 export class MonsterSystem {
@@ -106,6 +109,9 @@ export class MonsterSystem {
       const kind = this.kind(monster);
 
       if (monster.dead) {
+        if (mind.once) {
+          return;
+        }
         if (now - mind.diedAt >= (kind.boss ? BOSS_RESPAWN_MS : MONSTER_RESPAWN_MS)) {
           this.revive(monster, mind, kind);
         }
@@ -114,7 +120,7 @@ export class MonsterSystem {
 
       const target = this.chooseTarget(monster, mind, kind);
       if (target) {
-        const range = kind.boss ? BOSS_ATTACK_RANGE : MONSTER_ATTACK_RANGE;
+        const range = attackRange(kind);
         const distance = Math.hypot(target.x - monster.x, target.y - monster.y);
         if (distance > range * 0.8) {
           this.step(monster, target.x, target.y, MONSTER_CHASE_SPEED, deltaMs);
@@ -128,8 +134,10 @@ export class MonsterSystem {
       if (mind.returning) {
         if (this.step(monster, mind.homeX, mind.homeY, MONSTER_CHASE_SPEED, deltaMs) < 8) {
           mind.returning = false;
-          monster.hp = monster.maxHp;
-          mind.damageBy.clear();
+          if (!mind.once) {
+            monster.hp = monster.maxHp;
+            mind.damageBy.clear();
+          }
         }
         return;
       }
@@ -151,7 +159,7 @@ export class MonsterSystem {
   private chooseTarget(monster: Monster, mind: Mind, kind: MonsterKind) {
     const players = new Map(this.arena.targets());
     const current = mind.targetId ? players.get(mind.targetId) : undefined;
-    if (current && Math.hypot(current.x - mind.homeX, current.y - mind.homeY) <= MONSTER_LEASH) {
+    if (current && (mind.once || Math.hypot(current.x - mind.homeX, current.y - mind.homeY) <= MONSTER_LEASH)) {
       return current;
     }
     if (mind.targetId) {
@@ -187,7 +195,7 @@ export class MonsterSystem {
       return;
     }
     for (const [sessionId, player] of this.arena.targets()) {
-      if (Math.hypot(player.x - monster.x, player.y - monster.y) <= BOSS_ATTACK_RANGE) {
+      if (Math.hypot(player.x - monster.x, player.y - monster.y) <= attackRange(kind)) {
         this.arena.strikePlayer(id, sessionId, damage);
       }
     }
@@ -210,7 +218,21 @@ export class MonsterSystem {
     return distance - length;
   }
 
-  private spawn(kindId: string, home: { x: number; y: number }) {
+  /** Brings in a one-off monster, the world boss, with this much health. Returns its id. */
+  summon(kindId: string, maxHp: number) {
+    const id = this.spawn(kindId, this.findHome(false, true), true);
+    const monster = this.arena.monsters.get(id)!;
+    monster.maxHp = maxHp;
+    monster.hp = maxHp;
+    return id;
+  }
+
+  remove(id: string) {
+    this.arena.monsters.delete(id);
+    this.minds.delete(id);
+  }
+
+  private spawn(kindId: string, home: { x: number; y: number }, once = false) {
     const kind = monsterKind(kindId)!;
     const monster = new Monster();
     monster.kind = kindId;
@@ -229,7 +251,9 @@ export class MonsterSystem {
       lastAttackAt: 0,
       diedAt: 0,
       damageBy: new Map(),
+      once,
     });
+    return id;
   }
 
   private revive(monster: Monster, mind: Mind, kind: MonsterKind) {
@@ -243,8 +267,11 @@ export class MonsterSystem {
     }
   }
 
-  /** A free spot away from where players arrive and from the portals; bosses go far out. */
-  private findHome(boss: boolean) {
+  /**
+   * A free spot away from where players arrive and from the portals; bosses go far out, and the
+   * world boss stays close enough to the middle that everyone finds it.
+   */
+  private findHome(boss: boolean, world = false) {
     const { bounds, portals } = this.arena.region;
     const centre = spawnPoint(this.arena.regionId);
     let best = { x: bounds.minX + 100, y: bounds.minY + 100 };
@@ -255,6 +282,9 @@ export class MonsterSystem {
       const fromCentre = Math.hypot(x - centre.x, y - centre.y);
       const nearPortal = portals.some((p) => Math.hypot(p.x - x, p.y - y) < 180);
       if (fromCentre < MONSTER_SAFE_RADIUS || nearPortal || isBlocked(this.arena.layout, x, y, 30)) {
+        continue;
+      }
+      if (world && fromCentre > MONSTER_SAFE_RADIUS + 200) {
         continue;
       }
       // Ordinary monsters take the first good spot; a boss keeps looking for the farthest one.
@@ -268,4 +298,8 @@ export class MonsterSystem {
     }
     return best;
   }
+}
+
+function attackRange(kind: MonsterKind) {
+  return kind.world ? WORLD_BOSS.attackRange : kind.boss ? BOSS_ATTACK_RANGE : MONSTER_ATTACK_RANGE;
 }

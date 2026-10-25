@@ -2,14 +2,8 @@
 # Builds the game and runs one Node server for the page and the multiplayer rooms.
 #
 # This is the free plan: no card needed, but the server sleeps after a while without players
-# and its files start over each time, so levels, gold, accounts and GM rights are lost then.
-# To keep them, switch to a paid plan with a disk (needs a card on Render):
-#   plan: starter
-#   envVars: add  - key: DATA_DIR / value: /var/data
-#   disk:
-#     name: mu-sky-data
-#     mountPath: /var/data
-#     sizeGB: 1
+# and its files start over each time. Set MONGODB_URI (a free MongoDB Atlas database) and levels,
+# gold, gear, accounts and GM rights are kept there instead; without it they are lost then.
 services:
   - type: web
     name: mu-sky
@@ -26,4 +20,7 @@ services:
         value: "1"
       # Asked for when the blueprint is created: the secret typed in the game as "/gm <key>".
       - key: GM_KEY
+        sync: false
+      # Also asked for: the MongoDB Atlas connection string (mongodb+srv://...). Keeps the players' data.
+      - key: MONGODB_URI
         sync: false

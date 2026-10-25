@@ -1,10 +1,9 @@
 // Accounts: a name and password that lead to a player id, so the same progress opens on any device.
-// Passwords are kept only as salted scrypt hashes in accounts.json in the data folder.
+// Passwords are kept only as salted scrypt hashes, in MongoDB or accounts.json (see store.ts).
 
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
 import { dataFile } from "./environment.ts";
+import { loadRecords, saveRecords } from "./store.ts";
 
 interface Account {
   username: string;
@@ -24,25 +23,11 @@ const MAX_FAILURES = 10;
 const FAILURE_WINDOW_MS = 10 * 60 * 1000;
 
 const file = process.env.ACCOUNTS_FILE ?? dataFile("accounts.json");
-const accounts = load();
+const accounts = await loadRecords<Account>("accounts", file);
 const failures = new Map<string, number[]>();
 
-function load(): Map<string, Account> {
-  if (!existsSync(file)) {
-    return new Map();
-  }
-  try {
-    return new Map(Object.entries(JSON.parse(readFileSync(file, "utf8"))));
-  } catch (error) {
-    console.error(`Could not read ${file}; starting with no accounts.`, error);
-    return new Map();
-  }
-}
-
 function save() {
-  mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(`${file}.tmp`, JSON.stringify(Object.fromEntries(accounts)));
-  renameSync(`${file}.tmp`, file);
+  saveRecords("accounts", file, accounts);
 }
 
 function hashPassword(password: string, salt: string) {

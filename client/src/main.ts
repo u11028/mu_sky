@@ -18,6 +18,9 @@ import { play } from "./three/sfx.ts";
 import { changeSettings, onSettings, type Quality } from "./settings.ts";
 import { ARMOR_TIERS, POTION, type ShopItem, WEAPON_TIERS } from "../../shared/items.ts";
 import { type CosmeticKind, MOUNTS, type Wardrobe, WINGS } from "../../shared/cosmetics.ts";
+import type { WorldBossEnd, WorldBossEvent } from "../../shared/monsters.ts";
+import { type BoardId, BOARDS, DAILY_GIFTS, type DailyGiftEvent, type Leaderboards } from "../../shared/rewards.ts";
+import { BAG_SIZE, type BagView, type Gear, gearEffect, type GearSlot, type LootEvent, RARITIES, sellPrice } from "../../shared/loot.ts";
 import { HeroPicker } from "./three/HeroPicker.ts";
 import { RESPAWN_MS, type HitEvent, isSkillId, SKILLS, type SkillId, xpToNext } from "../../shared/combat.ts";
 import { BAN_DAYS, type GmAction, type GmList, type GmPlayer } from "../../shared/gm.ts";
@@ -387,7 +390,10 @@ function showJoinDialog(message: string) {
 function startGame(joined: Room, region: RegionId) {
   // The world shows the count once its models have loaded.
   online.textContent = "กำลังโหลด...";
+  document.querySelector("#loading-region")!.textContent = REGIONS[region].name;
+  document.querySelector("#loading-tagline")!.textContent = REGIONS[region].tagline;
   showLoading(0);
+  void startTutorial();
   scene = new World3D(
     document.querySelector<HTMLDivElement>("#game")!,
     joined,
@@ -440,6 +446,18 @@ function startGame(joined: Room, region: RegionId) {
     }
   });
   joined.onMessage("upgrade", (message: { id: string }) => scene?.showUpgrade(message.id));
+  joined.onMessage("loot", (event: LootEvent) => {
+    scene?.showLoot(event);
+    if (event.by === joined.sessionId && !event.sold) {
+      bagDot.hidden = !bagPanel.hidden;
+    }
+  });
+  joined.onMessage("bag", renderBag);
+  joined.onMessage("daily-gift", showDailyGift);
+  joined.onMessage("world-boss", (event: WorldBossEvent) => showWorldBoss(event, true));
+  joined.onMessage("world-boss-end", endWorldBoss);
+  // A world boss of the world just left is not this one's; the server tells again if there is one here.
+  hideWorldBoss();
   joined.onMessage("notice", (message: { text: string; ok: boolean }) => {
     showToast({ kind: message.ok ? "quest" : "title", text: message.text });
     if (message.ok) {
@@ -482,7 +500,26 @@ function startGame(joined: Room, region: RegionId) {
 const loading = document.querySelector<HTMLDivElement>("#loading")!;
 
 /** A loading bar while a region's models arrive; gone at 100%. */
+/** Shown while a region loads, one at a time. */
+const TIPS = [
+  "ล้มบอสได้ของหายากขึ้นไปทุกครั้ง ส่วนมอนสเตอร์ทั่วไปก็มีโอกาสดรอปของ",
+  "บอสโลกจอมอสูรราหูมาทุก 30 นาที ใครตีด้วยได้ของล้ำค่าทุกคน",
+  "เข้าเกมทุกวันติดกัน วันที่ 7 ได้ของล้ำค่าและทอง 1,500",
+  "ใส่อาวุธกับเครื่องรางที่ดรอปได้ในกระเป๋า 🎒 เสริมพลังจากร้านค้าอีกชั้น",
+  "ชวนเพื่อนเข้าทีมได้ที่ปุ่ม 👥 แบ่ง XP กับทอง และตีกันเองไม่โดน",
+  "ขี่สัตว์วิ่งเร็วขึ้น ส่วนปีกเพิ่มพลังโจมตี ซื้อได้ที่ร้านค้า 🛒",
+  "ทำภารกิจรายวันครบได้ฉายา ฉายาบางอันยากและเพี้ยนมาก",
+  "เลือดใกล้หมดกดยาเลือด 🧪 หรือสกิลพรแห่งชีวิต 💚",
+  "สร้างห้องส่วนตัวแล้วส่งรหัสให้เพื่อน เล่นกันเฉพาะกลุ่มได้",
+];
+let tipIndex = Math.floor(Math.random() * TIPS.length);
+
 function showLoading(share: number) {
+  if (loading.hidden && share < 1) {
+    // A new load: the next tip.
+    tipIndex = (tipIndex + 1) % TIPS.length;
+    document.querySelector("#loading-tip")!.textContent = `💡 ${TIPS[tipIndex]}`;
+  }
   loading.hidden = share >= 1;
   loading.querySelector<HTMLElement>("span")!.style.width = `${Math.round(share * 100)}%`;
   loading.querySelector("b")!.textContent = `กำลังสร้างโลก ${Math.round(share * 100)}%`;
@@ -831,6 +868,292 @@ window.addEventListener("keydown", (event) => {
   }
 });
 
+// The world boss: a banner with the region and the time left, while it is up.
+const worldBossBanner = document.querySelector<HTMLElement>("#world-boss")!;
+let worldBossCountdown: ReturnType<typeof setInterval> | undefined;
+
+function hideWorldBoss() {
+  clearInterval(worldBossCountdown);
+  worldBossBanner.hidden = true;
+}
+
+function showWorldBoss(event: WorldBossEvent, announce: boolean) {
+  hideWorldBoss();
+  const endsAt = Date.now() + event.leftMs;
+  document.querySelector("#world-boss-name")!.textContent = event.name;
+  document.querySelector("#world-boss-region")!.textContent = REGIONS[event.region].name;
+  const time = document.querySelector("#world-boss-time")!;
+  const tick = () => {
+    const left = Math.max(0, endsAt - Date.now());
+    time.textContent = `${Math.floor(left / 60_000)}:${String(Math.floor((left % 60_000) / 1000)).padStart(2, "0")}`;
+    if (left === 0) {
+      hideWorldBoss();
+    }
+  };
+  tick();
+  worldBossCountdown = setInterval(tick, 1000);
+  worldBossBanner.hidden = false;
+  if (announce && event.leftMs > 5000) {
+    showToast({ kind: "title", text: `👹 บอสโลก ${event.name} บุก${REGIONS[event.region].name}! ไปช่วยกันล้ม รับของล้ำค่าทุกคน` });
+    play("levelup", 0.5);
+  }
+}
+
+function endWorldBoss(end: WorldBossEnd) {
+  hideWorldBoss();
+  showToast({
+    kind: end.beaten ? "quest" : "title",
+    text: end.beaten ? `🏆 ปราบ${end.name}สำเร็จ! ตีแรงสุด: ${end.top[0]?.name ?? "-"}` : `🌑 ${end.name} หนีไปแล้ว`,
+  });
+}
+
+// A first visit: a few bubbles point out the controls, once per device.
+const TUTORIAL_KEY = "mu-sky.tutorial-done";
+const tutorial = document.querySelector<HTMLElement>("#tutorial")!;
+let tutorialStep = -1;
+
+function tutorialSteps(): { target: string; text: string }[] {
+  return [
+    {
+      target: "#joystick",
+      text: touchScreen ? "ลากจอยตรงนี้เพื่อเดิน" : "เดินด้วย W A S D หรือลูกศร (ลากจอยตรงนี้ก็ได้)",
+    },
+    { target: "#attack-button", text: touchScreen ? "กดปุ่มดาบเพื่อโจมตี ตัวละครหันหาศัตรูใกล้สุดเอง" : "กด Space หรือปุ่มดาบเพื่อโจมตี" },
+    { target: ".skill-button[data-skill=\"spin\"]", text: touchScreen ? "สกิล 4 อย่างอยู่รอบปุ่มโจมตี ใช้แล้วต้องรอคูลดาวน์" : "สกิลกด Q E R F ใช้แล้วต้องรอคูลดาวน์" },
+    { target: "#potion-button", text: "ยาเลือด 🧪 กดตอนเลือดน้อย ซื้อเพิ่มได้ที่ร้านค้า" },
+    { target: "#quest-button", text: "ภารกิจรายวันอยู่ตรงนี้ ทำครบได้ฉายาเท่ๆ" },
+    { target: "#menu-bar", text: "กระเป๋า 🎒 ร้านค้า 🛒 อันดับ 🏆 ทีม 👥 และตั้งค่า อยู่ที่นี่" },
+    { target: "#online", text: "ล้มมอนสเตอร์เก็บทองและของดรอป แล้วเดินเข้าประตูวาร์ปเรืองแสงไปภาคอื่น ขอให้สนุก! ⚔" },
+  ];
+}
+
+function placeTutorial() {
+  const steps = tutorialSteps();
+  const step = steps[tutorialStep];
+  const target = document.querySelector<HTMLElement>(step.target);
+  const ring = document.querySelector<HTMLElement>("#tutorial-ring")!;
+  const bubble = document.querySelector<HTMLElement>("#tutorial-bubble")!;
+  document.querySelector("#tutorial-text")!.textContent = step.text;
+  document.querySelector("#tutorial-next")!.textContent = tutorialStep === steps.length - 1 ? "เริ่มเล่น!" : "ถัดไป";
+  const box = target && !target.hidden ? target.getBoundingClientRect() : undefined;
+  ring.hidden = !box;
+  if (box) {
+    const pad = 8;
+    Object.assign(ring.style, {
+      left: `${box.left - pad}px`,
+      top: `${box.top - pad}px`,
+      width: `${box.width + pad * 2}px`,
+      height: `${box.height + pad * 2}px`,
+    });
+  }
+  // Above the target when it sits low on the screen, below it otherwise.
+  const middle = box ? box.top + box.height / 2 : innerHeight / 2;
+  bubble.style.top = middle > innerHeight / 2 ? "" : `${(box?.bottom ?? 0) + 16}px`;
+  bubble.style.bottom = middle > innerHeight / 2 ? `${innerHeight - (box?.top ?? innerHeight / 2) + 16}px` : "";
+}
+
+function endTutorial() {
+  tutorial.hidden = true;
+  tutorialStep = -1;
+  try {
+    localStorage.setItem(TUTORIAL_KEY, "1");
+  } catch {
+    // Without storage it shows again next time; nothing worse.
+  }
+}
+
+async function startTutorial() {
+  let done = false;
+  try {
+    done = localStorage.getItem(TUTORIAL_KEY) === "1";
+  } catch {
+    // See endTutorial.
+  }
+  if (done || tutorialStep >= 0) {
+    return;
+  }
+  tutorialStep = 0;
+  // After the world has loaded and the day's gift is out of the way.
+  while (!loading.hidden || !dailyGift.hidden) {
+    await new Promise((resolve) => setTimeout(resolve, 400));
+  }
+  tutorial.hidden = false;
+  placeTutorial();
+}
+
+document.querySelector("#tutorial-next")!.addEventListener("click", () => {
+  tutorialStep++;
+  play("click", 0.3);
+  if (tutorialStep >= tutorialSteps().length) {
+    endTutorial();
+  } else {
+    placeTutorial();
+  }
+});
+document.querySelector("#tutorial-skip")!.addEventListener("click", endTutorial);
+addEventListener("resize", () => {
+  if (!tutorial.hidden) {
+    placeTutorial();
+  }
+});
+
+// The day's gift: seven cards, the ones of the streak so far ticked, today's shining.
+const dailyGift = document.querySelector<HTMLElement>("#daily-gift")!;
+
+function showDailyGift(event: DailyGiftEvent) {
+  const cards = DAILY_GIFTS.map((gift, index) => {
+    const day = index + 1;
+    const card = document.createElement("li");
+    card.className = day < event.day ? "claimed" : day === event.day ? "today" : "";
+    const label = document.createElement("small");
+    label.textContent = `วันที่ ${day}`;
+    const icon = document.createElement("span");
+    icon.className = "gift-icon";
+    icon.textContent = day < event.day ? "✅" : gift.icon;
+    const text = document.createElement("small");
+    text.textContent = gift.text;
+    card.append(label, icon, text);
+    return card;
+  });
+  document.querySelector("#daily-gift-days")!.replaceChildren(...cards);
+  const gift = DAILY_GIFTS[event.day - 1];
+  document.querySelector("#daily-gift-got")!.textContent =
+    `วันที่ ${event.day}: ได้ ${gift.text}${event.gearName ? ` (「${event.gearName}」อยู่ในกระเป๋า 🎒)` : ""}`;
+  dailyGift.hidden = false;
+  play("levelup", 0.4);
+}
+
+document.querySelector("#daily-gift-ok")!.addEventListener("click", () => {
+  dailyGift.hidden = true;
+  play("coin", 0.4);
+});
+
+// Leaderboards: fetched when the panel opens or the tab changes.
+let board: BoardId = "level";
+
+const boardTabs = BOARDS.map(({ id, name }) => {
+  const tab = document.createElement("button");
+  tab.type = "button";
+  tab.textContent = name;
+  tab.addEventListener("click", () => {
+    board = id;
+    void renderBoards();
+  });
+  tab.dataset.board = id;
+  return tab;
+});
+document.querySelector("#board-tabs")!.replaceChildren(...boardTabs);
+
+async function renderBoards() {
+  boardTabs.forEach((tab) => tab.classList.toggle("on", tab.dataset.board === board));
+  const list = document.querySelector("#board-list")!;
+  let boards: Leaderboards;
+  try {
+    boards = await (await fetch("api/leaderboards")).json();
+  } catch {
+    list.replaceChildren(Object.assign(document.createElement("li"), { textContent: "โหลดอันดับไม่ได้ ลองใหม่อีกครั้ง" }));
+    return;
+  }
+  const { unit } = BOARDS.find(({ id }) => id === board)!;
+  const rows = boards[board].map((entry, index) => {
+    const row = document.createElement("li");
+    row.className = index < 3 ? `top top-${index + 1}` : "";
+    const rank = document.createElement("span");
+    rank.className = "rank";
+    rank.textContent = index < 3 ? ["🥇", "🥈", "🥉"][index] : String(index + 1);
+    const who = document.createElement("span");
+    who.className = "who";
+    const name = document.createElement("b");
+    name.textContent = entry.name;
+    who.append(name);
+    const title = findTitle(entry.title);
+    if (title) {
+      who.append(titleBadge(title));
+    }
+    const value = document.createElement("span");
+    value.className = "value";
+    value.textContent = board === "level" ? `Lv.${entry.value}` : `${entry.value.toLocaleString()} ${unit}`;
+    row.append(rank, who, value);
+    return row;
+  });
+  if (rows.length === 0) {
+    rows.push(Object.assign(document.createElement("li"), { textContent: "ยังไม่มีใครติดอันดับ เป็นคนแรกเลย!" }));
+  }
+  list.replaceChildren(...rows);
+}
+
+// Bag: gear found on monsters.
+const bagPanel = document.querySelector<HTMLElement>("#bag-panel")!;
+const bagDot = document.querySelector<HTMLElement>("#bag-dot")!;
+let bag: BagView = { items: [], equipped: {} };
+
+function gearCard(gear: Gear, worn: boolean) {
+  const { color, name } = RARITIES[gear.rarity];
+  const card = document.createElement("div");
+  card.className = `shop-card gear-card${worn ? " worn" : ""}`;
+  card.style.setProperty("--rarity", color);
+  const title = document.createElement("strong");
+  title.textContent = `${gear.slot === "weapon" ? "⚔" : "🔮"} ${gear.name}`;
+  const info = document.createElement("small");
+  info.textContent = `${name} · ${gearEffect(gear)}`;
+  const buttons = document.createElement("div");
+  buttons.className = "gear-buttons";
+  const wear = document.createElement("button");
+  wear.type = "button";
+  if (worn) {
+    wear.textContent = "ถอด";
+    wear.addEventListener("click", () => room?.send("gear-off", { slot: gear.slot }));
+  } else {
+    wear.textContent = "ใส่";
+    wear.addEventListener("click", () => room?.send("gear-wear", { id: gear.id }));
+  }
+  const sell = document.createElement("button");
+  sell.type = "button";
+  sell.className = "secondary";
+  sell.textContent = `ขาย ${sellPrice(gear)}`;
+  sell.addEventListener("click", () => room?.send("gear-sell", { id: gear.id }));
+  buttons.append(wear, sell);
+  card.append(title, info, buttons);
+  return card;
+}
+
+function renderBag(view: BagView) {
+  bag = view;
+  document.querySelector("#bag-count")!.textContent = `${view.items.length}/${BAG_SIZE}`;
+  for (const slot of ["weapon", "charm"] as GearSlot[]) {
+    const holder = document.querySelector(`#worn-${slot}`)!;
+    const gear = view.items.find((item) => item.id === view.equipped[slot]);
+    if (gear) {
+      holder.replaceChildren(gearCard(gear, true));
+    } else {
+      const empty = document.createElement("p");
+      empty.className = "muted";
+      empty.textContent = slot === "weapon" ? "⚔ ยังไม่ได้ใส่อาวุธที่ดรอป" : "🔮 ยังไม่ได้ใส่เครื่องราง";
+      holder.replaceChildren(empty);
+    }
+  }
+  const worn = new Set(Object.values(view.equipped));
+  const rest = view.items.filter((item) => !worn.has(item.id)).sort((a, b) => b.rarity - a.rarity || b.bonus - a.bonus);
+  const list = document.querySelector("#bag-items")!;
+  if (rest.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "muted";
+    empty.textContent = "กระเป๋าว่าง ไปล่ามอนสเตอร์กัน!";
+    list.replaceChildren(empty);
+  } else {
+    list.replaceChildren(...rest.map((item) => gearCard(item, false)));
+  }
+}
+
+document.querySelector("#bag-sell-junk")!.addEventListener("click", () => {
+  const worn = new Set(Object.values(bag.equipped));
+  for (const item of bag.items) {
+    if (item.rarity <= 1 && !worn.has(item.id)) {
+      room?.send("gear-sell", { id: item.id });
+    }
+  }
+});
+
 // Panels on the right: one open at a time.
 for (const button of menuBar.querySelectorAll<HTMLButtonElement>("[data-panel]")) {
   button.addEventListener("click", () => {
@@ -840,6 +1163,12 @@ for (const button of menuBar.querySelectorAll<HTMLButtonElement>("[data-panel]")
     panel.hidden = !opening;
     if (opening && button.dataset.panel === "team-panel") {
       renderNearby();
+    }
+    if (opening && button.dataset.panel === "bag-panel") {
+      bagDot.hidden = true;
+    }
+    if (opening && button.dataset.panel === "board-panel") {
+      void renderBoards();
     }
     play("click", 0.3);
   });
@@ -1052,6 +1381,12 @@ gmPanel.addEventListener("click", (event) => {
         break;
       case "cosmetics":
         sendGm({ action: "cosmetics", target });
+        break;
+      case "gear":
+        sendGm({ action: "gear", target });
+        break;
+      case "worldboss":
+        sendGm({ action: "worldboss", target });
         break;
     }
     return;

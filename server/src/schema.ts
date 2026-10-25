@@ -21,6 +21,10 @@ export class Player extends Schema {
   /** Shop tiers, shown as a glowing weapon. */
   @type("uint8") weapon = 0;
   @type("uint8") armor = 0;
+  /** Rarity of the weapon found on monsters and worn (-1 for none): its glow outshines the shop's. */
+  @type("int8") gearRarity = -1;
+  /** The worn weapon's damage multiplier; the server's alone, not sent. */
+  gearPower = 1;
   /** The team's id, or "" when alone: teammates can't hurt each other. */
   @type("string") team = "";
   /** Wings worn and mount chosen (0 = none), and whether the player is riding it now. */

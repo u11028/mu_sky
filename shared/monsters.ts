@@ -8,6 +8,8 @@ export interface MonsterKind {
   model: string;
   level: number;
   boss?: boolean;
+  /** The world boss: comes now and then, for everyone, and never respawns by itself. */
+  world?: boolean;
   /** How tall it stands, in world units (a hero is about 2). */
   height: number;
 }
@@ -36,6 +38,8 @@ export const MONSTER_KINDS = {
   giantRacoon: { name: "มังกรทะเลตะวันออก", model: "Dragon", level: 11, boss: true, height: 4.6 },
   giantBamboo: { name: "ราชาค้างคาวถ้ำใต้", model: "GolelingEvolved", level: 12, boss: true, height: 4.6 },
   demonCyclop: { name: "มังกรเพลิงผาหิน", model: "DragonEvolved", level: 14, boss: true, height: 5.2 },
+
+  rahu: { name: "จอมอสูรราหู", model: "DragonEvolved", level: 20, boss: true, world: true, height: 7.5 },
 } as const satisfies Record<string, MonsterKind>;
 
 export type MonsterKindId = keyof typeof MONSTER_KINDS;
@@ -60,6 +64,10 @@ export function monsterMaxHp(kind: MonsterKind) {
 }
 
 export function monsterDamage(kind: MonsterKind) {
+  // The world boss is for everyone, new players too: it hits hard, not at once.
+  if (kind.world) {
+    return 38;
+  }
   const damage = 4 + kind.level * 2.5;
   return kind.boss ? damage * 2 : damage;
 }
@@ -82,3 +90,32 @@ export const MONSTER_RESPAWN_MS = 15_000;
 export const BOSS_RESPAWN_MS = 180_000;
 /** Monsters keep away from where players arrive. */
 export const MONSTER_SAFE_RADIUS = 260;
+
+/** The world boss's schedule and size. */
+export const WORLD_BOSS = {
+  kind: "rahu" as MonsterKindId,
+  /** The first one comes soon after the server starts (a free host starts it when someone plays). */
+  firstMs: 4 * 60_000,
+  everyMs: 30 * 60_000,
+  /** Gone if not beaten by then. */
+  lastsMs: 10 * 60_000,
+  /** Health for each player in that world when it comes, and at least this much. */
+  hpPerPlayer: 2000,
+  minHp: 3000,
+  attackRange: 120,
+};
+
+/** Told to every room of the world the boss came to, and to whoever joins while it's there. */
+export interface WorldBossEvent {
+  region: RegionId;
+  name: string;
+  /** Time left, in ms: the client counts down from it on its own clock. */
+  leftMs: number;
+}
+
+/** The world boss is gone: beaten (with the three who hit hardest) or escaped. */
+export interface WorldBossEnd {
+  beaten: boolean;
+  name: string;
+  top: { name: string; damage: number }[];
+}
