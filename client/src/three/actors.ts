@@ -160,6 +160,9 @@ export class Actor {
   revive() {
     this.dead = false;
     this.label.hp.hidden = false;
+    // The fall is held on its last frame; stop it outright, or it keeps pulling the body to the ground
+    // under every later animation.
+    this.mixer?.stopAllAction();
     this.base = undefined;
     this.once("spawn");
   }

@@ -1144,6 +1144,27 @@ export class WorldRoom extends Room<WorldState> {
         done(`${target.name}: Lv.${before} → Lv.${target.level}`);
         return;
       }
+      case "gold": {
+        const amount = Math.round(Number(message.amount));
+        if (!Number.isFinite(amount) || amount === 0) {
+          return;
+        }
+        target.gold = clamp(target.gold + amount, 0, 999_999_999);
+        progress.saveInventory(targetMovement.playerId, { gold: target.gold });
+        targetClient.send("gold", { amount, x: target.x, y: target.y });
+        done(`${target.name}: ทอง ${amount > 0 ? "+" : ""}${amount.toLocaleString()} (รวม ${target.gold.toLocaleString()})`);
+        return;
+      }
+      case "potions": {
+        const amount = Math.round(Number(message.amount));
+        if (!Number.isFinite(amount) || amount === 0) {
+          return;
+        }
+        target.potions = clamp(target.potions + amount, 0, POTION.max);
+        progress.saveInventory(targetMovement.playerId, { potions: target.potions });
+        done(`${target.name}: ยาเลือด ${target.potions} ขวด`);
+        return;
+      }
       case "title": {
         const title = findTitle(message.titleId);
         if (title) {

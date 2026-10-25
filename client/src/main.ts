@@ -922,6 +922,9 @@ function renderGmList(list: GmList) {
 
   // Keep the chosen player's details fresh, or forget them once they've gone.
   gmTarget = list.players.find((p) => p.id === gmTarget?.id);
+  gmSelf = list.players.find((p) => p.id === room?.sessionId);
+  document.querySelector("#gm-self-god")!.classList.toggle("on", Boolean(gmSelf?.god));
+  document.querySelector("#gm-self-onehit")!.classList.toggle("on", Boolean(gmSelf?.oneHit));
   gmActions.hidden = !gmTarget;
   if (gmTarget) {
     gmTargetName.textContent = `เลือก: ${gmTarget.name} (Lv.${gmTarget.level})`;
@@ -951,7 +954,37 @@ function renderGmList(list: GmList) {
   }
 }
 
+/** The GM's own line in the last list, for the state of the self buttons. */
+let gmSelf: GmPlayer | undefined;
+
 gmPanel.addEventListener("click", (event) => {
+  // "Me" buttons: powers and gifts for the GM, without picking a name first.
+  const self = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-self]")?.dataset.self;
+  if (self && room) {
+    const target = room.sessionId;
+    switch (self) {
+      case "god":
+        sendGm({ action: "god", target, on: !gmSelf?.god });
+        break;
+      case "onehit":
+        sendGm({ action: "onehit", target, on: !gmSelf?.oneHit });
+        break;
+      case "gold":
+        sendGm({ action: "gold", target, amount: 10_000 });
+        break;
+      case "potions":
+        sendGm({ action: "potions", target, amount: 99 });
+        break;
+      case "level":
+        sendGm({ action: "level", target, amount: 10 });
+        break;
+      case "heal":
+        sendGm({ action: "heal", target });
+        break;
+    }
+    return;
+  }
+
   const action = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-gm]")?.dataset.gm;
   if (!action || !gmTarget) {
     return;
@@ -967,6 +1000,9 @@ gmPanel.addEventListener("click", (event) => {
       break;
     case "level":
       sendGm({ action, target, amount: Number(document.querySelector<HTMLInputElement>("#gm-level")!.value) });
+      break;
+    case "gold":
+      sendGm({ action, target, amount: Number(document.querySelector<HTMLInputElement>("#gm-gold")!.value) });
       break;
     case "title":
       sendGm({ action, target, titleId: gmTitleSelect.value });

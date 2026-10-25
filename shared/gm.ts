@@ -7,6 +7,8 @@ export type GmAction =
   | { action: "god"; target: string; on: boolean }
   | { action: "onehit"; target: string; on: boolean }
   | { action: "level"; target: string; amount: number }
+  | { action: "gold"; target: string; amount: number }
+  | { action: "potions"; target: string; amount: number }
   | { action: "title"; target: string; titleId: string }
   | { action: "goto"; target: string }
   | { action: "summon"; target: string }
