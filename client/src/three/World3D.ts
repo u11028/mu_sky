@@ -1,5 +1,5 @@
 // The game world in 3D: draws a region and everyone in it, follows the local player, and turns
-// taps and keys into the same messages the server has always understood.
+// the joystick, buttons and keys into the same messages the server has always understood.
 
 import * as THREE from "three";
 import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer.js";
@@ -184,7 +184,6 @@ export class World3D {
   /** Actors still loading their model; a removal in the meantime cancels them. */
   private loading = new Set<string>();
   private auras = new Map<string, THREE.Mesh>();
-  private marker: THREE.Mesh;
   private keys = new Set<string>();
   private sentDir = { x: 0, y: 0 };
   /** The on-screen joystick's direction; wins over the keys while pushed. */
@@ -203,7 +202,6 @@ export class World3D {
   private server = { x: 0, y: 0 };
   /** When the server last moved the local player; settling waits until it has stopped too. */
   private serverMovedAt = 0;
-  private tapTarget?: { x: number; y: number };
   /** The local player's team, to tell teammates apart. */
   private myTeam = "";
   private playerStates = new Map<string, PlayerState>();
@@ -247,13 +245,6 @@ export class World3D {
     this.sun.shadow.bias = -0.0004;
     this.sun.shadow.normalBias = 0.03;
     this.scene.add(this.sun, this.sun.target);
-
-    this.marker = new THREE.Mesh(
-      new THREE.RingGeometry(0.35, 0.5, 32),
-      new THREE.MeshBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0, depthWrite: false }),
-    );
-    this.marker.rotation.x = -Math.PI / 2;
-    this.scene.add(this.marker);
 
     this.resize.observe(container);
     this.cleanup.push(onSettings((options) => this.applyQuality(options)));
@@ -374,7 +365,6 @@ export class World3D {
       // First sight, a respawn, a dash or a GM's teleport: jump to where the server says.
       if (!this.predicted || player.dead || Math.hypot(player.x - this.predicted.x, player.y - this.predicted.y) > 140) {
         this.predicted = { x: player.x, y: player.y };
-        this.tapTarget = undefined;
         actor.moveTo(player.x / PX, player.y / PX, now);
       }
     } else {
@@ -772,29 +762,13 @@ export class World3D {
 
   private bindInput() {
     const canvas = this.renderer.domElement;
-    const raycaster = new THREE.Raycaster();
-    const ground = this.scene.getObjectByName("ground")!;
     const pointers = new Map<number, { x: number; y: number }>();
     let pinch = 0;
 
+    // Walking is by the joystick or the keys only: touching the world does not move the player
+    // (a stray thumb on the screen used to send them off). Touches only count for pinching.
     const down = (event: PointerEvent) => {
       pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-      if (pointers.size > 1) {
-        return;
-      }
-      const rect = canvas.getBoundingClientRect();
-      raycaster.setFromCamera(
-        new THREE.Vector2(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1),
-        this.camera,
-      );
-      const hit = raycaster.intersectObject(ground)[0];
-      if (hit) {
-        this.room.send("target", { x: hit.point.x * PX, y: hit.point.z * PX });
-        this.tapTarget = { x: hit.point.x * PX, y: hit.point.z * PX };
-        this.marker.position.set(hit.point.x, hit.point.y + 0.08, hit.point.z);
-        this.marker.scale.setScalar(1.4);
-        (this.marker.material as THREE.MeshBasicMaterial).opacity = 1;
-      }
     };
     // Two fingers pinch to zoom on phones.
     const move = (event: PointerEvent) => {
@@ -900,19 +874,6 @@ export class World3D {
       const length = Math.hypot(input.x, input.y);
       dx = (input.x / length) * step;
       dy = (input.y / length) * step;
-      this.tapTarget = undefined;
-    } else if (this.tapTarget) {
-      const toX = this.tapTarget.x - position.x;
-      const toY = this.tapTarget.y - position.y;
-      const distance = Math.hypot(toX, toY);
-      if (distance <= step) {
-        dx = toX;
-        dy = toY;
-        this.tapTarget = undefined;
-      } else {
-        dx = (toX / distance) * step;
-        dy = (toY / distance) * step;
-      }
     }
 
     if (dx !== 0 || dy !== 0) {
@@ -1011,12 +972,6 @@ export class World3D {
     }
     this.fadeOccluders(delta, now);
     this.effects.update(now);
-    const marker = this.marker.material as THREE.MeshBasicMaterial;
-    if (marker.opacity > 0) {
-      marker.opacity = Math.max(0, marker.opacity - delta / 600);
-      this.marker.scale.setScalar(this.marker.scale.x + delta / 900);
-    }
-
     // Follow the local player smoothly; the sun's shadow box follows too.
     const me = this.players.get(this.room.sessionId);
     if (me) {

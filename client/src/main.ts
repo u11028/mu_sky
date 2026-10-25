@@ -180,13 +180,15 @@ async function account(path: "login" | "register") {
 
 document.querySelector("#account-login")!.addEventListener("click", () => void account("login"));
 document.querySelector("#account-register")!.addEventListener("click", () => void account("register"));
-accountLogout.addEventListener("click", () => {
-  // A fresh, empty identity: the account's progress stays safe on the server.
+/** Off the account on this browser: a fresh, empty identity; the account's progress stays safe on the server. */
+function signOut() {
   player.playerId = freshPlayerId();
   storage(ID_KEY, player.playerId);
   storage(USER_KEY, null);
   renderAccount();
-});
+}
+
+accountLogout.addEventListener("click", signOut);
 renderAccount();
 
 // ---- Full screen ----
@@ -1378,8 +1380,43 @@ for (const button of document.querySelectorAll<HTMLButtonElement>("#set-quality 
   button.addEventListener("click", () => changeSettings({ quality: button.dataset.quality as Quality }));
 }
 
+// Leaving: back to the start screen, and off the account if signed in. A guest keeps their
+// progress in this browser, so for them it is only leaving the game. Pressed twice, to be sure.
+const logOutButton = document.querySelector<HTMLButtonElement>("#log-out")!;
+let logOutArmed: ReturnType<typeof setTimeout> | undefined;
+
+function renderLogOut() {
+  const user = storage(USER_KEY);
+  logOutButton.textContent = user ? "🚪 ออกจากระบบ" : "🚪 ออกจากเกม";
+  document.querySelector("#log-out-note")!.textContent = user
+    ? `บัญชี ${user}: เข้าใหม่ได้ด้วยชื่อบัญชีและรหัสผ่าน`
+    : "ยังไม่มีบัญชี: ความคืบหน้าเก็บไว้ในเครื่องนี้ สมัครบัญชีได้ที่หน้าแรกเพื่อเล่นต่อเครื่องอื่น";
+}
+
+logOutButton.addEventListener("click", () => {
+  if (!logOutArmed) {
+    logOutButton.textContent = "กดอีกครั้งเพื่อยืนยัน";
+    logOutArmed = setTimeout(() => {
+      logOutArmed = undefined;
+      renderLogOut();
+    }, 3000);
+    return;
+  }
+  clearTimeout(logOutArmed);
+  logOutArmed = undefined;
+  const signedIn = Boolean(storage(USER_KEY));
+  removedReason = signedIn ? "ออกจากระบบแล้ว" : "ออกจากเกมแล้ว";
+  if (signedIn) {
+    signOut();
+  }
+  // A goodbye, not a dropped connection: the server lets go of the player at once.
+  void room?.leave(true);
+  renderLogOut();
+});
+document.querySelector('[data-panel="settings-panel"]')!.addEventListener("click", renderLogOut);
+
 attackButton.addEventListener("pointerdown", (event) => {
-  // Not a tap on the map: don't walk there.
+  // The press stays on the button: no zooming or scrolling the page.
   event.preventDefault();
   scene?.attack();
   attackButton.classList.remove("pressed");

@@ -2508,3 +2508,17 @@ body.in-safe-zone .skill-button[data-skill="strike"] {
     bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
   }
 }
+
+/* ---- Leaving ---- */
+
+#log-out {
+  width: 100%;
+  margin-top: 14px;
+  background: linear-gradient(180deg, #e5383b, #a4161a);
+  color: #fff;
+}
+
+#log-out-note {
+  margin-top: 6px;
+  font-size: 12px;
+}
