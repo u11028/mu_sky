@@ -1335,6 +1335,11 @@ export class WorldRoom extends Room<WorldState> {
       const player = where?.room.state.players.get(where.sessionId);
       if (player) {
         player.team = teams.teamIdOf(playerId);
+        // No team any more: the status each second skips them, so say it now (the team panel,
+        // frames and voice go away).
+        if (!player.team) {
+          where!.room.clients.find((c) => c.sessionId === where!.sessionId)?.send("team", []);
+        }
       }
     }
   }

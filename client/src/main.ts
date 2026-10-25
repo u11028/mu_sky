@@ -1313,13 +1313,21 @@ function renderTeam(list: TeamMember[]) {
   const inTeam = list.length > 1;
   teamFrames.hidden = !inTeam;
   voiceButton.hidden = !inTeam;
+  // Someone joined or left: the invite list in an open team panel would still say who was in. It
+  // reads the players' teams from the world, which the server sends a moment after this message.
+  const changed = list.map((member) => member.voice).join() !== teamNow.map((member) => member.voice).join();
   teamNow = list;
+  if (changed) {
+    setTimeout(() => {
+      if (!document.querySelector<HTMLElement>("#team-panel")!.hidden) {
+        renderNearby();
+      }
+    }, 400);
+  }
   if (!inTeam) {
-    // Voice is for the team: with the team gone, so is the microphone and every link.
-    if (voice.on) {
-      voice.leave();
-      renderVoiceButton();
-    }
+    // Voice is for the team: with the team gone, so is the microphone and every link, listening ones too.
+    voice.leave();
+    renderVoiceButton();
     voiceFailures = new Set();
   }
   voice.syncTeam(list);
