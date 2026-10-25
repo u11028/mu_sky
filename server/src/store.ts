@@ -7,10 +7,15 @@
 //
 // One document holds at most 16 MB: some thousands of players. Past that, give each player a
 // document of their own.
+//
+// Backups: the first save of each Thai day also copies the records to "<name>@<date>", and only the
+// last BACKUP_DAYS of those are kept. To go back to one, rename it to "<name>" in MongoDB Atlas
+// (Browse Collections) while the server is stopped.
 
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { type Collection, MongoClient } from "mongodb";
+import { thaiDay } from "../../shared/quests.ts";
 
 type Stored = { _id: string; data: Record<string, unknown>; savedAt: Date };
 
@@ -18,6 +23,9 @@ const uri = process.env.MONGODB_URI?.trim();
 let collection: Collection<Stored> | undefined;
 /** Writes to the database go one after another, newest last, so an older one never wins. */
 let writes: Promise<void> = Promise.resolve();
+const BACKUP_DAYS = 7;
+/** The Thai day each record set was last backed up. */
+const backedUp = new Map<string, number>();
 
 if (uri) {
   const client = new MongoClient(uri, { serverSelectionTimeoutMS: 15000 });
@@ -67,6 +75,30 @@ export function saveRecords(name: string, file: string, records: Map<string, unk
         .then(() => undefined)
         .catch((error) => console.error(`Could not save ${name} in MongoDB.`, error)),
     );
+    const today = thaiDay();
+    if (backedUp.get(name) !== today) {
+      backedUp.set(name, today);
+      writes = writes.then(() => backup(target, name, data));
+    }
+  }
+}
+
+/** Today's copy of the records, and away with copies older than a week. */
+async function backup(target: Collection<Stored>, name: string, data: Record<string, unknown>) {
+  try {
+    // Thai date as YYYY-MM-DD: sorts by age as text.
+    const date = new Date(Date.now() + 7 * 3600_000).toISOString().slice(0, 10);
+    await target.replaceOne({ _id: `${name}@${date}` }, { data, savedAt: new Date() }, { upsert: true });
+    const copies = await target
+      .find({ _id: { $regex: `^${name}@` } }, { projection: { _id: 1 } })
+      .sort({ _id: -1 })
+      .toArray();
+    const old = copies.slice(BACKUP_DAYS).map((copy) => copy._id);
+    if (old.length > 0) {
+      await target.deleteMany({ _id: { $in: old } });
+    }
+  } catch (error) {
+    console.error(`Could not back up ${name} in MongoDB.`, error);
   }
 }
 
