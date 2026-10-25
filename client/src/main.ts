@@ -12,7 +12,8 @@ import { HEROES, type ShotEvent } from "../../shared/heroes.ts";
 import { isRegionId, REGIONS, type RegionId, START_REGION } from "../../shared/regions.ts";
 import type { Achievement, ProgressView } from "../../shared/quests.ts";
 import { decorateTitle, findTitle, type Title, TITLES } from "../../shared/titles.ts";
-import { type SelfState, World3D } from "./three/World3D.ts";
+import { regionModels, type SelfState, World3D } from "./three/World3D.ts";
+import { preload } from "./three/assets.ts";
 import { stopMusic } from "./three/music.ts";
 import { play } from "./three/sfx.ts";
 import { changeSettings, onSettings, type Quality } from "./settings.ts";
@@ -353,6 +354,9 @@ async function travel(to: RegionId, from: RegionId, party = player.party) {
   scene?.destroy();
   scene = undefined;
   online.textContent = `กำลังเดินทางไป${REGIONS[to].name}...`;
+  // The loading screen at once, and the next region's models fetched while joining its room.
+  showRegionLoading(to);
+  void preload(regionModels(to));
   await leaving?.leave();
   travelling = false;
 
@@ -390,9 +394,7 @@ function showJoinDialog(message: string) {
 function startGame(joined: Room, region: RegionId) {
   // The world shows the count once its models have loaded.
   online.textContent = "กำลังโหลด...";
-  document.querySelector("#loading-region")!.textContent = REGIONS[region].name;
-  document.querySelector("#loading-tagline")!.textContent = REGIONS[region].tagline;
-  showLoading(0);
+  showRegionLoading(region);
   void startTutorial();
   scene = new World3D(
     document.querySelector<HTMLDivElement>("#game")!,
@@ -513,6 +515,12 @@ const TIPS = [
   "สร้างห้องส่วนตัวแล้วส่งรหัสให้เพื่อน เล่นกันเฉพาะกลุ่มได้",
 ];
 let tipIndex = Math.floor(Math.random() * TIPS.length);
+
+function showRegionLoading(region: RegionId) {
+  document.querySelector("#loading-region")!.textContent = REGIONS[region].name;
+  document.querySelector("#loading-tagline")!.textContent = REGIONS[region].tagline;
+  showLoading(0);
+}
 
 function showLoading(share: number) {
   if (loading.hidden && share < 1) {

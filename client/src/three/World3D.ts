@@ -144,6 +144,32 @@ function worldRenderer() {
   return sharedRenderer;
 }
 
+/** Every model a region needs before it is shown. */
+export function regionModels(regionId: RegionId) {
+  const { kinds, boss } = REGION_MONSTERS[regionId];
+  return [
+    ...propModels(),
+    ...BORDER_MODELS,
+    ...GRASS_MODELS,
+    ...[...kinds, boss].map((kind) => `monsters/${monsterKind(kind)!.model}`),
+    "anims/General",
+    "anims/Movement",
+  ];
+}
+
+/**
+ * Fetches, one region after another, the models of the regions the portals lead to, while the
+ * player is busy here: walking through a portal then needs no download.
+ */
+async function prefetchNeighbours(regionId: RegionId, stillHere: () => boolean) {
+  for (const portal of REGIONS[regionId].portals) {
+    if (!stillHere()) {
+      return;
+    }
+    await preload(regionModels(portal.to));
+  }
+}
+
 export class World3D {
   private renderer = worldRenderer();
   private labels = new CSS2DRenderer();
@@ -236,23 +262,17 @@ export class World3D {
   // ---- Loading ----
 
   private async start() {
-    const { kinds, boss } = REGION_MONSTERS[this.regionId];
-    const monsterModels = [...kinds, boss].map((kind) => `monsters/${monsterKind(kind)!.model}`);
-    await preload(
-      [
-        ...propModels(),
-        ...BORDER_MODELS,
-        ...GRASS_MODELS,
-        ...monsterModels,
-        "anims/General",
-        "anims/Movement",
-      ],
-      (share) => this.onLoading(share * 0.85),
-    );
+    await preload(regionModels(this.regionId), (share) => this.onLoading(share * 0.85));
     if (this.disposed) {
       return;
     }
     this.scenery = await buildScenery(this.scene, this.regionId);
+    if (this.disposed) {
+      return;
+    }
+    // The shaders of the models new here are built off the main thread where the browser can,
+    // instead of freezing the first frame.
+    await this.renderer.compileAsync(this.scene, this.camera).catch(() => undefined);
     if (this.disposed) {
       return;
     }
@@ -262,6 +282,8 @@ export class World3D {
     this.bindInput();
     this.loop();
     this.showBanner();
+    // Once the region is up and running, quietly fetch the next ones.
+    setTimeout(() => void prefetchNeighbours(this.regionId, () => !this.disposed), 3000);
   }
 
   private listen() {

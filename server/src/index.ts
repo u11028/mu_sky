@@ -19,7 +19,23 @@ const app = express();
 // After `npm run build` the server also hands out the game itself, so one port is enough.
 const clientDist = fileURLToPath(new URL("../../client/dist", import.meta.url));
 if (existsSync(clientDist)) {
-  app.use(express.static(clientDist));
+  app.use(
+    express.static(clientDist, {
+      setHeaders(res, path) {
+        if (/[\\/]assets[\\/][^\\/]+-[\w-]{8}\.(js|css)$/.test(path)) {
+          // Built code: its name changes with every build, so it never needs asking about again.
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        } else if (/\.(glb|ogg|mp3|png|jpg|webp)$/.test(path)) {
+          // Models, music and pictures: kept a day, instead of asking the server about each one
+          // (a round trip across the ocean) every time the game opens.
+          res.setHeader("Cache-Control", "public, max-age=86400");
+        } else {
+          // The page itself: always the newest, so an update shows on the next visit.
+          res.setHeader("Cache-Control", "no-cache");
+        }
+      },
+    }),
+  );
 }
 
 app.get("/health", (_req, res) => {
