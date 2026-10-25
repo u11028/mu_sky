@@ -130,8 +130,20 @@ const SKILL_KEYS: Record<string, SkillId> = {
   Digit4: "heal",
 };
 
+/**
+ * One renderer for the whole game, kept from region to region. A new one per region opened a new
+ * WebGL context each trip: phones had to upload every model and compile every shader again, and the
+ * old contexts piled up until the browser dropped them, freezing the screen on the next map.
+ */
+let sharedRenderer: THREE.WebGLRenderer | undefined;
+
+function worldRenderer() {
+  sharedRenderer ??= new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+  return sharedRenderer;
+}
+
 export class World3D {
-  private renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+  private renderer = worldRenderer();
   private labels = new CSS2DRenderer();
   private scene = new THREE.Scene();
   private camera = new THREE.PerspectiveCamera(40, 1, 0.5, 600);
@@ -1079,7 +1091,9 @@ export class World3D {
         }
       }
     });
-    this.renderer.dispose();
+    // The renderer stays for the next region (see worldRenderer); only what it cached for this scene goes.
+    this.renderer.renderLists.dispose();
+    this.sun.dispose();
     this.renderer.domElement.remove();
     this.labels.domElement.remove();
   }
