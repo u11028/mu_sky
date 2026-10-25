@@ -39,6 +39,8 @@
       <span class="meter xp"><span id="stats-xp-fill"></span><b id="stats-xp">XP 0/100</b></span>
     </div>
 
+    <button id="ride-button" type="button" hidden title="ขึ้น/ลงสัตว์ขี่ (V)">🐎</button>
+
     <div id="joystick" hidden aria-label="จอยสติ๊กเดิน">
       <div class="stick-knob"></div>
     </div>
@@ -85,6 +87,10 @@
         <div><strong id="shop-armor-name"></strong><small id="shop-armor-info"></small></div>
         <div class="shop-buy"><button type="button" data-buy="armor" id="shop-armor-buy"></button></div>
       </div>
+      <h3>🪽 ปีก <small class="muted">เพิ่มพลังโจมตี</small></h3>
+      <div id="shop-wings" class="shop-grid"></div>
+      <h3>🐎 สัตว์ขี่ <small class="muted">วิ่งเร็วขึ้น · โจมตีแล้วลงจากหลังเอง</small></h3>
+      <div id="shop-mounts" class="shop-grid"></div>
       <p class="muted">ล้มมอนสเตอร์เพื่อเก็บทอง บอสให้ทองเยอะมาก</p>
     </aside>
 
@@ -137,6 +143,7 @@
           <button type="button" data-self="potions">🧪 +99 ยาเลือด</button>
           <button type="button" data-self="level">⬆ +10 เลเวล</button>
           <button type="button" data-self="heal">💚 เลือดเต็ม</button>
+          <button type="button" data-self="cosmetics">🪽 ปีก+สัตว์ขี่ครบ</button>
         </div>
       </section>
       <form id="gm-announce" autocomplete="off">

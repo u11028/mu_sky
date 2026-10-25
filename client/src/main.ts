@@ -17,6 +17,7 @@ import { stopMusic } from "./three/music.ts";
 import { play } from "./three/sfx.ts";
 import { changeSettings, onSettings, type Quality } from "./settings.ts";
 import { ARMOR_TIERS, POTION, type ShopItem, WEAPON_TIERS } from "../../shared/items.ts";
+import { type CosmeticKind, MOUNTS, type Wardrobe, WINGS } from "../../shared/cosmetics.ts";
 import { HeroPicker } from "./three/HeroPicker.ts";
 import { RESPAWN_MS, type HitEvent, isSkillId, SKILLS, type SkillId, xpToNext } from "../../shared/combat.ts";
 import { BAN_DAYS, type GmAction, type GmList, type GmPlayer } from "../../shared/gm.ts";
@@ -372,6 +373,7 @@ function showJoinDialog(message: string) {
   joystick.hidden = true;
   partyBadge.hidden = true;
   menuBar.hidden = true;
+  rideButton.hidden = true;
   teamFrames.hidden = true;
   document.querySelectorAll<HTMLElement>(".side-panel").forEach((panel) => (panel.hidden = true));
   stopMusic();
@@ -445,6 +447,12 @@ function startGame(joined: Room, region: RegionId) {
     }
   });
   joined.onMessage("team", renderTeam);
+  joined.onMessage("wardrobe", (owned: Wardrobe) => {
+    wardrobe = owned;
+    if (me) {
+      renderShop(me);
+    }
+  });
   joined.onMessage("team-invite", (message: { from: string }) => {
     document.querySelector("#team-invite-from")!.textContent = message.from;
     teamInvite.hidden = false;
@@ -614,6 +622,8 @@ function renderSelf(self: SelfState) {
   renderShop(self);
   document.querySelector("#potion-count")!.textContent = String(self.potions);
   me = self;
+  rideButton.hidden = self.mount === 0 || self.dead;
+  rideButton.classList.toggle("on", self.riding);
   stats.classList.toggle("low", self.hp / self.maxHp <= 0.25);
   gmButton.hidden = !self.gm;
 
@@ -707,7 +717,61 @@ joystick.addEventListener("pointercancel", releaseStick);
 
 let me: SelfState | undefined;
 
+let wardrobe: Wardrobe = { wings: [0], mounts: [0] };
+const rideButton = document.querySelector<HTMLButtonElement>("#ride-button")!;
+
+function ride() {
+  if (me && me.mount > 0 && !me.dead) {
+    room?.send("ride", { on: !me.riding });
+  }
+}
+
+rideButton.addEventListener("click", ride);
+window.addEventListener("keydown", (event) => {
+  if (document.activeElement !== chatInput && !event.repeat && event.code === "KeyV") {
+    ride();
+  }
+});
+
+/** Cards for every wing or mount: buy it, put it on, or see it's the one in use. */
+function renderCosmetics(kind: CosmeticKind, self: SelfState) {
+  const list = kind === "wing" ? WINGS : MOUNTS;
+  const owned = kind === "wing" ? wardrobe.wings : wardrobe.mounts;
+  const worn = kind === "wing" ? self.wing : self.mount;
+  const cards = list.map((item, index) => {
+    const card = document.createElement("div");
+    card.className = `shop-card${index === worn ? " worn" : ""}`;
+    const name = document.createElement("strong");
+    name.textContent = item.name;
+    const effect = document.createElement("small");
+    effect.textContent =
+      index === 0
+        ? ""
+        : kind === "wing"
+          ? `โจมตี ×${(item as (typeof WINGS)[number]).power}`
+          : `วิ่งเร็ว ×${(item as (typeof MOUNTS)[number]).speed}${(item as (typeof MOUNTS)[number]).flies ? " · บินได้" : ""}`;
+    const button = document.createElement("button");
+    button.type = "button";
+    if (index === worn) {
+      button.textContent = "ใช้อยู่";
+      button.disabled = true;
+    } else if (owned.includes(index)) {
+      button.textContent = index === 0 ? "ถอด" : "ใช้";
+      button.addEventListener("click", () => room?.send("equip", { kind, index }));
+    } else {
+      button.textContent = `${item.price.toLocaleString()} 💰`;
+      button.disabled = self.gold < item.price;
+      button.addEventListener("click", () => room?.send("buy-cosmetic", { kind, index }));
+    }
+    card.append(name, effect, button);
+    return card;
+  });
+  document.querySelector(kind === "wing" ? "#shop-wings" : "#shop-mounts")!.replaceChildren(...cards);
+}
+
 function renderShop(self: SelfState) {
+  renderCosmetics("wing", self);
+  renderCosmetics("mount", self);
   document.querySelector("#shop-gold")!.textContent = self.gold.toLocaleString();
   document.querySelector("#shop-potions")!.textContent = String(self.potions);
   for (const [slot, tiers, label] of [
@@ -985,6 +1049,9 @@ gmPanel.addEventListener("click", (event) => {
         break;
       case "heal":
         sendGm({ action: "heal", target });
+        break;
+      case "cosmetics":
+        sendGm({ action: "cosmetics", target });
         break;
     }
     return;

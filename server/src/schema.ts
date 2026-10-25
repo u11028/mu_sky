@@ -23,6 +23,10 @@ export class Player extends Schema {
   @type("uint8") armor = 0;
   /** The team's id, or "" when alone: teammates can't hurt each other. */
   @type("string") team = "";
+  /** Wings worn and mount chosen (0 = none), and whether the player is riding it now. */
+  @type("uint8") wing = 0;
+  @type("uint8") mount = 0;
+  @type("boolean") riding = false;
 }
 
 export class Monster extends Schema {

@@ -43,3 +43,9 @@ https://pixel-boy.itch.io/ninja-adventure-asset-pack
 | music/west.ogg | 30 - Ruins |
 | music/south.ogg | 27 - Chill |
 | music/boss.ogg | 17 - Fight |
+
+## Mounts (`3d/mounts/`)
+
+Horse, White Horse, Wolf and Stag from Quaternius' animated animal models, the velociraptor from
+Quaternius' animated dinosaurs, and the dragon from his Ultimate Monsters (all CC0, files from
+https://poly.pizza/u/Quaternius). Wings are drawn in code, not taken from a pack.

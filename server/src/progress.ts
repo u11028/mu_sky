@@ -61,6 +61,11 @@ interface Progress {
   /** Tiers bought in the shop; 0 is the starting gear. */
   weapon: number;
   armor: number;
+  /** Wings and mounts owned (indexes into WINGS and MOUNTS; 0, "none", always) and the ones in use. */
+  ownedWings: number[];
+  ownedMounts: number[];
+  wing: number;
+  mount: number;
 }
 
 /** Enough to earn every title; older ids are dropped first. */
@@ -145,6 +150,10 @@ function newProgress(): Progress {
     potions: 3,
     weapon: 0,
     armor: 0,
+    ownedWings: [0],
+    ownedMounts: [0],
+    wing: 0,
+    mount: 0,
   };
 }
 
@@ -461,11 +470,29 @@ export interface Inventory {
   potions: number;
   weapon: number;
   armor: number;
+  wing: number;
+  mount: number;
 }
 
 export function inventory(playerId: string): Inventory {
-  const { gold, potions, weapon, armor } = get(playerId);
-  return { gold, potions, weapon, armor };
+  const { gold, potions, weapon, armor, wing, mount } = get(playerId);
+  return { gold, potions, weapon, armor, wing, mount };
+}
+
+/** The wings and mounts a player owns. */
+export function wardrobe(playerId: string) {
+  const { ownedWings, ownedMounts } = get(playerId);
+  return { wings: [...ownedWings], mounts: [...ownedMounts] };
+}
+
+export function addToWardrobe(playerId: string, kind: "wing" | "mount", index: number) {
+  const record = get(playerId);
+  const owned = kind === "wing" ? record.ownedWings : record.ownedMounts;
+  if (!owned.includes(index)) {
+    owned.push(index);
+    owned.sort((a, b) => a - b);
+  }
+  scheduleSave();
 }
 
 export function saveInventory(playerId: string, change: Partial<Inventory>) {

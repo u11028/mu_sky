@@ -19,6 +19,8 @@ import { loadSounds, play } from "./sfx.ts";
 import { playMusic } from "./music.ts";
 import { onSettings, type Settings } from "../settings.ts";
 import { WEAPON_TIERS } from "../../../shared/items.ts";
+import { MOUNTS, WINGS } from "../../../shared/cosmetics.ts";
+import { loadModel } from "./assets.ts";
 
 /** The local player, as the HUD shows it. */
 export interface SelfState {
@@ -34,6 +36,9 @@ export interface SelfState {
   weapon: number;
   armor: number;
   team: string;
+  wing: number;
+  mount: number;
+  riding: boolean;
 }
 
 /** Another player in this region, for the team panel's invite list. */
@@ -62,6 +67,9 @@ interface PlayerState {
   weapon: number;
   armor: number;
   team: string;
+  wing: number;
+  mount: number;
+  riding: boolean;
 }
 
 interface MonsterState {
@@ -340,6 +348,8 @@ export class World3D {
       player.gm ? "gm" : isMe ? "me" : mate ? "mate" : "",
     );
     actor.setWeaponGlow(WEAPON_TIERS[player.weapon]?.color);
+    actor.setWings(player.wing, WINGS[player.wing]);
+    this.setMount(actor, player.riding && !player.dead ? player.mount : 0);
     actor.setHp(player.hp, player.maxHp);
     actor.setTitle(player.title);
     if (player.dead && !actor.dead) {
@@ -364,6 +374,9 @@ export class World3D {
         weapon: player.weapon,
         armor: player.armor,
         team: player.team,
+        wing: player.wing,
+        mount: player.mount,
+        riding: player.riding,
       });
       if (this.myLevel !== player.level) {
         this.myLevel = player.level;
@@ -403,6 +416,26 @@ export class World3D {
   private danger(level: number, boss: boolean) {
     const gap = level - this.myLevel;
     return boss ? "boss" : gap >= 3 ? "danger" : gap >= 1 ? "tough" : "";
+  }
+
+  /** Puts a player on their mount, loading the animal the first time, or back on foot with 0. */
+  private setMount(actor: Actor, index: number) {
+    if (actor.mountKey === index) {
+      return;
+    }
+    actor.mountKey = index;
+    const info = MOUNTS[index];
+    if (!index || !info?.model) {
+      actor.setMount();
+      return;
+    }
+    void loadModel(`mounts/${info.model}`).then((gltf) => {
+      // Still the same choice once the model has arrived?
+      if (actor.mountKey === index && !this.disposed) {
+        actor.setMount(info, gltf);
+        this.effects.dust(actor.root.position, 1.2, "#f4e9d8");
+      }
+    });
   }
 
   /** The golden ring under an immortal GM. */
@@ -778,7 +811,9 @@ export class World3D {
       return;
     }
     const position = this.predicted;
-    const step = (PLAYER_SPEED * delta) / 1000;
+    const state = this.playerStates.get(this.room.sessionId);
+    const pace = state?.riding ? (MOUNTS[state.mount]?.speed ?? 1) : 1;
+    const step = (PLAYER_SPEED * pace * delta) / 1000;
     const input = this.inputDirection();
     let dx = 0;
     let dy = 0;

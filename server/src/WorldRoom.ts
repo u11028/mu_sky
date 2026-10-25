@@ -47,6 +47,7 @@ import { clientAddress } from "./environment.ts";
 import { isGmKey } from "./gmKey.ts";
 import * as teams from "./teams.ts";
 import { ARMOR_TIERS, isShopItem, monsterGold, POTION, type ShopItem, WEAPON_TIERS } from "../../shared/items.ts";
+import { type CosmeticKind, cosmeticList, isCosmeticKind, MOUNTS, WINGS } from "../../shared/cosmetics.ts";
 import * as progress from "./progress.ts";
 import { type Monster, Player, WorldState } from "./schema.ts";
 
@@ -255,6 +256,22 @@ export class WorldRoom extends Room<WorldState> {
       }
     });
     this.onMessage("potion", (client) => this.drinkPotion(client.sessionId));
+    this.onMessage("buy-cosmetic", (client, message: { kind?: unknown; index?: unknown }) => {
+      if (isCosmeticKind(message?.kind)) {
+        this.buyCosmetic(client, message.kind, Number(message?.index));
+      }
+    });
+    this.onMessage("equip", (client, message: { kind?: unknown; index?: unknown }) => {
+      if (isCosmeticKind(message?.kind)) {
+        this.equipCosmetic(client, message.kind, Number(message?.index));
+      }
+    });
+    this.onMessage("ride", (client, message: { on?: unknown }) => {
+      const player = this.state.players.get(client.sessionId);
+      if (player && !player.dead) {
+        player.riding = Boolean(message?.on) && player.mount > 0;
+      }
+    });
     this.onMessage("team-invite", (client, message: { target?: unknown }) => this.teamInvite(client, String(message?.target)));
     this.onMessage("team-answer", (client, message: { yes?: unknown }) => this.teamAnswer(client, Boolean(message?.yes)));
     this.onMessage("team-leave", (client) => {
@@ -310,6 +327,7 @@ export class WorldRoom extends Room<WorldState> {
     player.gm = powers.gm;
     player.god = powers.god;
     Object.assign(player, progress.inventory(playerId));
+    client.send("wardrobe", progress.wardrobe(playerId));
     player.team = teams.teamIdOf(playerId);
     this.applyLevel(player, playerId);
     player.hp = player.maxHp;
@@ -506,8 +524,9 @@ export class WorldRoom extends Room<WorldState> {
     }
 
     movement.lastAttackAt = now;
-    // Attacking ends the arrival shield.
+    // Attacking ends the arrival shield, and gets the rider off.
     movement.shieldUntil = 0;
+    player.riding = false;
     const aimedAt = this.aim(sessionId, player, movement, hero.attack.range * 1.15);
     const { facingX, facingY } = movement;
     this.broadcast("swing", { id: sessionId, x: facingX, y: facingY });
@@ -600,6 +619,7 @@ export class WorldRoom extends Room<WorldState> {
     const { player, movement } = attacker;
     movement.skillReadyAt[skillId] = now + SKILLS[skillId].cooldownMs;
     movement.shieldUntil = 0;
+    player.riding = false;
 
     if (skillId === "spin") {
       this.broadcast("skill", { id: skillId, by: sessionId });
@@ -685,6 +705,7 @@ export class WorldRoom extends Room<WorldState> {
       attackPower(attacker.level) *
       hero.power *
       (WEAPON_TIERS[attacker.weapon]?.bonus ?? 1) *
+      (WINGS[attacker.wing]?.power ?? 1) *
       multiplier *
       (0.85 + Math.random() * 0.3) *
       (crit ? CRIT_MULTIPLIER : 1);
@@ -916,6 +937,53 @@ export class WorldRoom extends Room<WorldState> {
     player.hp += amount;
     progress.saveInventory(movement.playerId, { potions: player.potions });
     this.broadcast("potion", { by: sessionId, amount });
+  }
+
+  // ---- Wings and mounts ----
+
+  private buyCosmetic(client: Client, kind: CosmeticKind, index: number) {
+    const player = this.state.players.get(client.sessionId);
+    const movement = this.movements.get(client.sessionId);
+    const item = cosmeticList(kind)[index];
+    if (!player || !movement || !item || index <= 0) {
+      return;
+    }
+    const owned = progress.wardrobe(movement.playerId)[kind === "wing" ? "wings" : "mounts"];
+    if (owned.includes(index)) {
+      this.equipCosmetic(client, kind, index);
+      return;
+    }
+    if (player.gold < item.price) {
+      client.send("notice", { text: `ทองไม่พอ ต้องใช้ ${item.price.toLocaleString()} ทอง`, ok: false });
+      return;
+    }
+    player.gold -= item.price;
+    progress.addToWardrobe(movement.playerId, kind, index);
+    progress.saveInventory(movement.playerId, { gold: player.gold });
+    client.send("notice", { text: `ได้รับ ${item.name}!`, ok: true });
+    this.broadcast("upgrade", { id: client.sessionId });
+    this.equipCosmetic(client, kind, index);
+  }
+
+  /** Puts on owned wings, or picks the mount to ride (0 takes them off). */
+  private equipCosmetic(client: Client, kind: CosmeticKind, index: number) {
+    const player = this.state.players.get(client.sessionId);
+    const movement = this.movements.get(client.sessionId);
+    if (!player || !movement) {
+      return;
+    }
+    const owned = progress.wardrobe(movement.playerId)[kind === "wing" ? "wings" : "mounts"];
+    if (!owned.includes(index)) {
+      return;
+    }
+    if (kind === "wing") {
+      player.wing = index;
+    } else {
+      player.mount = index;
+      player.riding = index > 0;
+    }
+    progress.saveInventory(movement.playerId, { [kind]: index });
+    client.send("wardrobe", progress.wardrobe(movement.playerId));
   }
 
   // ---- Teams ----
@@ -1165,6 +1233,17 @@ export class WorldRoom extends Room<WorldState> {
         done(`${target.name}: ยาเลือด ${target.potions} ขวด`);
         return;
       }
+      case "cosmetics": {
+        // Every wing and mount, wearing the best of each.
+        WINGS.forEach((_, index) => progress.addToWardrobe(targetMovement.playerId, "wing", index));
+        MOUNTS.forEach((_, index) => progress.addToWardrobe(targetMovement.playerId, "mount", index));
+        target.wing = WINGS.length - 1;
+        target.mount = MOUNTS.length - 1;
+        progress.saveInventory(targetMovement.playerId, { wing: target.wing, mount: target.mount });
+        targetClient.send("wardrobe", progress.wardrobe(targetMovement.playerId));
+        done(`${target.name}: ได้ปีกและสัตว์ขี่ครบทุกแบบ`);
+        return;
+      }
       case "title": {
         const title = findTitle(message.titleId);
         if (title) {
@@ -1224,7 +1303,7 @@ export class WorldRoom extends Room<WorldState> {
   // ---- Simulation ----
 
   private update(deltaMs: number) {
-    const step = (PLAYER_SPEED * deltaMs) / 1000;
+    const baseStep = (PLAYER_SPEED * deltaMs) / 1000;
     const { bounds, portals } = this.region;
     const flushSteps = ++this.ticks % STEP_FLUSH_TICKS === 0;
     if (flushSteps) {
@@ -1246,6 +1325,8 @@ export class WorldRoom extends Room<WorldState> {
         }
         return;
       }
+
+      const step = baseStep * (player.riding ? (MOUNTS[player.mount]?.speed ?? 1) : 1);
 
       if (player.hp < player.maxHp && now - movement.lastHitAt > REGEN_DELAY_MS) {
         movement.regen += (player.maxHp * REGEN_PER_SECOND * deltaMs) / 1000;

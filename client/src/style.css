@@ -1845,3 +1845,78 @@ button.secondary {
 #chat-toggle {
   position: relative;
 }
+
+/* ---- Wings and mounts ---- */
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.shop-card {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.shop-card.worn {
+  border-color: var(--accent);
+  background: rgba(233, 196, 106, 0.12);
+}
+
+.shop-card strong {
+  font-size: 13px;
+}
+
+.shop-card small {
+  min-height: 1em;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.shop-card button {
+  margin-top: 4px;
+  padding: 5px 8px;
+  font-size: 12px;
+}
+
+.shop-card button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+#ride-button {
+  position: fixed;
+  left: calc(env(safe-area-inset-left, 0px) + 52px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 176px);
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  background: radial-gradient(circle at 35% 30%, #ffd08a, #a0612b 75%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  font-size: 26px;
+  touch-action: none;
+}
+
+#ride-button[hidden] {
+  display: none;
+}
+
+#ride-button.on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent), 0 0 16px var(--accent);
+}
+
+/* On computers the chat sits above the joystick: keep the ride button clear of it. */
+@media (min-width: 601px) {
+  #ride-button {
+    left: calc(env(safe-area-inset-left, 0px) + 176px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
+  }
+}

@@ -5,9 +5,11 @@ import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { decorateTitle, findTitle } from "../../../shared/titles.ts";
 import { copyModel, loadModel, materialsOf, standOnGround } from "./assets.ts";
+import type { Mount, Wing } from "../../../shared/cosmetics.ts";
+import { buildWings } from "./wings.ts";
 
 /** Animations every actor understands, mapped to each model's own clip names. */
-export type Move = "idle" | "walk" | "run" | "attack" | "hit" | "death" | "spawn";
+export type Move = "idle" | "walk" | "run" | "attack" | "hit" | "death" | "spawn" | "ride";
 
 /** KayKit heroes share one rig; their clips come from two animation files. */
 const HERO_CLIPS: Record<Move, string> = {
@@ -18,6 +20,8 @@ const HERO_CLIPS: Record<Move, string> = {
   hit: "Hit_A",
   death: "Death_A",
   spawn: "Spawn_Ground",
+  // Knees up, as if in a saddle.
+  ride: "Jump_Idle",
 };
 
 /** Monster clips differ between kinds; the first one a model has wins. */
@@ -29,6 +33,13 @@ const MONSTER_CLIPS: Record<Move, string[]> = {
   hit: ["HitReact", "HitRecieve"],
   death: ["Death"],
   spawn: ["Yes", "Idle", "Flying_Idle"],
+  ride: ["Idle", "Flying_Idle"],
+};
+
+/** Mount animals' clips: standing and galloping (or flying). */
+const MOUNT_CLIPS = {
+  idle: ["Idle", "Flying_Idle", "Velociraptor_Idle"],
+  run: ["Gallop", "Fast_Flying", "Velociraptor_Run", "Walk"],
 };
 
 const HERO_HEIGHT = 2.1;
@@ -70,6 +81,13 @@ function makeLabel(height: number): Label {
 
 export class Actor {
   readonly root = new THREE.Group();
+  /** The body and anything worn on it (wings); lifted into the saddle when riding. */
+  readonly avatar = new THREE.Group();
+  private wings?: THREE.Group;
+  private wingIndex = 0;
+  private mount?: { model: THREE.Object3D; mixer: THREE.AnimationMixer; idle?: THREE.AnimationAction; run?: THREE.AnimationAction; current?: THREE.AnimationAction; info: Mount };
+  /** Which mount the rider sits on (0 = on foot), to load it only when it changes. */
+  mountKey = 0;
   readonly label: Label;
   private mixer?: THREE.AnimationMixer;
   private actions = new Map<Move, THREE.AnimationAction>();
@@ -99,13 +117,13 @@ export class Actor {
 
   constructor(readonly height: number) {
     this.label = makeLabel(height);
-    this.root.add(this.label.object);
+    this.root.add(this.label.object, this.avatar);
   }
 
   /** Puts a model in and wires its animations. */
   attach(model: THREE.Object3D, clips: THREE.AnimationClip[], names: (move: Move) => string[]) {
     const placed = standOnGround(model, this.height);
-    this.root.add(placed);
+    this.avatar.add(placed);
     this.materials = materialsOf(placed);
     this.mixer = new THREE.AnimationMixer(model);
     for (const move of Object.keys(MONSTER_CLIPS) as Move[]) {
@@ -120,11 +138,48 @@ export class Actor {
     this.settle();
   }
 
-  /** Back to standing or moving after a one-off animation. */
+  /** Back to standing, moving or sitting in the saddle after a one-off animation. */
   private settle() {
     if (!this.dead) {
-      this.loop(performance.now() - this.movedAt < 160 ? this.gait : "idle");
+      this.loop(this.mount ? "ride" : performance.now() - this.movedAt < 160 ? this.gait : "idle");
     }
+  }
+
+  /** Wings on the back (index 0 takes them off). */
+  setWings(index: number, wing?: Wing) {
+    if (index === this.wingIndex) {
+      return;
+    }
+    this.wingIndex = index;
+    this.wings?.removeFromParent();
+    this.wings = index > 0 && wing ? buildWings(wing) : undefined;
+    if (this.wings) {
+      this.avatar.add(this.wings);
+    }
+  }
+
+  /** Puts the rider on an animal (a loaded model), or back on foot with undefined. */
+  setMount(info?: Mount, gltf?: GLTF) {
+    if (this.mount) {
+      this.mount.model.removeFromParent();
+      this.mount = undefined;
+    }
+    if (info && gltf) {
+      const model = copyModel(gltf);
+      const placed = standOnGround(model, info.height);
+      this.root.add(placed);
+      const mixer = new THREE.AnimationMixer(model);
+      const find = (names: string[]) => {
+        const clip = names.map((name) => gltf.animations.find((c) => c.name === name || c.name.endsWith(`|${name}`))).find(Boolean);
+        return clip ? mixer.clipAction(clip) : undefined;
+      };
+      this.mount = { model: placed, mixer, idle: find(MOUNT_CLIPS.idle), run: find(MOUNT_CLIPS.run), info };
+    }
+    this.avatar.position.y = info ? info.height * info.seat : 0;
+    this.label.object.position.y = this.height + 0.25 + this.avatar.position.y;
+    this.base = undefined;
+    this.mixer?.stopAllAction();
+    this.settle();
   }
 
   /** Plays a looping animation, blending from the current one. */
@@ -180,6 +235,23 @@ export class Actor {
     if (now >= this.frozenUntil) {
       this.mixer?.update(delta / 1000);
     }
+    const moving = now - this.movedAt < 160;
+    this.wings?.userData.animate(now, moving || Boolean(this.mount?.info.flies));
+    if (this.mount) {
+      const wanted = moving ? (this.mount.run ?? this.mount.idle) : (this.mount.idle ?? this.mount.run);
+      if (wanted && wanted !== this.mount.current) {
+        wanted.reset().fadeIn(0.2).play();
+        this.mount.current?.fadeOut(0.2);
+        this.mount.current = wanted;
+      }
+      this.mount.mixer.update(delta / 1000);
+      if (this.mount.info.flies) {
+        // A flying mount hovers and bobs above the ground.
+        const hover = 0.8 + Math.sin(now / 400) * 0.15;
+        this.mount.model.position.y = hover;
+        this.avatar.position.y = this.mount.info.height * this.mount.info.seat + hover;
+      }
+    }
     if (this.punch > 0) {
       this.punch = Math.max(0, this.punch - delta / 160);
       this.root.scale.set(1 + this.punch * 0.14, 1 - this.punch * 0.1, 1 + this.punch * 0.14);
@@ -194,7 +266,7 @@ export class Actor {
     this.root.rotation.y += turn * Math.min(1, delta / 70);
 
     if (!this.dead && now >= this.busyUntil) {
-      this.loop(now - this.movedAt < 160 ? this.gait : "idle");
+      this.loop(this.mount ? "ride" : moving ? this.gait : "idle");
     }
 
     if (this.flash > 0) {
