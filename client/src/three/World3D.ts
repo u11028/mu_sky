@@ -283,9 +283,12 @@ export class World3D {
 
   private listen() {
     const state = this.room.state as any;
+    // The count (and the team panel's invite list) follow the server's players at once, not the
+    // models: someone whose look is still loading is already there to be invited.
     state.players.onAdd((player: any, id: string) => {
       void this.addPlayer(id, player);
       player.onChange(() => this.updatePlayer(id, player));
+      this.onPlayerCount(state.players.size);
     });
     state.players.onRemove((_player: any, id: string) => {
       this.loading.delete(id);
@@ -294,7 +297,7 @@ export class World3D {
       this.players.delete(id);
       this.auras.get(id)?.removeFromParent();
       this.auras.delete(id);
-      this.onPlayerCount(this.players.size);
+      this.onPlayerCount(state.players.size);
     });
     state.monsters.onAdd((monster: any, id: string) => {
       void this.addMonster(id, monster);
@@ -322,7 +325,6 @@ export class World3D {
     this.scene.add(actor.root);
     this.players.set(id, actor);
     this.updatePlayer(id, player);
-    this.onPlayerCount(this.players.size);
   }
 
   private async addMonster(id: string, monster: MonsterState) {
@@ -658,13 +660,15 @@ export class World3D {
 
   /** The other players in this region, for inviting to a team. */
   nearbyPlayers(): Nearby[] {
-    return [...this.playerStates]
+    const players = (this.room.state as any).players as Map<string, PlayerState>;
+    const myTeam = players.get(this.room.sessionId)?.team ?? "";
+    return [...players]
       .filter(([id]) => id !== this.room.sessionId)
       .map(([id, player]) => ({
         id,
         name: player.name,
         level: player.level,
-        mate: player.team !== "" && player.team === this.myTeam,
+        mate: player.team !== "" && player.team === myTeam,
       }));
   }
 
@@ -819,6 +823,13 @@ export class World3D {
     window.addEventListener("keyup", keyUp);
     window.addEventListener("blur", blur);
     this.cleanup.push(() => {
+      // The canvas outlives this world (one renderer for the whole game): its listeners must go
+      // too, or every region left behind stays in memory through them.
+      canvas.removeEventListener("pointerdown", down);
+      canvas.removeEventListener("pointermove", move);
+      canvas.removeEventListener("pointerup", up);
+      canvas.removeEventListener("pointercancel", up);
+      canvas.removeEventListener("wheel", wheel);
       window.removeEventListener("keydown", keyDown);
       window.removeEventListener("keyup", keyUp);
       window.removeEventListener("blur", blur);
@@ -1119,6 +1130,12 @@ export class World3D {
       }
       for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
         if (!material.userData.shared) {
+          // Its pictures too (ground, sea, glows), unless they belong to a cached model.
+          for (const value of Object.values(material)) {
+            if ((value as THREE.Texture | null)?.isTexture && !(value as THREE.Texture).userData.shared) {
+              (value as THREE.Texture).dispose();
+            }
+          }
           material.dispose();
         }
       }

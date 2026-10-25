@@ -19,6 +19,12 @@ export function loadModel(path: string) {
           mesh.geometry.userData.shared = true;
           for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
             material.userData.shared = true;
+            // Copies with their own materials still share these pictures.
+            for (const value of Object.values(material)) {
+              if ((value as THREE.Texture | null)?.isTexture) {
+                (value as THREE.Texture).userData.shared = true;
+              }
+            }
           }
         }
       });

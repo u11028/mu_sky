@@ -369,6 +369,9 @@ if (import.meta.env.DEV) {
 
 function showJoinDialog(message: string) {
   online.textContent = "ออฟไลน์";
+  // Left in the middle of the tutorial: it comes back next time.
+  tutorial.hidden = true;
+  tutorialStep = -1;
   voice.leave();
   renderVoiceButton();
   voiceButton.hidden = true;
@@ -402,6 +405,10 @@ function startGame(joined: Room, region: RegionId) {
     chatInput,
     (count) => {
       online.textContent = `${REGIONS[region].name} · ออนไลน์ ${count} คน`;
+      // Someone came or went: an open team panel lists who can be invited now.
+      if (!document.querySelector<HTMLElement>("#team-panel")!.hidden) {
+        renderNearby();
+      }
     },
     renderSelf,
     showLoading,
@@ -1014,6 +1021,11 @@ async function startTutorial() {
   // After the world has loaded and the day's gift is out of the way.
   while (!loading.hidden || !dailyGift.hidden) {
     await new Promise((resolve) => setTimeout(resolve, 400));
+  }
+  // Left the game before it finished loading: show it next time instead, not over the start screen.
+  if (!room) {
+    tutorialStep = -1;
+    return;
   }
   tutorial.hidden = false;
   placeTutorial();

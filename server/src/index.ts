@@ -58,7 +58,9 @@ app.post("/api/login", (req, res) => {
 });
 
 const gameServer = new Server({
-  transport: new WebSocketTransport({ server: createServer(app) }),
+  // Messages up to 16 KB: the default 4 KB is less than some phones' voice chat offers, which
+  // would cut them off. Each message is still checked and trimmed by the room.
+  transport: new WebSocketTransport({ server: createServer(app), maxPayload: 16 * 1024 }),
 });
 
 // One room per region and party: joining with { region: "north", party: "" } finds the public north,

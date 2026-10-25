@@ -3,8 +3,10 @@
 // on the few messages that set a link up.
 //
 // Who to link with comes from the team status the server sends every second. Of each pair, the one
-// with the smaller voice tag makes the offer; a link is made again whenever either side turns their
-// microphone on or off, since what it carries changes.
+// with the smaller voice tag makes the offer, and only it decides when a link must be made again
+// (when either side turns their microphone on or off, since what it carries changes): the other
+// side may hear of a teammate's microphone a second later than the offer, and must not drop a good
+// link over that. It only drops its links when its own microphone changes, and waits for the offer.
 
 export interface VoiceMate {
   voice: string;
@@ -25,6 +27,8 @@ interface Link {
   mineOn: boolean;
   theirsOn: boolean;
   name: string;
+  /** Routes that came before the other side's description: added once it is in. */
+  early: RTCIceCandidateInit[];
 }
 
 // Public STUN servers let two phones behind home routers find a way to each other.
@@ -117,7 +121,8 @@ export class Voice {
     const others = new Map(mates.filter((mate) => !mate.me && mate.online).map((mate) => [mate.voice, mate]));
     for (const [tag, link] of [...this.links]) {
       const mate = others.get(tag);
-      const stale = !mate || link.mineOn !== this.on || link.theirsOn !== mate.talking;
+      const offering = this.myTag < tag;
+      const stale = !mate || link.mineOn !== this.on || (offering && link.theirsOn !== mate.talking);
       if (stale) {
         this.close(tag);
       }
@@ -135,14 +140,31 @@ export class Voice {
       this.close(from);
       const link = this.open(from, mate);
       await link.connection.setRemoteDescription(data.offer);
+      await this.addEarlyRoutes(link);
       this.microphone?.getTracks().forEach((track) => link.connection.addTrack(track, this.microphone!));
       const answer = await link.connection.createAnswer();
       await link.connection.setLocalDescription(answer);
       this.send("voice-signal", { to: from, data: { answer } });
     } else if ("answer" in data) {
-      await this.links.get(from)?.connection.setRemoteDescription(data.answer);
+      const link = this.links.get(from);
+      if (link) {
+        await link.connection.setRemoteDescription(data.answer);
+        await this.addEarlyRoutes(link);
+      }
     } else if ("ice" in data) {
-      await this.links.get(from)?.connection.addIceCandidate(data.ice).catch(() => undefined);
+      const link = this.links.get(from);
+      // Routes often arrive right behind the offer or answer, before it has been taken in: keep them.
+      if (link && !link.connection.remoteDescription) {
+        link.early.push(data.ice);
+      } else {
+        await link?.connection.addIceCandidate(data.ice).catch(() => undefined);
+      }
+    }
+  }
+
+  private async addEarlyRoutes(link: Link) {
+    for (const route of link.early.splice(0)) {
+      await link.connection.addIceCandidate(route).catch(() => undefined);
     }
   }
 
@@ -163,7 +185,7 @@ export class Voice {
     const connection = new RTCPeerConnection({ iceServers: ICE_SERVERS });
     const audio = new Audio();
     audio.autoplay = true;
-    const link: Link = { connection, audio, mineOn: this.on, theirsOn: mate?.talking ?? true, name: mate?.name ?? "" };
+    const link: Link = { connection, audio, mineOn: this.on, theirsOn: mate?.talking ?? true, name: mate?.name ?? "", early: [] };
     this.links.set(tag, link);
     connection.onicecandidate = (event) => {
       if (event.candidate) {

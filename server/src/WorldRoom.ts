@@ -87,8 +87,6 @@ interface Movement {
   regen: number;
   /** GM power: every hit kills. */
   oneHit: boolean;
-  /** Wrong GM keys typed; after a few the player can't try again this visit. */
-  gmTries: number;
   /** When each skill may be used again. */
   skillReadyAt: Partial<Record<SkillId, number>>;
   potionReadyAt: number;
@@ -114,7 +112,10 @@ interface JoinOptions {
 const PLAYER_ID = /^[A-Za-z0-9_-]{16,64}$/;
 /** Steps and times are counted towards quests once a second, not on every tick. */
 const STEP_FLUSH_TICKS = 20;
+/** Wrong GM keys allowed before a lock, counted by address and by player across rooms and visits. */
 const MAX_GM_TRIES = 5;
+const GM_LOCK_MS = 15 * 60_000;
+const gmFailures = new Map<string, { count: number; lockedUntil: number }>();
 
 /** An arrow, crossbow bolt or magic orb in flight. */
 interface Projectile extends ShotEvent {
@@ -153,6 +154,18 @@ function cleanText(value: unknown, maxLength: number) {
 
   // Control characters would break the chat layout.
   return value.replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, maxLength);
+}
+
+/** Names that would pass a player's chat off as the game's or a GM's. */
+const RESERVED_NAME = /^(ระบบ|ประกาศ|แอดมิน|admin|system|gm|\[gm\]|ผู้ดูแล)/i;
+
+function playerName(value: unknown) {
+  // Invisible and direction-changing characters would let a name look like another.
+  const name = cleanText(value, NAME_MAX_LENGTH).replace(/[\u200b-\u200f\u202a-\u202e\u2060-\u2064\ufeff]/g, "").trim();
+  if (!name || RESERVED_NAME.test(name)) {
+    return `ผู้เล่น${Math.floor(1000 + Math.random() * 9000)}`;
+  }
+  return name;
 }
 
 function validPlayerId(value: unknown) {
@@ -212,8 +225,9 @@ export class WorldRoom extends Room<WorldState> {
       }
 
       // Keys send -1, 0 or 1; a joystick sends any direction. Either way the player walks at full speed.
-      const x = Number(message?.x) || 0;
-      const y = Number(message?.y) || 0;
+      // Anything else (Infinity, text) is no direction: dividing by it would make the position NaN.
+      const x = clamp(Number(message?.x) || 0, -1, 1);
+      const y = clamp(Number(message?.y) || 0, -1, 1);
       const length = Math.hypot(x, y);
       movement.dirX = length > 0.2 ? x / length : 0;
       movement.dirY = length > 0.2 ? y / length : 0;
@@ -317,8 +331,13 @@ export class WorldRoom extends Room<WorldState> {
 
   onDispose() {
     rooms.delete(this);
+    // The world boss's region emptied and closed: it is gone, and the other regions' banners with it.
     if (worldBoss?.room === this) {
       worldBoss = undefined;
+      const name = monsterKind(WORLD_BOSS.kind)!.name;
+      for (const room of this.sameWorld()) {
+        room.broadcast("world-boss-end", { beaten: false, name, top: [] } satisfies WorldBossEnd);
+      }
     }
   }
 
@@ -334,7 +353,7 @@ export class WorldRoom extends Room<WorldState> {
 
   onJoin(client: Client, options: JoinOptions) {
     const player = new Player();
-    player.name = cleanText(options?.name, NAME_MAX_LENGTH) || `ผู้เล่น${Math.floor(1000 + Math.random() * 9000)}`;
+    player.name = playerName(options?.name);
     const skin = Number(options?.skin);
     player.skin = Number.isInteger(skin) && skin >= 0 && skin < HEROES.length ? skin : 0;
 
@@ -377,7 +396,6 @@ export class WorldRoom extends Room<WorldState> {
       shieldUntil: Date.now() + SPAWN_SHIELD_MS,
       regen: 0,
       oneHit: powers.oneHit,
-      gmTries: 0,
       skillReadyAt: {},
       potionReadyAt: 0,
       safeNoticeAt: 0,
@@ -1342,6 +1360,8 @@ export class WorldRoom extends Room<WorldState> {
         }
       }
     }
+    // The new team shows at once, not with the next status a second later.
+    rooms.forEach((room) => room.sendTeamStatus());
   }
 
   /** Passes a voice connection message to a teammate, wherever they are; nobody else is reachable. */
@@ -1408,15 +1428,27 @@ export class WorldRoom extends Room<WorldState> {
   private runCommand(client: Client, movement: Movement, player: Player, text: string) {
     const [command, ...args] = text.split(/\s+/);
     if (command === "/gm") {
-      if (movement.gmTries >= MAX_GM_TRIES) {
-        this.tell(client, "ลองรหัส GM ผิดหลายครั้งเกินไป ออกแล้วเข้าเกมใหม่ก่อน");
+      // Counted by address and by player: leaving and coming back does not reset it.
+      const keys = [`ip:${(client.auth as { ip?: string } | undefined)?.ip ?? ""}`, `id:${movement.playerId}`];
+      const now = Date.now();
+      if (keys.some((key) => (gmFailures.get(key)?.lockedUntil ?? 0) > now)) {
+        this.tell(client, "ลองรหัส GM ผิดหลายครั้งเกินไป รอ 15 นาทีแล้วลองใหม่");
         return;
       }
       if (!isGmKey(args.join(" "))) {
-        movement.gmTries++;
+        for (const key of keys) {
+          const entry = gmFailures.get(key) ?? { count: 0, lockedUntil: 0 };
+          entry.count++;
+          if (entry.count >= MAX_GM_TRIES) {
+            entry.count = 0;
+            entry.lockedUntil = now + GM_LOCK_MS;
+          }
+          gmFailures.set(key, entry);
+        }
         this.tell(client, "รหัส GM ไม่ถูกต้อง");
         return;
       }
+      keys.forEach((key) => gmFailures.delete(key));
 
       progress.setPower(movement.playerId, "gm", true);
       player.gm = true;
@@ -1566,6 +1598,8 @@ export class WorldRoom extends Room<WorldState> {
         MOUNTS.forEach((_, index) => progress.addToWardrobe(targetMovement.playerId, "mount", index));
         target.wing = WINGS.length - 1;
         target.mount = MOUNTS.length - 1;
+        // Up in the saddle, as choosing a mount in the shop does.
+        target.riding = !target.dead;
         progress.saveInventory(targetMovement.playerId, { wing: target.wing, mount: target.mount });
         targetClient.send("wardrobe", progress.wardrobe(targetMovement.playerId));
         done(`${target.name}: ได้ปีกและสัตว์ขี่ครบทุกแบบ`);
@@ -1616,7 +1650,7 @@ export class WorldRoom extends Room<WorldState> {
           done("แบนตัวเองไม่ได้");
           return;
         }
-        const days = Number(message.days) > 0 ? Number(message.days) : PERMANENT_BAN_DAYS;
+        const days = Number(message.days) > 0 ? Math.min(Number(message.days), PERMANENT_BAN_DAYS) : PERMANENT_BAN_DAYS;
         const reason = cleanText(message.reason, 80);
         const until = progress.ban(targetMovement.playerId, days, reason);
         targetClient.send("removed", { text: banText({ until, reason }) });
