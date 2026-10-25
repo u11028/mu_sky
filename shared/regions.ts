@@ -90,3 +90,36 @@ export function spawnPoint(region: RegionId, from?: RegionId) {
   const length = Math.hypot(dx, dy) || 1;
   return { x: back.x + (dx / length) * 110, y: back.y + (dy / length) * 110 };
 }
+
+/** Safe zones: around where players appear in the middle, and around every portal. */
+export const SAFE_RADIUS = 200;
+export const PORTAL_SAFE_RADIUS = 140;
+
+export interface SafeZone {
+  x: number;
+  y: number;
+  radius: number;
+}
+
+const safeZoneCache = new Map<RegionId, SafeZone[]>();
+
+/**
+ * Where nobody can be hurt, by players or monsters, and nobody can attack: the middle, where players
+ * appear and come back to life, and the portals, so nobody is ambushed on arriving.
+ */
+export function safeZones(region: RegionId): SafeZone[] {
+  let zones = safeZoneCache.get(region);
+  if (!zones) {
+    const centre = spawnPoint(region);
+    zones = [
+      { ...centre, radius: SAFE_RADIUS },
+      ...REGIONS[region].portals.map((portal) => ({ x: portal.x, y: portal.y, radius: PORTAL_SAFE_RADIUS })),
+    ];
+    safeZoneCache.set(region, zones);
+  }
+  return zones;
+}
+
+export function inSafeZone(region: RegionId, x: number, y: number) {
+  return safeZones(region).some((zone) => Math.hypot(zone.x - x, zone.y - y) <= zone.radius);
+}

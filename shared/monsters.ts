@@ -88,8 +88,12 @@ export const BOSS_AGGRO = 260;
 export const MONSTER_LEASH = 420;
 export const MONSTER_RESPAWN_MS = 15_000;
 export const BOSS_RESPAWN_MS = 180_000;
-/** Monsters keep away from where players arrive. */
-export const MONSTER_SAFE_RADIUS = 260;
+/**
+ * Monsters live this far from where players appear, well outside the safe zone there (SAFE_RADIUS,
+ * 200) even when they wander, and this far from portals (outside their safe zones of 140).
+ */
+export const MONSTER_SAFE_RADIUS = 340;
+export const MONSTER_PORTAL_CLEARANCE = 260;
 
 /** The world boss's schedule and size. */
 export const WORLD_BOSS = {

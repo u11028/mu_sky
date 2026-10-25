@@ -4,7 +4,7 @@
 import * as THREE from "three";
 import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 import type { Room } from "colyseus.js";
-import { REGIONS, type RegionId } from "../../../shared/regions.ts";
+import { inSafeZone, REGIONS, type RegionId, safeZones } from "../../../shared/regions.ts";
 import { type HitEvent, SKILLS, type SkillId } from "../../../shared/combat.ts";
 import { type Hero, heroOf, type ShotEvent } from "../../../shared/heroes.ts";
 import { regionLayout, slide } from "../../../shared/regionThemes.ts";
@@ -197,6 +197,8 @@ export class World3D {
    * and gently kept in step with the server, so walking never waits for the network.
    */
   private predicted?: { x: number; y: number };
+  /** Whether the local player stands in a safe zone, as last shown. */
+  private safe = false;
   private server = { x: 0, y: 0 };
   /** When the server last moved the local player; settling waits until it has stopped too. */
   private serverMovedAt = 0;
@@ -270,6 +272,7 @@ export class World3D {
     if (this.disposed) {
       return;
     }
+    this.addSafeZones();
     // The shaders of the models new here are built off the main thread where the browser can,
     // instead of freezing the first frame.
     await this.renderer.compileAsync(this.scene, this.camera).catch(() => undefined);
@@ -477,6 +480,28 @@ export class World3D {
         this.effects.dust(actor.root.position, 1.2, "#f4e9d8");
       }
     });
+  }
+
+  /** A soft blue circle on the ground where nobody can fight, its rim slowly breathing. */
+  private addSafeZones() {
+    for (const zone of safeZones(this.regionId)) {
+      const radius = zone.radius / PX;
+      const group = new THREE.Group();
+      group.position.set(zone.x / PX, 0.05, zone.y / PX);
+      group.rotation.x = -Math.PI / 2;
+      const fill = new THREE.Mesh(
+        new THREE.CircleGeometry(radius, 64),
+        new THREE.MeshBasicMaterial({ color: "#39b8ff", transparent: true, opacity: 0.1, depthWrite: false }),
+      );
+      // Plain blending, not additive: on bright grass an additive rim washes out to white.
+      const rimMaterial = new THREE.MeshBasicMaterial({ color: "#1e9bff", transparent: true, opacity: 0.6, depthWrite: false });
+      const rim = new THREE.Mesh(new THREE.RingGeometry(radius - 0.22, radius, 96), rimMaterial);
+      group.add(fill, rim);
+      this.scene.add(group);
+      this.scenery?.animators.push((now) => {
+        rimMaterial.opacity = 0.5 + Math.sin(now / 700) * 0.15;
+      });
+    }
   }
 
   /** The golden ring under an immortal GM; other colours and sizes mark other things (the world boss). */
@@ -963,6 +988,15 @@ export class World3D {
       ring.scale.setScalar(1 + Math.sin(now / 250) * 0.12);
     });
     this.scenery?.animators.forEach((animate) => animate(now, delta));
+    // Six times a second: is the local player in a safe zone? A badge says so, and the attack buttons dim.
+    if (this.frameCount % 10 === 0 && this.predicted) {
+      const safe = inSafeZone(this.regionId, this.predicted.x, this.predicted.y);
+      if (safe !== this.safe) {
+        this.safe = safe;
+        document.querySelector<HTMLElement>("#safe-badge")!.hidden = !safe;
+        document.body.classList.toggle("in-safe-zone", safe);
+      }
+    }
     // Twice a second: is a living boss close? Then the fight theme plays.
     if (this.frameCount % 30 === 0) {
       let near = false;
@@ -1135,6 +1169,8 @@ export class World3D {
     });
     // The renderer stays for the next region (see worldRenderer); only what it cached for this scene goes.
     this.renderer.renderLists.dispose();
+    document.querySelector<HTMLElement>("#safe-badge")!.hidden = true;
+    document.body.classList.remove("in-safe-zone");
     this.sun.dispose();
     this.renderer.domElement.remove();
     this.labels.domElement.remove();

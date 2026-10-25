@@ -10,6 +10,7 @@ import {
   MONSTER_CHASE_SPEED,
   MONSTER_LEASH,
   MONSTER_RESPAWN_MS,
+  MONSTER_PORTAL_CLEARANCE,
   MONSTER_SAFE_RADIUS,
   MONSTER_SPEED,
   type MonsterKind,
@@ -280,7 +281,7 @@ export class MonsterSystem {
       const x = bounds.minX + 80 + Math.random() * (bounds.maxX - bounds.minX - 160);
       const y = bounds.minY + 80 + Math.random() * (bounds.maxY - bounds.minY - 160);
       const fromCentre = Math.hypot(x - centre.x, y - centre.y);
-      const nearPortal = portals.some((p) => Math.hypot(p.x - x, p.y - y) < 180);
+      const nearPortal = portals.some((p) => Math.hypot(p.x - x, p.y - y) < MONSTER_PORTAL_CLEARANCE);
       if (fromCentre < MONSTER_SAFE_RADIUS || nearPortal || isBlocked(this.arena.layout, x, y, 30)) {
         continue;
       }

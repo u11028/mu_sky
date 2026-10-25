@@ -2430,3 +2430,32 @@ button.secondary {
     max-width: calc(100vw - 264px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
   }
 }
+
+/* ---- Safe zones ---- */
+
+#safe-badge {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 244px);
+  left: 50%;
+  z-index: 4;
+  padding: 5px 14px;
+  border: 1px solid rgba(127, 216, 255, 0.7);
+  border-radius: 999px;
+  background: rgba(8, 40, 60, 0.82);
+  color: #d9f4ff;
+  font-size: 12px;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+#safe-badge[hidden] {
+  display: none;
+}
+
+/* No fighting in a safe zone: the attack button and the attacking skills dim. */
+body.in-safe-zone #attack-button,
+body.in-safe-zone .skill-button[data-skill="spin"],
+body.in-safe-zone .skill-button[data-skill="strike"] {
+  filter: grayscale(0.85) brightness(0.75);
+}

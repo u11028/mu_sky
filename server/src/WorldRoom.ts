@@ -19,6 +19,7 @@ import {
   REGIONS,
   type Region,
   type RegionId,
+  inSafeZone,
   spawnPoint,
   START_REGION,
 } from "../../shared/regions.ts";
@@ -89,6 +90,8 @@ interface Movement {
   /** When each skill may be used again. */
   skillReadyAt: Partial<Record<SkillId, number>>;
   potionReadyAt: number;
+  /** Last time the player was told they can't fight in a safe zone, to say it only now and then. */
+  safeNoticeAt: number;
 }
 
 /** Teammates within this distance share a monster's reward even if they didn't hit it. */
@@ -370,6 +373,7 @@ export class WorldRoom extends Room<WorldState> {
       gmTries: 0,
       skillReadyAt: {},
       potionReadyAt: 0,
+      safeNoticeAt: 0,
     });
 
     client.send("chat-history", this.chatHistory);
@@ -475,11 +479,25 @@ export class WorldRoom extends Room<WorldState> {
     player.hp = Math.min(player.hp, player.maxHp);
   }
 
-  /** Players a monster may chase: alive, here, and not leaving. */
+  /** Standing in a safe zone: can't hurt anyone or be hurt. */
+  private isSafe(player: Player) {
+    return inSafeZone(this.regionId, player.x, player.y);
+  }
+
+  /** Tells a player who tried to fight in a safe zone why nothing happened, now and then. */
+  private safeNotice(sessionId: string, movement: Movement) {
+    const now = Date.now();
+    if (now - movement.safeNoticeAt > 3000) {
+      movement.safeNoticeAt = now;
+      this.clients.find((c) => c.sessionId === sessionId)?.send("notice", { text: "🛡 เขตปลอดภัย: ต่อสู้ไม่ได้ ออกไปนอกวงก่อน", ok: false });
+    }
+  }
+
+  /** Players a monster may chase: alive, here, not leaving, and out of the safe zones. */
   private *chaseable(): Iterable<[string, Player]> {
     for (const [sessionId, player] of this.state.players) {
       const movement = this.movements.get(sessionId);
-      if (!player.dead && movement && !movement.travelling) {
+      if (!player.dead && movement && !movement.travelling && !this.isSafe(player)) {
         yield [sessionId, player];
       }
     }
@@ -517,6 +535,7 @@ export class WorldRoom extends Room<WorldState> {
           !sameTeam(player, other) &&
           otherMovement &&
           !otherMovement.travelling &&
+          !this.isSafe(other) &&
           distance <= reach &&
           distance < bestDistance
         ) {
@@ -542,6 +561,11 @@ export class WorldRoom extends Room<WorldState> {
     const { player, movement } = attacker;
     const hero = heroOf(player.skin);
     if (now - movement.lastAttackAt < hero.cooldownMs) {
+      return;
+    }
+    // No fighting from inside: an archer could shoot monsters that can't come for them.
+    if (this.isSafe(player)) {
+      this.safeNotice(sessionId, movement);
       return;
     }
 
@@ -609,6 +633,7 @@ export class WorldRoom extends Room<WorldState> {
             ended ||
             shot.monstersOnly ||
             targetId === shot.by ||
+            this.isSafe(target) ||
             (shooter && sameTeam(shooter.player, target)) ||
             target.dead ||
             !targetMovement ||
@@ -639,6 +664,10 @@ export class WorldRoom extends Room<WorldState> {
     }
 
     const { player, movement } = attacker;
+    if ((skillId === "spin" || skillId === "strike") && this.isSafe(player)) {
+      this.safeNotice(sessionId, movement);
+      return;
+    }
     movement.skillReadyAt[skillId] = now + SKILLS[skillId].cooldownMs;
     movement.shieldUntil = 0;
     player.riding = false;
@@ -744,6 +773,9 @@ export class WorldRoom extends Room<WorldState> {
     targetMovement: Movement,
     multiplier = 1,
   ) {
+    if (this.isSafe(target)) {
+      return;
+    }
     if (target.god) {
       this.broadcast("hit", { attacker: attackerId, target: targetId, damage: 0, blocked: true } satisfies HitEvent);
       return;
@@ -831,7 +863,7 @@ export class WorldRoom extends Room<WorldState> {
   private monsterHit(monsterId: string, sessionId: string, damage: number) {
     const target = this.state.players.get(sessionId);
     const movement = this.movements.get(sessionId);
-    if (!target || !movement || target.dead || Date.now() < movement.shieldUntil) {
+    if (!target || !movement || target.dead || Date.now() < movement.shieldUntil || this.isSafe(target)) {
       return;
     }
     if (target.god) {
@@ -1564,8 +1596,10 @@ export class WorldRoom extends Room<WorldState> {
 
       const step = baseStep * (player.riding ? (MOUNTS[player.mount]?.speed ?? 1) : 1);
 
-      if (player.hp < player.maxHp && now - movement.lastHitAt > REGEN_DELAY_MS) {
-        movement.regen += (player.maxHp * REGEN_PER_SECOND * deltaMs) / 1000;
+      // A safe zone is a place to rest: health comes back three times as fast, at once.
+      const safe = this.isSafe(player);
+      if (player.hp < player.maxHp && (safe || now - movement.lastHitAt > REGEN_DELAY_MS)) {
+        movement.regen += (player.maxHp * REGEN_PER_SECOND * (safe ? 3 : 1) * deltaMs) / 1000;
         const whole = Math.floor(movement.regen);
         movement.regen -= whole;
         player.hp = Math.min(player.maxHp, player.hp + whole);
