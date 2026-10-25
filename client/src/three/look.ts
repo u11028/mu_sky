@@ -158,5 +158,4 @@ export const BORDER_MODELS = [
   "town/hills_A_trees",
   "town/hills_B_trees",
 ];
-export const CLOUD_MODELS = ["town/cloud_big", "town/cloud_small"];
 export const GRASS_MODELS = ["nature/Grass_1_A", "nature/Grass_2_A"];

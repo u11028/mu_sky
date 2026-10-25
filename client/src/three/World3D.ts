@@ -13,8 +13,8 @@ import { PLAYER_SPEED, WORLD_HEIGHT, WORLD_WIDTH } from "../../../shared/world.t
 import { Actor, heroActor, monsterActor } from "./actors.ts";
 import { preload } from "./assets.ts";
 import { Effects } from "./effects.ts";
-import { BORDER_MODELS, CLOUD_MODELS, GRASS_MODELS, propModels, PX, REGION_LOOKS } from "./look.ts";
-import { buildScenery, type Scenery } from "./scenery.ts";
+import { BORDER_MODELS, GRASS_MODELS, propModels, PX, REGION_LOOKS } from "./look.ts";
+import { buildScenery, type Occluder, type Scenery } from "./scenery.ts";
 import { loadSounds, play } from "./sfx.ts";
 import { playMusic } from "./music.ts";
 import { onSettings, type Settings } from "../settings.ts";
@@ -228,7 +228,6 @@ export class World3D {
       [
         ...propModels(),
         ...BORDER_MODELS,
-        ...CLOUD_MODELS,
         ...GRASS_MODELS,
         ...monsterModels,
         "anims/General",
@@ -921,7 +920,7 @@ export class World3D {
         playMusic(this.regionId, near);
       }
     }
-    this.fadeOccluders(delta);
+    this.fadeOccluders(delta, now);
     this.effects.update(now);
     const marker = this.marker.material as THREE.MeshBasicMaterial;
     if (marker.opacity > 0) {
@@ -951,15 +950,42 @@ export class World3D {
     this.labels.render(this.scene, this.camera);
   };
 
-  /** Trees and houses between the camera and the player fade, so the player is never hidden. */
-  private fadeOccluders(delta: number) {
-    for (const occluder of this.scenery?.occluders ?? []) {
-      const { position } = occluder.object;
-      // Nearer the camera (larger z) than the player, close sideways, and tall enough to reach the line of sight.
-      const ahead = position.z - this.focus.z;
-      const side = Math.abs(position.x - this.focus.x);
-      const hides = ahead > -0.5 && ahead < occluder.height * 1.1 + 1 && side < 1.2 + occluder.height * 0.35;
-      const target = hides ? FADED : 1;
+  private sightRay = new THREE.Raycaster();
+
+  /**
+   * Trees, houses and rocks between the camera and the player fade, so the player is never hidden.
+   * Lines of sight go from the camera to the player's feet, body and head (higher when riding);
+   * whatever they pass through fades, and stays faded a moment so leafy gaps don't make it flicker.
+   */
+  private fadeOccluders(delta: number, now: number) {
+    const occluders = this.scenery?.occluders ?? [];
+    const me = this.players.get(this.room.sessionId);
+    if (this.frameCount % 3 === 0) {
+      const nearby = occluders
+        .filter((o) => Math.hypot(o.object.position.x - this.focus.x, o.object.position.z - this.focus.z) < 16)
+        .map((o) => o.object);
+      const base = me ? me.root.position : this.focus;
+      const lift = me ? me.avatar.position.y : 0;
+      for (const height of [0.4, 1.2, 2.2]) {
+        const point = new THREE.Vector3(base.x, base.y + lift + height, base.z);
+        const direction = point.clone().sub(this.camera.position);
+        const distance = direction.length();
+        this.sightRay.set(this.camera.position, direction.normalize());
+        this.sightRay.far = distance - 0.2;
+        for (const hit of this.sightRay.intersectObjects(nearby, true)) {
+          let node: THREE.Object3D | null = hit.object;
+          while (node && !node.userData.occluder) {
+            node = node.parent;
+          }
+          if (node) {
+            (node.userData.occluder as Occluder).blockedAt = now;
+          }
+        }
+      }
+    }
+
+    for (const occluder of occluders) {
+      const target = now - occluder.blockedAt < 450 ? FADED : 1;
       if (Math.abs(occluder.opacity - target) < 0.01) {
         continue;
       }

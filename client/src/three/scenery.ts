@@ -6,7 +6,7 @@ import { WORLD_HEIGHT, WORLD_WIDTH } from "../../../shared/world.ts";
 import { PORTAL_RADIUS, REGIONS, type RegionId } from "../../../shared/regions.ts";
 import { PROPS, regionLayout, regionSeed, seededRandom, THEMES } from "../../../shared/regionThemes.ts";
 import { copyModel, firstMesh, loadModel, standOnGround, tintLeaves } from "./assets.ts";
-import { BORDER_MODELS, CLOUD_MODELS, GRASS_MODELS, PROP_LOOKS, PX, REGION_LOOKS } from "./look.ts";
+import { BORDER_MODELS, GRASS_MODELS, PROP_LOOKS, PX, REGION_LOOKS } from "./look.ts";
 
 /** How far past the map's edge the ground goes, in units, so the camera never sees its end. */
 const MARGIN = 40;
@@ -23,6 +23,8 @@ export interface Occluder {
   /** Own transparent copies of its materials, made the first time it fades. */
   materials?: THREE.Material[];
   opacity: number;
+  /** When a line of sight to the player last passed through it. */
+  blockedAt: number;
 }
 
 export interface Scenery {
@@ -89,7 +91,9 @@ export async function buildScenery(scene: THREE.Scene, regionId: RegionId): Prom
       return -Math.min(2.5, (past / PX) * 0.35);
     }
     // How far outside the walkable area: the land rises into hills there.
-    const outside = Math.max(bounds.minX - x, x - bounds.maxX, bounds.minY - y, y - bounds.maxY, 0) / PX;
+    // The camera looks from the south, from up to ~35 units behind the player: hills there would
+    // stand between it and the player, so the land only rises to the north, east and west.
+    const outside = Math.max(bounds.minX - x, x - bounds.maxX, bounds.minY - y, 0) / PX;
     const hills = Math.min(1, outside / 10) ** 1.5 * (4 + noise(ux * 0.08, uz * 0.08) * 6);
     return hills + (noise(ux * 0.15, uz * 0.15) - 0.5) * 0.35;
   };
@@ -168,15 +172,18 @@ export async function buildScenery(scene: THREE.Scene, regionId: RegionId): Prom
       object.position.set(x / PX, heightAt(x / PX, y / PX), y / PX);
       scene.add(object);
       const height = PROP_LOOKS[prop].height;
-      if (height >= 2.5) {
-        occluders.push({ object, height, opacity: 1 });
+      // Anything tall enough to hide a player: trees, houses, big rocks.
+      if (height >= 1.5) {
+        const occluder: Occluder = { object, height, opacity: 1, blockedAt: 0 };
+        object.userData.occluder = occluder;
+        occluders.push(occluder);
       }
     }
   }
 
-  // ---- Mountains and hills beyond the edges, clouds above ----
+  // ---- Mountains and hills beyond the edges ----
+  // (No clouds: the camera on a phone sits as high as they would, and they covered the whole screen.)
   await addBorder(scene, regionId, heightAt);
-  animators.push(await addClouds(scene, regionId));
   for (const portal of region.portals) {
     animators.push(addPortal(scene, portal.x / PX, portal.y / PX, REGIONS[portal.to].name));
   }
@@ -393,9 +400,7 @@ async function addBorder(scene: THREE.Scene, regionId: RegionId, heightAt: (x: n
   const step = 9;
   for (let x = -10; x <= w + 10; x += step) {
     spots.push([x, bounds.minY / PX - 8 - random() * 8]);
-    if (sea !== "south") {
-      spots.push([x, bounds.maxY / PX + 8 + random() * 8]);
-    }
+    // None along the south edge: the camera stands there.
   }
   for (let z = -2; z <= h + 2; z += step) {
     spots.push([bounds.minX / PX - 8 - random() * 8, z]);
@@ -411,37 +416,6 @@ async function addBorder(scene: THREE.Scene, regionId: RegionId, heightAt: (x: n
     model.scale.multiplyScalar(1.6);
     scene.add(model);
   }
-}
-
-/** A few clouds drifting slowly across, high above the players. */
-async function addClouds(scene: THREE.Scene, regionId: RegionId): Promise<Animator> {
-  const random = seededRandom(regionSeed(regionId) + 11);
-  const w = WORLD_WIDTH / PX;
-  const clouds: THREE.Object3D[] = [];
-  for (let i = 0; i < 7; i++) {
-    const model = standOnGround(copyModel(await loadModel(CLOUD_MODELS[i % 2]), { shadows: true }), 2 + random() * 2);
-    model.scale.multiplyScalar(2.2);
-    model.position.set(random() * (w + 40) - 20, 13 + random() * 5, random() * (WORLD_HEIGHT / PX + 20) - 10);
-    model.traverse((child) => {
-      const mesh = child as THREE.Mesh;
-      if (mesh.isMesh) {
-        const material = (mesh.material as THREE.MeshStandardMaterial).clone();
-        material.transparent = true;
-        material.opacity = 0.85;
-        mesh.material = material;
-      }
-    });
-    clouds.push(model);
-    scene.add(model);
-  }
-  return (_time, delta) => {
-    for (const cloud of clouds) {
-      cloud.position.x += delta * 0.0008;
-      if (cloud.position.x > w + 25) {
-        cloud.position.x = -25;
-      }
-    }
-  };
 }
 
 /** A shimmering ring of light with a sign, leading to another region. */
