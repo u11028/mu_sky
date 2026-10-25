@@ -1,27 +1,29 @@
 # Render blueprint: https://render.com/docs/blueprint-spec
-# Builds the game, runs one Node server for the page and the multiplayer rooms,
-# and keeps progress, accounts and the GM key on a disk that survives restarts.
+# Builds the game and runs one Node server for the page and the multiplayer rooms.
+#
+# This is the free plan: no card needed, but the server sleeps after a while without players
+# and its files start over each time, so levels, gold, accounts and GM rights are lost then.
+# To keep them, switch to a paid plan with a disk (needs a card on Render):
+#   plan: starter
+#   envVars: add  - key: DATA_DIR / value: /var/data
+#   disk:
+#     name: mu-sky-data
+#     mountPath: /var/data
+#     sizeGB: 1
 services:
   - type: web
     name: mu-sky
     runtime: node
-    # A disk needs a paid plan; on "free" the data starts over whenever the server restarts.
-    plan: starter
+    plan: free
     buildCommand: npm ci && npm run build
     startCommand: npm start
     healthCheckPath: /health
     envVars:
       - key: NODE_VERSION
         value: "22"
-      - key: DATA_DIR
-        value: /var/data
       # Render's proxy forwards each player's real address; bans by address need it.
       - key: TRUST_PROXY
         value: "1"
       # Asked for when the blueprint is created: the secret typed in the game as "/gm <key>".
       - key: GM_KEY
         sync: false
-    disk:
-      name: mu-sky-data
-      mountPath: /var/data
-      sizeGB: 1
