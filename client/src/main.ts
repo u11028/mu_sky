@@ -1154,11 +1154,27 @@ document.querySelector("#bag-sell-junk")!.addEventListener("click", () => {
   }
 });
 
+// On short screens the menu folds into one ☰ button that opens it as a row.
+const menuToggle = document.querySelector<HTMLButtonElement>("#menu-toggle")!;
+
+function foldMenu(open: boolean) {
+  menuBar.classList.toggle("open", open);
+  menuToggle.setAttribute("aria-expanded", String(open));
+  menuToggle.textContent = open ? "✕" : "☰";
+}
+
+menuToggle.addEventListener("click", () => {
+  foldMenu(!menuBar.classList.contains("open"));
+  play("click", 0.3);
+});
+gmButton.addEventListener("click", () => foldMenu(false));
+
 // Panels on the right: one open at a time.
 for (const button of menuBar.querySelectorAll<HTMLButtonElement>("[data-panel]")) {
   button.addEventListener("click", () => {
     const panel = document.querySelector<HTMLElement>(`#${button.dataset.panel}`)!;
     const opening = panel.hidden;
+    foldMenu(false);
     document.querySelectorAll<HTMLElement>(".side-panel").forEach((other) => (other.hidden = true));
     panel.hidden = !opening;
     if (opening && button.dataset.panel === "team-panel") {

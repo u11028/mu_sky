@@ -2368,3 +2368,65 @@ button.secondary {
   gap: 8px;
   justify-content: center;
 }
+
+/* ---- Short and landscape screens ---- */
+
+#menu-toggle {
+  display: none;
+}
+
+/*
+ * Too short for the column of menu buttons above the attack buttons: one ☰ button instead,
+ * opening the menu as a row leftwards from it (wrapping onto a second row on narrow screens).
+ */
+@media (max-height: 719px) {
+  #menu-bar {
+    z-index: 7;
+    display: flex;
+    flex-direction: row-reverse;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-width: calc(100vw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+  }
+
+  #menu-toggle {
+    display: block;
+  }
+
+  #menu-bar:not(.open) > button:not(#menu-toggle) {
+    display: none;
+  }
+
+  /* News waiting behind the folded menu: a new find in the bag, a team invite. */
+  #menu-bar:not(.open):has(#bag-dot:not([hidden]), #team-dot:not([hidden])) #menu-toggle::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ff4d4d;
+    box-shadow: 0 0 6px #ff4d4d;
+  }
+}
+
+/* Landscape phones: the stick and the attack buttons shrink to fit under the stats panel. */
+@media (orientation: landscape) and (max-height: 500px) {
+  #actions {
+    transform: scale(0.74);
+    transform-origin: 100% 100%;
+  }
+
+  #joystick {
+    transform: scale(0.8);
+    transform-origin: 0 100%;
+  }
+
+  /* Beside the stats panel instead of under it: the attack buttons reach up to there. */
+  #menu-bar {
+    top: calc(env(safe-area-inset-top, 0px) + 56px);
+    right: calc(env(safe-area-inset-right, 0px) + 252px);
+    max-width: calc(100vw - 264px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+  }
+}
