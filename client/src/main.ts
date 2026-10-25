@@ -1,13 +1,6 @@
 import "./style.css";
 import { Client, type Room } from "colyseus.js";
-import {
-  type ChatMessage,
-  cleanPartyCode,
-  PARTY_ALPHABET,
-  PARTY_CODE_LENGTH,
-  ROOM_NAME,
-  SERVER_PORT,
-} from "../../shared/world.ts";
+import { type ChatMessage, cleanPartyCode, PARTY_ALPHABET, PARTY_CODE_LENGTH, RECONNECT_SECONDS, ROOM_NAME, SERVER_PORT } from "../../shared/world.ts";
 import { HEROES, type ShotEvent } from "../../shared/heroes.ts";
 import { isRegionId, REGIONS, type RegionId, START_REGION } from "../../shared/regions.ts";
 import type { Achievement, ProgressView } from "../../shared/quests.ts";
@@ -486,7 +479,7 @@ function startGame(joined: Room, region: RegionId) {
     }
   });
 
-  joined.onLeave(() => {
+  joined.onLeave((code) => {
     if (travelling) {
       return;
     }
@@ -494,14 +487,39 @@ function startGame(joined: Room, region: RegionId) {
     scene?.destroy();
     scene = undefined;
     room = undefined;
+    // The connection dropped (not a kick, not leaving): the server keeps the player for a while.
+    if (!removedReason && code !== 1000 && code !== 4000) {
+      void reconnect(joined.reconnectionToken, region);
+      return;
+    }
     showJoinDialog(removedReason || "หลุดจากเซิร์ฟเวอร์ เข้าเกมใหม่ได้เลย");
     removedReason = "";
   });
 }
 
+/** Tries to get back into the room just lost, where the player stood, until the server gives up on them. */
+async function reconnect(token: string, region: RegionId) {
+  document.querySelector("#loading-region")!.textContent = "📶 กำลังเชื่อมต่อใหม่...";
+  document.querySelector("#loading-tagline")!.textContent = "ตัวละครรออยู่ที่เดิม ไม่โดนตีระหว่างนี้";
+  showLoading(0);
+  online.textContent = "กำลังเชื่อมต่อใหม่...";
+  const giveUpAt = Date.now() + RECONNECT_SECONDS * 1000;
+  while (Date.now() < giveUpAt) {
+    try {
+      room = await new Client(endpoint).reconnect(token);
+      startGame(room, region);
+      return;
+    } catch {
+      // Still offline, or the server not reached yet: try again shortly.
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+  }
+  showLoading(1);
+  showJoinDialog("หลุดจากเซิร์ฟเวอร์นานเกินไป เข้าเกมใหม่ได้เลย");
+}
+
 const loading = document.querySelector<HTMLDivElement>("#loading")!;
 
-/** A loading bar while a region's models arrive; gone at 100%. */
 /** Shown while a region loads, one at a time. */
 const TIPS = [
   "ล้มบอสได้ของหายากขึ้นไปทุกครั้ง ส่วนมอนสเตอร์ทั่วไปก็มีโอกาสดรอปของ",
@@ -522,6 +540,7 @@ function showRegionLoading(region: RegionId) {
   showLoading(0);
 }
 
+/** A loading bar while a region's models arrive; gone at 100%. */
 function showLoading(share: number) {
   if (loading.hidden && share < 1) {
     // A new load: the next tip.

@@ -72,6 +72,7 @@ interface PlayerState {
   wing: number;
   mount: number;
   riding: boolean;
+  away: boolean;
 }
 
 interface MonsterState {
@@ -387,7 +388,7 @@ export class World3D {
     }
     const mate = !isMe && player.team !== "" && player.team === this.myTeam;
     actor.setName(
-      `${player.gm ? "[GM] " : ""}Lv.${player.level} ${player.name}`,
+      `${player.gm ? "[GM] " : ""}Lv.${player.level} ${player.name}${player.away ? " 📶" : ""}`,
       player.gm ? "gm" : isMe ? "me" : mate ? "mate" : "",
     );
     // A found weapon of rare or better outshines the shop's tiers.

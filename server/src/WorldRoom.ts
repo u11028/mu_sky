@@ -9,6 +9,7 @@ import {
   NAME_MAX_LENGTH,
   PARTY_MAX_PLAYERS,
   PLAYER_SPEED,
+  RECONNECT_SECONDS,
   HEROES,
   WORLD_HEIGHT,
   WORLD_WIDTH,
@@ -92,6 +93,8 @@ interface Movement {
   potionReadyAt: number;
   /** Last time the player was told they can't fight in a safe zone, to say it only now and then. */
   safeNoticeAt: number;
+  /** Kicked or banned by a GM: never kept for a reconnection. */
+  removed?: boolean;
 }
 
 /** Teammates within this distance share a monster's reward even if they didn't hit it. */
@@ -344,11 +347,7 @@ export class WorldRoom extends Room<WorldState> {
     player.gm = powers.gm;
     player.god = powers.god;
     Object.assign(player, progress.inventory(playerId));
-    client.send("wardrobe", progress.wardrobe(playerId));
-    client.send("bag", progress.bag(playerId));
-    if (worldBoss && worldBoss.room.party === this.party) {
-      client.send("world-boss", worldBoss.room.worldBossEvent());
-    }
+    this.sendInventory(client, playerId);
     player.team = teams.teamIdOf(playerId);
     this.applyLevel(player, playerId);
     player.hp = player.maxHp;
@@ -396,9 +395,37 @@ export class WorldRoom extends Room<WorldState> {
     });
   }
 
-  onLeave(client: Client) {
+  /** What the client keeps outside the room's state: sent on joining, and again on coming back. */
+  private sendInventory(client: Client, playerId: string) {
+    client.send("wardrobe", progress.wardrobe(playerId));
+    client.send("bag", progress.bag(playerId));
+    if (worldBoss && worldBoss.room.party === this.party) {
+      client.send("world-boss", worldBoss.room.worldBossEvent());
+    }
+  }
+
+  async onLeave(client: Client, consented: boolean) {
     const player = this.state.players.get(client.sessionId);
     const movement = this.movements.get(client.sessionId);
+    // A dropped connection, not a goodbye: keep the player where they stand, out of harm's way,
+    // for the game to reconnect them.
+    if (!consented && player && movement && !movement.travelling && !movement.removed) {
+      player.away = true;
+      player.riding = false;
+      movement.dirX = 0;
+      movement.dirY = 0;
+      movement.target = undefined;
+      try {
+        const back = await this.allowReconnection(client, RECONNECT_SECONDS);
+        player.away = false;
+        movement.shieldUntil = Date.now() + SPAWN_SHIELD_MS;
+        this.sendInventory(back, movement.playerId);
+        back.send("progress", progress.view(movement.playerId));
+        return;
+      } catch {
+        // Not back in time: they leave as usual.
+      }
+    }
     if (movement && !movement.travelling && teams.teamIdOf(movement.playerId)) {
       const { playerId } = movement;
       teams.goneFor(
@@ -479,9 +506,9 @@ export class WorldRoom extends Room<WorldState> {
     player.hp = Math.min(player.hp, player.maxHp);
   }
 
-  /** Standing in a safe zone: can't hurt anyone or be hurt. */
+  /** Standing in a safe zone, or waiting to reconnect: can't hurt anyone or be hurt. */
   private isSafe(player: Player) {
-    return inSafeZone(this.regionId, player.x, player.y);
+    return player.away || inSafeZone(this.regionId, player.x, player.y);
   }
 
   /** Tells a player who tried to fight in a safe zone why nothing happened, now and then. */
@@ -1533,6 +1560,7 @@ export class WorldRoom extends Room<WorldState> {
           return;
         }
         targetClient.send("removed", { text: "คุณถูก GM เตะออกจากเกม" });
+        targetMovement.removed = true;
         targetClient.leave(4000);
         done(`เตะ ${target.name} ออกแล้ว`);
         return;
@@ -1545,6 +1573,7 @@ export class WorldRoom extends Room<WorldState> {
         const reason = cleanText(message.reason, 80);
         const until = progress.ban(targetMovement.playerId, days, reason);
         targetClient.send("removed", { text: banText({ until, reason }) });
+        targetMovement.removed = true;
         targetClient.leave(4003);
         done(`แบน ${target.name} ${days === PERMANENT_BAN_DAYS ? "ถาวร" : `${days} วัน`} แล้ว`);
         return;

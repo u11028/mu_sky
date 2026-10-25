@@ -31,6 +31,8 @@ export class Player extends Schema {
   @type("uint8") wing = 0;
   @type("uint8") mount = 0;
   @type("boolean") riding = false;
+  /** The connection dropped and the game is waiting for them to come back: shown, but out of reach. */
+  @type("boolean") away = false;
 }
 
 export class Monster extends Schema {

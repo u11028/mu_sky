@@ -45,3 +45,9 @@ export function cleanPartyCode(value: unknown) {
   const code = value.trim().toUpperCase();
   return code.length === PARTY_CODE_LENGTH && [...code].every((c) => PARTY_ALPHABET.includes(c)) ? code : "";
 }
+
+/**
+ * How long a player whose connection dropped (a phone switching networks, a locked screen) is kept
+ * in the world, unhurt, for the game to reconnect them where they were.
+ */
+export const RECONNECT_SECONDS = 45;
