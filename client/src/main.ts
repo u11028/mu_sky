@@ -7,6 +7,7 @@ import type { Achievement, ProgressView } from "../../shared/quests.ts";
 import { decorateTitle, findTitle, type Title, TITLES } from "../../shared/titles.ts";
 import { regionModels, type SelfState, World3D } from "./three/World3D.ts";
 import { preload } from "./three/assets.ts";
+import { Voice } from "./voice.ts";
 import { stopMusic } from "./three/music.ts";
 import { play } from "./three/sfx.ts";
 import { changeSettings, onSettings, type Quality } from "./settings.ts";
@@ -366,6 +367,11 @@ if (import.meta.env.DEV) {
 
 function showJoinDialog(message: string) {
   online.textContent = "ออฟไลน์";
+  if (voice.on) {
+    voice.stop();
+    renderVoiceButton();
+  }
+  voiceButton.hidden = true;
   questButton.hidden = true;
   questPanel.hidden = true;
   stats.hidden = true;
@@ -449,6 +455,10 @@ function startGame(joined: Room, region: RegionId) {
   });
   joined.onMessage("bag", renderBag);
   joined.onMessage("daily-gift", showDailyGift);
+  joined.onMessage("voice-signal", (message: { from: string; data: Parameters<Voice["receive"]>[1] }) => {
+    void voice.receive(message.from, message.data).catch(() => undefined);
+  });
+  voice.announce();
   joined.onMessage("world-boss", (event: WorldBossEvent) => showWorldBoss(event, true));
   joined.onMessage("world-boss-end", endWorldBoss);
   // A world boss of the world just left is not this one's; the server tells again if there is one here.
@@ -1237,6 +1247,9 @@ document.querySelector("#team-leave")!.addEventListener("click", () => {
 
 interface TeamMember {
   me: boolean;
+  /** Voice tag, for the voice chat; and whether their microphone is on. */
+  voice: string;
+  talking: boolean;
   name: string;
   level: number;
   hp: number;
@@ -1246,18 +1259,65 @@ interface TeamMember {
   online: boolean;
 }
 
+// Team voice chat: 🎤 turns the microphone on and links up with teammates who have theirs on.
+const voiceButton = document.querySelector<HTMLButtonElement>("#voice-button")!;
+let speakingNow = new Set<string>();
+const voice = new Voice(
+  (type, message) => room?.send(type, message),
+  (speaking) => {
+    speakingNow = speaking;
+    voiceButton.classList.toggle("speaking", speaking.has("me"));
+    document.querySelectorAll<HTMLElement>(".team-member[data-voice]").forEach((row) => {
+      row.classList.toggle("speaking", speaking.has(row.dataset.voice!));
+    });
+  },
+);
+
+function renderVoiceButton() {
+  voiceButton.classList.toggle("on", voice.on);
+  voiceButton.setAttribute("aria-pressed", String(voice.on));
+  voiceButton.textContent = voice.on ? "🎙" : "🎤";
+}
+
+voiceButton.addEventListener("click", async () => {
+  play("click", 0.3);
+  if (voice.on) {
+    voice.stop();
+    renderVoiceButton();
+    showToast({ kind: "title", text: "🔇 ปิดไมค์แล้ว" });
+    return;
+  }
+  try {
+    await voice.start();
+    renderVoiceButton();
+    showToast({ kind: "quest", text: "🎙 เปิดไมค์แล้ว คุยกับเพื่อนในทีมที่เปิดไมค์ได้เลย" });
+  } catch {
+    showToast({ kind: "title", text: "ใช้ไมค์ไม่ได้ ลองอนุญาตไมโครโฟนในเบราว์เซอร์ก่อน" });
+  }
+});
+
 /** The team in the panel, and small health frames at the side of the screen. */
 function renderTeam(list: TeamMember[]) {
   const inTeam = list.length > 1;
   teamFrames.hidden = !inTeam;
+  voiceButton.hidden = !inTeam;
+  if (!inTeam && voice.on) {
+    // Voice is for the team: with the team gone, so is the microphone.
+    voice.stop();
+    renderVoiceButton();
+  }
+  voice.syncTeam(list);
   document.querySelector<HTMLElement>("#team-dot")!.hidden = !inTeam;
   document.querySelector<HTMLButtonElement>("#team-leave")!.hidden = !inTeam;
   const frame = (member: TeamMember) => {
     const row = document.createElement("li");
     row.className = `team-member${member.dead ? " dead" : ""}${member.online ? "" : " offline"}`;
+    // The local player's own row is "me", as the voice chat calls them.
+    row.dataset.voice = member.me ? "me" : member.voice;
+    row.classList.toggle("speaking", speakingNow.has(row.dataset.voice));
     const name = document.createElement("span");
     name.className = "team-name";
-    name.textContent = `${member.me ? "⭐ " : ""}${member.online ? `Lv.${member.level} ` : ""}${member.name}`;
+    name.textContent = `${member.me ? "⭐ " : ""}${member.online ? `Lv.${member.level} ` : ""}${member.name}${member.talking ? " 🎤" : ""}`;
     const where = document.createElement("small");
     where.textContent = member.online ? (member.dead ? "ล้มอยู่" : member.region) : "ออฟไลน์";
     const bar = document.createElement("span");

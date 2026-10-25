@@ -48,6 +48,7 @@ import { findTitle } from "../../shared/titles.ts";
 import { clientAddress } from "./environment.ts";
 import { isGmKey } from "./gmKey.ts";
 import * as teams from "./teams.ts";
+import * as voice from "./voice.ts";
 import { ARMOR_TIERS, isShopItem, monsterGold, POTION, type ShopItem, WEAPON_TIERS } from "../../shared/items.ts";
 import { type CosmeticKind, cosmeticList, isCosmeticKind, MOUNTS, WINGS } from "../../shared/cosmetics.ts";
 import * as progress from "./progress.ts";
@@ -303,6 +304,13 @@ export class WorldRoom extends Room<WorldState> {
       }
     });
     this.onMessage("gm", (client, message: GmAction) => this.runGmAction(client, message));
+    this.onMessage("voice", (client, message: { on?: unknown }) => {
+      const movement = this.movements.get(client.sessionId);
+      if (movement) {
+        voice.setTalking(movement.playerId, Boolean(message?.on));
+      }
+    });
+    this.onMessage("voice-signal", (client, message: { to?: unknown; data?: unknown }) => this.passVoiceSignal(client, message));
 
     this.setSimulationInterval((deltaMs) => this.update(deltaMs), 50);
   }
@@ -425,6 +433,9 @@ export class WorldRoom extends Room<WorldState> {
       } catch {
         // Not back in time: they leave as usual.
       }
+    }
+    if (movement && !movement.travelling) {
+      voice.setTalking(movement.playerId, false);
     }
     if (movement && !movement.travelling && teams.teamIdOf(movement.playerId)) {
       const { playerId } = movement;
@@ -1328,6 +1339,23 @@ export class WorldRoom extends Room<WorldState> {
     }
   }
 
+  /** Passes a voice connection message to a teammate, wherever they are; nobody else is reachable. */
+  private passVoiceSignal(client: Client, message: { to?: unknown; data?: unknown }) {
+    const from = this.movements.get(client.sessionId)?.playerId;
+    const to = voice.playerOf(message?.to);
+    const team = from && teams.teamIdOf(from);
+    if (!from || !to || !team || teams.teamIdOf(to) !== team || !voice.isTalking(from) || !voice.isTalking(to)) {
+      return;
+    }
+    if (JSON.stringify(message.data ?? null).length > voice.MAX_SIGNAL_LENGTH) {
+      return;
+    }
+    const where = WorldRoom.sessionOf(to);
+    where?.room.clients
+      .find((c) => c.sessionId === where.sessionId)
+      ?.send("voice-signal", { from: voice.tagOf(from), data: message.data });
+  }
+
   /** Each player in a team hears how their teammates are doing, wherever they are. */
   private sendTeamStatus() {
     for (const [sessionId, player] of this.state.players) {
@@ -1342,6 +1370,8 @@ export class WorldRoom extends Room<WorldState> {
         return mate
           ? {
               me: playerId === mine,
+              voice: voice.tagOf(playerId),
+              talking: voice.isTalking(playerId) && !mate.away,
               name: mate.name,
               level: mate.level,
               hp: mate.hp,
@@ -1350,7 +1380,18 @@ export class WorldRoom extends Room<WorldState> {
               region: where!.room.region.name,
               online: true,
             }
-          : { me: false, name: progress.summary(playerId).name || "ผู้เล่น", level: 0, hp: 0, maxHp: 1, dead: false, region: "", online: false };
+          : {
+              me: false,
+              voice: voice.tagOf(playerId),
+              talking: false,
+              name: progress.summary(playerId).name || "ผู้เล่น",
+              level: 0,
+              hp: 0,
+              maxHp: 1,
+              dead: false,
+              region: "",
+              online: false,
+            };
       });
       client?.send("team", list);
     }
