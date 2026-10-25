@@ -1780,3 +1780,68 @@ button.secondary {
     top: calc(env(safe-area-inset-top, 0px) + 60px);
   }
 }
+
+/* ---- Shrinking the chat ---- */
+
+#chat {
+  position: fixed;
+}
+
+#chat-min {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  z-index: 1;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 11px;
+  line-height: 1;
+}
+
+#chat:has(#chat-log:empty) #chat-min,
+#chat.min #chat-min,
+#chat.min #chat-log,
+#chat.min #chat-form {
+  display: none;
+}
+
+/* Shrunk: only the 💬 button, on every screen. */
+#chat.min #chat-toggle {
+  display: block;
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 20px;
+}
+
+#chat-unread {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #e63946;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+#chat-unread[hidden] {
+  display: none;
+}
+
+#chat-toggle {
+  position: relative;
+}

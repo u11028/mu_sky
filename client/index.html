@@ -210,8 +210,9 @@
     <div id="toasts" aria-live="polite"></div>
 
     <section id="chat" aria-label="แชท">
+      <button id="chat-min" type="button" aria-label="ย่อแชท" title="ย่อแชท">➖</button>
       <ol id="chat-log" aria-live="polite"></ol>
-      <button id="chat-toggle" type="button" aria-label="เปิดแชท">💬</button>
+      <button id="chat-toggle" type="button" aria-label="เปิดแชท">💬<span id="chat-unread" hidden></span></button>
       <form id="chat-form" autocomplete="off">
         <input id="chat-input" maxlength="120" placeholder="พิมพ์แล้วกด Enter เพื่อคุย..." enterkeyhint="send" />
         <button type="submit">ส่ง</button>

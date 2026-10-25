@@ -499,6 +499,11 @@ function addChatLine(message: ChatMessage) {
   }
 
   chatLog.append(line);
+  // Count what arrives while the chat is shrunk, shown on the 💬 button.
+  if (!message.system && chatBox.classList.contains("min")) {
+    unread++;
+    showChatState();
+  }
   while (chatLog.children.length > 60) {
     chatLog.firstElementChild?.remove();
   }
@@ -1062,18 +1067,47 @@ chatForm.addEventListener("submit", (event) => {
   closeChat();
 });
 
-// Phones keep the chat folded to its last lines; 💬 opens it for typing.
+// The chat can be shrunk to a 💬 button (remembered). Typing opens it for the moment; sending or
+// leaving the box folds it back. Phones also fold it to its last lines when not typing.
+const CHAT_MIN_KEY = "mu-sky.chat-min";
 const chatBox = document.querySelector<HTMLElement>("#chat")!;
+const chatUnread = document.querySelector<HTMLSpanElement>("#chat-unread")!;
+let chatMinimized = storage(CHAT_MIN_KEY) === "1";
+let unread = 0;
+
+function showChatState() {
+  chatBox.classList.toggle("min", chatMinimized && !chatBox.classList.contains("open"));
+  chatUnread.hidden = unread === 0;
+  chatUnread.textContent = unread > 9 ? "9+" : String(unread);
+}
+
+function openChat() {
+  chatBox.classList.add("open");
+  unread = 0;
+  showChatState();
+  chatInput.focus();
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
 
 function closeChat() {
   chatBox.classList.remove("open");
+  showChatState();
   chatLog.scrollTop = chatLog.scrollHeight;
 }
 
 document.querySelector("#chat-toggle")!.addEventListener("click", () => {
-  chatBox.classList.add("open");
-  chatInput.focus();
+  // Pressing 💬 brings the chat back for good.
+  chatMinimized = false;
+  storage(CHAT_MIN_KEY, "0");
+  openChat();
 });
+document.querySelector("#chat-min")!.addEventListener("click", () => {
+  chatMinimized = true;
+  storage(CHAT_MIN_KEY, "1");
+  chatInput.blur();
+  closeChat();
+});
+showChatState();
 // Closing the keyboard without sending folds it back.
 chatInput.addEventListener("blur", () => {
   if (!chatInput.value.trim()) {
@@ -1089,7 +1123,7 @@ window.addEventListener("keydown", (event) => {
 
   if (event.key === "Enter" && document.activeElement !== chatInput) {
     event.preventDefault();
-    chatInput.focus();
+    openChat();
   } else if (event.key === "Escape" && document.activeElement === chatInput) {
     chatInput.blur();
   }
