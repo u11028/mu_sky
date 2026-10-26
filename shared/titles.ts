@@ -33,6 +33,9 @@ export type LifeStat =
   /** World bosses beaten (hitting them counts), and times dealing the most damage to one. */
   | "worldBosses"
   | "worldBossTop"
+  /** Invasions finished first in a world, and golden rabbits caught. */
+  | "invasionWins"
+  | "goldRabbits"
   /** Other titles earned. */
   | "titles";
 
@@ -307,6 +310,24 @@ export const TITLES: readonly Title[] = [
     stat: "worldBossTop",
     goal: 1,
     style: { color: "#ffffff", glow: "#ff006e", bubbleFill: "#2b0016", bubbleBorder: "#ff4d94", bubbleText: "#ffe0ee" },
+  },
+  {
+    id: "invasion-champion",
+    name: "ผู้ขับไล่อสูรแห่งชั่วโมง",
+    rarity: "legendary",
+    hint: "ได้อันดับ 1 ในอีเวนต์อสูรบุก",
+    stat: "invasionWins",
+    goal: 1,
+    style: { color: "#ffffff", glow: "#d00000", bubbleFill: "#2b0000", bubbleBorder: "#ff4d4d", bubbleText: "#ffe0e0" },
+  },
+  {
+    id: "rabbit-catcher",
+    name: "นักล่ากระต่ายทองคำ",
+    rarity: "epic",
+    hint: "จับกระต่ายทองคำได้ 3 ตัว",
+    stat: "goldRabbits",
+    goal: 3,
+    style: { color: "#ffd60a", glow: "#ff9f1c", bubbleFill: "#2b1d00", bubbleBorder: "#ffd60a", bubbleText: "#fff3b0" },
   },
   {
     id: "eclipse",

@@ -15,7 +15,7 @@ export function codexReward(kind: MonsterKind) {
   return Math.round((kind.world ? 1000 : kind.boss ? 150 : 25) * (1 + kind.level / 5));
 }
 
-/** The book's pages: the monsters of each region, then the world boss. */
+/** The book's pages: the monsters of each region, then the world boss, then those of timed events. */
 export const CODEX_PAGES: { title: string; region?: RegionId; kinds: MonsterKindId[] }[] = [
   ...(Object.keys(REGION_MONSTERS) as RegionId[])
     .filter((region) => REGION_MONSTERS[region].boss)
@@ -25,6 +25,7 @@ export const CODEX_PAGES: { title: string; region?: RegionId; kinds: MonsterKind
       kinds: [...REGION_MONSTERS[region].kinds, REGION_MONSTERS[region].boss!],
     })),
   { title: "บอสโลก", kinds: (Object.keys(MONSTER_KINDS) as MonsterKindId[]).filter((id) => (MONSTER_KINDS[id] as MonsterKind).world) },
+  { title: "อีเวนต์", kinds: ["goldRabbit"] },
 ];
 
 export const CODEX_KINDS = CODEX_PAGES.flatMap((page) => page.kinds);

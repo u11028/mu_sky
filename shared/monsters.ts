@@ -40,6 +40,9 @@ export const MONSTER_KINDS = {
   demonCyclop: { name: "มังกรเพลิงผาหิน", model: "DragonEvolved", level: 14, boss: true, height: 5.2 },
 
   rahu: { name: "จอมอสูรราหู", model: "DragonEvolved", level: 20, boss: true, world: true, height: 7.5 },
+
+  // Comes now and then and runs from players (see events.ts).
+  goldRabbit: { name: "กระต่ายทองคำ", model: "Bunny", level: 5, height: 1.8 },
 } as const satisfies Record<string, MonsterKind>;
 
 export type MonsterKindId = keyof typeof MONSTER_KINDS;

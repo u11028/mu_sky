@@ -72,6 +72,8 @@ interface Life {
   bosses: number;
   worldBosses: number;
   worldBossTop: number;
+  invasionWins: number;
+  goldRabbits: number;
   /** The collection book: kills by monster kind, and the names of the gear found. */
   hunted: Record<string, number>;
   found: string[];
@@ -171,6 +173,8 @@ function newLife(): Life {
     bosses: 0,
     worldBosses: 0,
     worldBossTop: 0,
+    invasionWins: 0,
+    goldRabbits: 0,
     hunted: {},
     found: [],
     dungeons: 0,
@@ -606,6 +610,18 @@ export function recordWorldBoss(playerId: string, top: boolean) {
     if (top) {
       life.worldBossTop++;
     }
+  });
+}
+
+export function recordInvasionWin(playerId: string) {
+  return update(playerId, ({ life }) => {
+    life.invasionWins++;
+  });
+}
+
+export function recordGoldRabbit(playerId: string) {
+  return update(playerId, ({ life }) => {
+    life.goldRabbits++;
   });
 }
 

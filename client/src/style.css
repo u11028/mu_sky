@@ -1146,8 +1146,19 @@ button.secondary {
 }
 
 .float-text.crit {
-  font-size: 28px;
+  font-size: 32px;
   color: #ffd60a;
+  text-shadow: 0 2px 0 #5a2d00, 0 0 12px rgba(255, 140, 0, 0.9);
+  animation: crit-pop 0.28s cubic-bezier(0.2, 1.8, 0.4, 1);
+}
+
+@keyframes crit-pop {
+  from {
+    transform: scale(2.2) rotate(-8deg);
+  }
+  to {
+    transform: scale(1) rotate(0);
+  }
 }
 
 .float-text.immortal,
@@ -3333,4 +3344,172 @@ body.in-safe-zone #ultimate-button.offensive {
 .gm-report .gm-grid button {
   padding: 4px;
   font-size: 12px;
+}
+
+/* ---- Timed events: the invasion banner, the golden rabbit, the combo ---- */
+
+#event-banner {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 100px);
+  left: 50%;
+  z-index: 6;
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 6px 14px;
+  border: 1px solid #ff4d4d;
+  border-radius: 18px;
+  background: linear-gradient(90deg, rgba(70, 0, 0, 0.92), rgba(120, 20, 0, 0.92));
+  box-shadow: 0 0 16px rgba(255, 60, 0, 0.45);
+  color: #ffe5d9;
+  font-size: 13px;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+#event-banner[hidden] {
+  display: none;
+}
+
+#event-banner.on {
+  animation: invasion-pulse 1.2s ease-in-out infinite;
+}
+
+#event-banner time {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #ffd60a;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+#event-top {
+  display: none;
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  text-align: left;
+}
+
+#event-banner.open #event-top {
+  display: grid;
+  gap: 2px;
+}
+
+@keyframes invasion-pulse {
+  50% {
+    box-shadow: 0 0 26px rgba(255, 60, 0, 0.85);
+  }
+}
+
+@media (max-width: 600px) {
+  #event-banner {
+    top: calc(env(safe-area-inset-top, 0px) + 270px);
+    font-size: 12px;
+  }
+}
+
+.actor-name.rabbit {
+  color: #ffd60a;
+  text-shadow: 0 0 6px rgba(255, 190, 0, 0.9), 0 1px 0 #3b2600;
+}
+
+#combo {
+  position: fixed;
+  right: 24px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 330px);
+  z-index: 5;
+  display: grid;
+  justify-items: end;
+  color: #fff;
+  font-style: italic;
+  line-height: 1;
+  text-shadow: 0 3px 0 #2b1600, 0 0 10px rgba(255, 150, 0, 0.8);
+  pointer-events: none;
+}
+
+#combo[hidden] {
+  display: none;
+}
+
+#combo b {
+  font-size: 44px;
+  font-weight: 900;
+  background: linear-gradient(180deg, #fff6c9, #ffb703);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+#combo span {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #ffd60a;
+}
+
+#combo[data-tier="1"] span {
+  color: #7dff9a;
+}
+
+#combo[data-tier="2"] b {
+  background-image: linear-gradient(180deg, #ffe0ee, #ff4d94);
+}
+
+#combo[data-tier="2"] span {
+  color: #ff86b0;
+}
+
+#combo[data-tier="3"] b,
+#combo[data-tier="4"] b {
+  background-image: linear-gradient(180deg, #ffffff, #b15cff 50%, #ff2fb4);
+}
+
+#combo[data-tier="3"] span,
+#combo[data-tier="4"] span {
+  color: #e0aaff;
+}
+
+#combo[data-tier="4"] {
+  animation: combo-glow 0.5s ease-in-out infinite alternate;
+}
+
+#combo.bump b {
+  animation: combo-bump 0.18s ease-out;
+}
+
+#combo.fading {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s, transform 0.4s;
+}
+
+@keyframes combo-bump {
+  from {
+    transform: scale(1.45);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes combo-glow {
+  to {
+    filter: drop-shadow(0 0 12px #ff2fb4);
+  }
+}
+
+@media (max-width: 600px) {
+  #combo {
+    right: 12px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 360px);
+  }
+
+  #combo b {
+    font-size: 36px;
+  }
 }

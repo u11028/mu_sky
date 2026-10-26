@@ -38,7 +38,15 @@ import {
   type SkillId,
   SPAWN_SHIELD_MS,
 } from "../../shared/combat.ts";
-import { monsterKind, monsterXp, WORLD_BOSS, type WorldBossEnd, type WorldBossEvent } from "../../shared/monsters.ts";
+import {
+  monsterKind,
+  monsterMaxHp,
+  monsterXp,
+  REGION_MONSTERS,
+  WORLD_BOSS,
+  type WorldBossEnd,
+  type WorldBossEvent,
+} from "../../shared/monsters.ts";
 import { codexReward } from "../../shared/codex.ts";
 import { dungeonParty } from "../../shared/dungeon.ts";
 import { DungeonRun } from "./DungeonRun.ts";
@@ -46,7 +54,7 @@ import { isBlocked, regionLayout, type RegionLayout, slide } from "../../shared/
 import { heroOf, type ShotEvent } from "../../shared/heroes.ts";
 import { MonsterSystem } from "./MonsterSystem.ts";
 import { type GmAction, type GmList, PERMANENT_BAN_DAYS } from "../../shared/gm.ts";
-import { type Achievement, regionOfTheDay, STEP_PX, thaiDay } from "../../shared/quests.ts";
+import { type Achievement, questReward, regionOfTheDay, rewardText, STEP_PX, thaiDay } from "../../shared/quests.ts";
 import { findTitle } from "../../shared/titles.ts";
 import { clientAddress } from "./environment.ts";
 import { isGmKey } from "./gmKey.ts";
@@ -54,6 +62,16 @@ import * as teams from "./teams.ts";
 import * as voice from "./voice.ts";
 import { clearErrors, errorGroups, reportServer } from "./errors.ts";
 import { closeReport, fileReport, openReports, reportTarget } from "./reports.ts";
+import {
+  GOLD_RABBIT,
+  type GoldRabbitEvent,
+  INVASION,
+  INVASION_PRIZES,
+  INVASION_SCORED,
+  type InvasionEnd,
+  type InvasionStatus,
+  nextInvasionAt,
+} from "../../shared/events.ts";
 import { AUTO_MUTE_MINUTES, censor, type GmReport, REPORT_REASONS } from "../../shared/safety.ts";
 import { ARMOR_TIERS, isShopItem, monsterGold, POTION, type ShopItem, WEAPON_TIERS } from "../../shared/items.ts";
 import { type CosmeticKind, cosmeticList, isCosmeticKind, MOUNTS, WINGS } from "../../shared/cosmetics.ts";
@@ -162,6 +180,18 @@ let worldBoss: { room: WorldRoom; monsterId: string; endsAt: number } | undefine
 let nextWorldBossAt = Date.now() + WORLD_BOSS.firstMs;
 let worldBossTimer: NodeJS.Timeout | undefined;
 
+/** The invasion near or on, for every world at once; each world (party) keeps its own scores. */
+let invasion:
+  | { startsAt: number; endsAt: number; warned: number; started: boolean; lords: number; scores: Map<string, Map<string, { name: string; score: number }>> }
+  | undefined;
+/** TIMED_EVENTS=off: events only when a GM starts them (the tests). */
+const naturalEvents = process.env.TIMED_EVENTS !== "off";
+let nextInvasion = naturalEvents ? nextInvasionAt() : Infinity;
+/** The golden rabbit now running, if any. */
+let rabbit: { room: WorldRoom; monsterId: string; endsAt: number } | undefined;
+let nextRabbitAt = naturalEvents ? Date.now() + GOLD_RABBIT.firstMs : Infinity;
+let eventTimer: NodeJS.Timeout | undefined;
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
@@ -228,6 +258,7 @@ export class WorldRoom extends Room<WorldState> {
     this.setState(new WorldState());
     rooms.add(this);
     worldBossTimer ??= setInterval(() => WorldRoom.worldBossTick(), 10_000);
+    eventTimer ??= setInterval(() => WorldRoom.eventTick(), 1000);
     this.layout = regionLayout(this.regionId);
     this.monsters = new MonsterSystem({
       regionId: this.regionId,
@@ -399,6 +430,9 @@ export class WorldRoom extends Room<WorldState> {
 
   onDispose() {
     rooms.delete(this);
+    if (rabbit?.room === this) {
+      rabbit = undefined;
+    }
     // The world boss's region emptied and closed: it is gone, and the other regions' banners with it.
     if (worldBoss?.room === this) {
       worldBoss = undefined;
@@ -1137,6 +1171,12 @@ export class WorldRoom extends Room<WorldState> {
     this.monsters.hurt(monsterId, attackerId, damage);
     const killed = monster.hp <= 0;
     this.broadcast("hit", { attacker: attackerId, target: monsterId, damage, crit: rolled.crit, killed } satisfies HitEvent);
+    if (monster.elite === "rabbit" && damage > 0) {
+      const coins = Math.round(GOLD_RABBIT.coinsPerHit * (1 + attacker.level / 10));
+      attacker.gold += coins;
+      progress.saveInventory(attackerMovement.playerId, { gold: attacker.gold });
+      this.clients.find((c) => c.sessionId === attackerId)?.send("gold", { amount: coins, x: monster.x, y: monster.y });
+    }
     if (killed) {
       this.monsterDefeated(monsterId, monster);
     }
@@ -1160,6 +1200,13 @@ export class WorldRoom extends Room<WorldState> {
     if (worldBoss?.room === this && worldBoss.monsterId === monsterId) {
       this.worldBossDefeated(monsterId, monster, fighters, damageBy);
       return;
+    }
+    if (monster.elite === "invader" || monster.elite === "lord") {
+      this.scoreInvader(monster, fighters);
+      // Let it fall before it goes.
+      this.clock.setTimeout(() => this.monsters.remove(monsterId), 2000);
+    } else if (monster.elite === "rabbit" && rabbit?.monsterId === monsterId) {
+      this.rabbitCaught(monsterId, monster, fighters);
     }
     const names: string[] = [];
     const gold = monsterGold(kind.level, Boolean(kind.boss));
@@ -1446,6 +1493,304 @@ export class WorldRoom extends Room<WorldState> {
     for (const room of this.sameWorld()) {
       room.broadcast("world-boss-end", { beaten: true, name: kind.name, top } satisfies WorldBossEnd);
       room.sendChat({ from: "ระบบ", text: `🏆 ปราบบอสโลก ${kind.name} สำเร็จ! ${ranking}`, system: true });
+    }
+  }
+
+  // ---- Timed events: the invasion and the golden rabbit ----
+
+  /** Every second: warnings, the start, keeping the demons coming, the end; and the rabbit. */
+  private static eventTick() {
+    const now = Date.now();
+    const busy = [...rooms].filter((room) => room.clients.length > 0 && room.regionId !== "dungeon");
+
+    if (!invasion && now >= nextInvasion - INVASION.warnMs[0]) {
+      invasion = { startsAt: nextInvasion, endsAt: nextInvasion + INVASION.lastsMs, warned: 0, started: false, lords: 0, scores: new Map() };
+    }
+    if (invasion) {
+      const on = invasion;
+      // One warning at a time, even when the server started late and several are due.
+      let warn = false;
+      while (on.warned < INVASION.warnMs.length && now >= on.startsAt - INVASION.warnMs[on.warned]) {
+        on.warned++;
+        warn = true;
+      }
+      if (warn && on.startsAt - now > 5000) {
+        const minutes = Math.max(1, Math.round((on.startsAt - now) / 60_000));
+        rooms.forEach((room) => room.sendChat({ from: "ระบบ", text: `😈 อีก ${minutes} นาที อสูรจะบุกทุกภาค! ล้มให้มากที่สุด ติด 3 อันดับแรกรับรางวัลใหญ่`, system: true }));
+      }
+      if (!on.started && now >= on.startsAt) {
+        on.started = true;
+        rooms.forEach((room) => room.sendChat({ from: "ระบบ", text: "😈 อสูรบุกแล้ว! 10 นาทีนี้ ล้มอสูรได้แต้ม · จอมอสูรได้ 10 แต้ม", system: true }));
+      }
+      if (on.started && now < on.endsAt) {
+        for (const room of busy) {
+          room.topUpInvaders();
+        }
+        while (on.lords < INVASION.lordAtMs.length && now >= on.startsAt + INVASION.lordAtMs[on.lords]) {
+          on.lords++;
+          busy.forEach((room) => room.summonLord());
+        }
+      }
+      if (now >= on.endsAt) {
+        WorldRoom.endInvasion(on);
+        invasion = undefined;
+        nextInvasion = naturalEvents ? nextInvasionAt(now + 1) : Infinity;
+      } else if (now % 2000 < 1000) {
+        rooms.forEach((room) => room.sendInvasionStatus());
+      }
+    }
+
+    if (rabbit && now >= rabbit.endsAt) {
+      rabbit.room.rabbitEscapes();
+    } else if (!rabbit && now >= nextRabbitAt) {
+      const choices = busy.some((room) => room.party === "") ? busy.filter((room) => room.party === "") : busy;
+      if (choices.length === 0) {
+        nextRabbitAt = now + 60_000;
+      } else {
+        choices[Math.floor(Math.random() * choices.length)].summonRabbit();
+      }
+    }
+  }
+
+  /** A free spot this far from a player, out of the safe zones; undefined when none was found. */
+  private spotNear(player: Player, [near, far]: readonly [number, number]) {
+    const { bounds } = this.region;
+    for (let attempt = 0; attempt < 24; attempt++) {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = near + Math.random() * (far - near);
+      const x = Math.min(bounds.maxX - 60, Math.max(bounds.minX + 60, player.x + Math.cos(angle) * distance));
+      const y = Math.min(bounds.maxY - 60, Math.max(bounds.minY + 60, player.y + Math.sin(angle) * distance));
+      if (!inSafeZone(this.regionId, x, y) && !isBlocked(this.layout, x, y, 30)) {
+        return { x, y };
+      }
+    }
+    return undefined;
+  }
+
+  /** Near a random player here (those out in the open first). */
+  private spotNearSomeone(range: readonly [number, number]) {
+    const players = [...this.state.players.values()].filter((player) => !player.dead && !player.away);
+    const out = players.filter((player) => !inSafeZone(this.regionId, player.x, player.y));
+    const pool = out.length > 0 ? out : players;
+    for (let attempt = 0; attempt < 4 && pool.length > 0; attempt++) {
+      const spot = this.spotNear(pool[Math.floor(Math.random() * pool.length)], range);
+      if (spot) {
+        return spot;
+      }
+    }
+    return undefined;
+  }
+
+  private eventMonsters(...elites: string[]) {
+    return [...this.state.monsters].filter(([, monster]) => elites.includes(monster.elite));
+  }
+
+  /** More demons, up to as many as the players here call for, a few at a time. */
+  private topUpInvaders() {
+    const alive = this.eventMonsters("invader").filter(([, monster]) => !monster.dead).length;
+    const wanted = Math.min(INVASION.max, INVASION.base + INVASION.perPlayer * this.clients.length);
+    const { kinds } = REGION_MONSTERS[this.regionId];
+    for (let i = alive; i < wanted && i < alive + 3 && kinds.length > 0; i++) {
+      const spot = this.spotNearSomeone(INVASION.spawnNear);
+      if (!spot) {
+        return;
+      }
+      const kindId = kinds[Math.floor(Math.random() * kinds.length)];
+      const id = this.monsters.summonAt(kindId, Math.round(monsterMaxHp(monsterKind(kindId)!) * INVASION.hpScale), spot.x, spot.y, INVASION.aggro);
+      this.state.monsters.get(id)!.elite = "invader";
+    }
+  }
+
+  /** The region's boss, as a demon lord: far tougher, worth ten points. */
+  private summonLord() {
+    const lordKind = REGION_MONSTERS[this.regionId].boss;
+    const spot = this.spotNearSomeone([350, 520]);
+    if (!lordKind || !spot) {
+      return;
+    }
+    const kind = monsterKind(lordKind)!;
+    const id = this.monsters.summonAt(lordKind, Math.round(monsterMaxHp(kind) * INVASION.lordHpScale), spot.x, spot.y, INVASION.aggro);
+    this.state.monsters.get(id)!.elite = "lord";
+    this.sendChat({ from: "ระบบ", text: `👹 จอมอสูร ${kind.name} ปรากฏตัวที่${this.region.name}! ล้มได้ 10 แต้ม`, system: true });
+  }
+
+  /** A demon beaten: points for everyone who fought it, in this world's scores. */
+  private scoreInvader(monster: Monster, fighters: string[]) {
+    if (!invasion || Date.now() >= invasion.endsAt) {
+      return;
+    }
+    let scores = invasion.scores.get(this.party);
+    if (!scores) {
+      scores = new Map();
+      invasion.scores.set(this.party, scores);
+    }
+    fighters.forEach((sessionId, index) => {
+      const movement = this.movements.get(sessionId);
+      const player = this.state.players.get(sessionId);
+      if (!movement || !player) {
+        return;
+      }
+      const points = monster.elite === "lord" ? (index === 0 ? INVASION.lordPoints : 3) : INVASION.points;
+      const entry = scores!.get(movement.playerId) ?? { name: player.name, score: 0 };
+      entry.name = player.name;
+      entry.score += points;
+      scores!.set(movement.playerId, entry);
+    });
+  }
+
+  private static ranking(party: string) {
+    return [...(invasion?.scores.get(party) ?? new Map<string, { name: string; score: number }>())].sort((a, b) => b[1].score - a[1].score);
+  }
+
+  /** Each player's banner: when, the best of their world, their own score and place. */
+  private sendInvasionStatus() {
+    if (!invasion || this.regionId === "dungeon") {
+      return;
+    }
+    const ranking = WorldRoom.ranking(this.party);
+    const top = ranking.slice(0, 5).map(([, entry]) => ({ ...entry }));
+    for (const client of this.clients) {
+      const playerId = this.movements.get(client.sessionId)?.playerId;
+      const index = ranking.findIndex(([id]) => id === playerId);
+      client.send("invasion", {
+        phase: invasion.started ? "on" : "soon",
+        startsAt: invasion.startsAt,
+        endsAt: invasion.endsAt,
+        top,
+        mine: index >= 0 ? ranking[index][1].score : 0,
+        rank: index + 1,
+      } satisfies InvasionStatus);
+    }
+  }
+
+  /** The end: prizes for each world's best and for everyone who scored, and the demons go. */
+  private static endInvasion(ended: NonNullable<typeof invasion>) {
+    const prizes = new Map<string, string>();
+    for (const [party, scores] of ended.scores) {
+      const ranking = [...scores].sort((a, b) => b[1].score - a[1].score);
+      ranking.forEach(([playerId, entry], index) => {
+        const where = WorldRoom.sessionOf(playerId);
+        if (!where) {
+          return;
+        }
+        const prize = INVASION_PRIZES[index] ?? INVASION_SCORED.find((tier) => entry.score >= tier.from);
+        if (prize) {
+          prizes.set(playerId, where.room.givePrize(where.sessionId, prize, index === 0));
+        }
+      });
+      const medals = ["🥇", "🥈", "🥉"];
+      const podium = ranking.slice(0, 3).map(([, entry], index) => `${medals[index]} ${entry.name} (${entry.score})`).join("  ");
+      for (const room of rooms) {
+        if (room.party === party && podium) {
+          room.sendChat({ from: "ระบบ", text: `🏆 อสูรบุกจบแล้ว! ${podium}`, system: true });
+        }
+      }
+    }
+    for (const room of rooms) {
+      for (const [id] of room.eventMonsters("invader", "lord")) {
+        room.monsters.remove(id);
+      }
+      const ranking = [...(ended.scores.get(room.party) ?? new Map<string, { name: string; score: number }>())].sort(
+        (a, b) => b[1].score - a[1].score,
+      );
+      const top = ranking.slice(0, 5).map(([, entry]) => ({ ...entry }));
+      for (const client of room.clients) {
+        const playerId = room.movements.get(client.sessionId)?.playerId ?? "";
+        const index = ranking.findIndex(([id]) => id === playerId);
+        client.send("invasion-end", {
+          top,
+          mine: index >= 0 ? ranking[index][1].score : 0,
+          rank: index + 1,
+          prize: prizes.get(playerId) ?? "",
+        } satisfies InvasionEnd);
+      }
+    }
+  }
+
+  /** Pays a prize to a player here (gold grows with their level); returns it as text. */
+  private givePrize(sessionId: string, prize: { gold: number; potions: number; gear?: "boss" }, champion: boolean) {
+    const player = this.state.players.get(sessionId);
+    const movement = this.movements.get(sessionId);
+    const client = this.clients.find((c) => c.sessionId === sessionId);
+    if (!player || !movement || !client) {
+      return "";
+    }
+    const { gold, potions } = questReward(prize, player.level);
+    player.gold += gold;
+    player.potions = Math.min(POTION.max, player.potions + potions);
+    progress.saveInventory(movement.playerId, { gold: player.gold, potions: player.potions });
+    client.send("gold", { amount: gold, x: player.x, y: player.y });
+    if (prize.gear) {
+      this.dropGear(client, player, movement.playerId, prize.gear, Math.max(5, player.level), player);
+    }
+    if (champion) {
+      this.celebrate(movement.playerId, progress.recordInvasionWin(movement.playerId));
+    }
+    return [rewardText({ gold, potions }), prize.gear && "ของหายาก"].filter(Boolean).join(" + ");
+  }
+
+  private summonRabbit() {
+    const spot = this.spotNearSomeone([380, 600]);
+    if (!spot) {
+      nextRabbitAt = naturalEvents ? Date.now() + 30_000 : Infinity;
+      return;
+    }
+    const hp = GOLD_RABBIT.hp + GOLD_RABBIT.hpPerPlayer * this.clients.length;
+    const monsterId = this.monsters.summonFleeing(GOLD_RABBIT.kind, hp, spot.x, spot.y, GOLD_RABBIT.fleeFrom, GOLD_RABBIT.speed);
+    this.state.monsters.get(monsterId)!.elite = "rabbit";
+    rabbit = { room: this, monsterId, endsAt: Date.now() + GOLD_RABBIT.lastsMs };
+    nextRabbitAt = naturalEvents
+      ? Date.now() + GOLD_RABBIT.everyMs[0] + Math.random() * (GOLD_RABBIT.everyMs[1] - GOLD_RABBIT.everyMs[0])
+      : Infinity;
+    const event = { region: this.regionId, leftMs: GOLD_RABBIT.lastsMs } satisfies GoldRabbitEvent;
+    for (const room of this.sameWorld()) {
+      room.broadcast("gold-rabbit", event);
+      room.sendChat({
+        from: "ระบบ",
+        text: `✨ กระต่ายทองคำโผล่ที่${this.region.name}! ตีได้เหรียญทุกครั้ง จับได้รับแจ็กพอต (${GOLD_RABBIT.lastsMs / 1000} วิ)`,
+        system: true,
+      });
+    }
+  }
+
+  private rabbitEscapes() {
+    if (!rabbit) {
+      return;
+    }
+    this.monsters.remove(rabbit.monsterId);
+    rabbit = undefined;
+    for (const room of this.sameWorld()) {
+      room.broadcast("gold-rabbit-end", {});
+      room.sendChat({ from: "ระบบ", text: "🐰 กระต่ายทองคำวิ่งหนีไปแล้ว... รอบหน้าต้องไวกว่านี้!", system: true });
+    }
+  }
+
+  /** Caught: the jackpot for the one who hit it most, a third for everyone else who hit it. */
+  private rabbitCaught(monsterId: string, monster: Monster, fighters: string[]) {
+    rabbit = undefined;
+    const names: string[] = [];
+    fighters.forEach((sessionId, index) => {
+      const player = this.state.players.get(sessionId);
+      const movement = this.movements.get(sessionId);
+      const client = this.clients.find((c) => c.sessionId === sessionId);
+      if (!player || !movement || !client) {
+        return;
+      }
+      names.push(player.name);
+      const { gold } = questReward({ gold: index === 0 ? GOLD_RABBIT.jackpot : Math.round(GOLD_RABBIT.jackpot / 3), potions: 0 }, player.level);
+      player.gold += gold;
+      progress.saveInventory(movement.playerId, { gold: player.gold });
+      client.send("gold", { amount: gold, x: monster.x, y: monster.y });
+      if (index === 0) {
+        this.celebrate(movement.playerId, progress.recordGoldRabbit(movement.playerId));
+      }
+    });
+    this.clock.setTimeout(() => this.monsters.remove(monsterId), 2000);
+    for (const room of this.sameWorld()) {
+      room.broadcast("gold-rabbit-end", {});
+      if (names.length > 0) {
+        room.sendChat({ from: "ระบบ", text: `🐰💰 ${names[0]} จับกระต่ายทองคำได้ที่${this.region.name}! รับแจ็กพอตไปเลย`, system: true });
+      }
     }
   }
 
@@ -2050,6 +2395,27 @@ export class WorldRoom extends Room<WorldState> {
         return;
       case "reports":
         client.send("gm-reports", WorldRoom.gmReports());
+        return;
+      case "invasion":
+        if (invasion?.started) {
+          // On already: the same button ends it now, prizes and all.
+          invasion.endsAt = Date.now();
+          done("จบอสูรบุกแล้ว แจกรางวัลตามอันดับ");
+          return;
+        }
+        // Soon, with a short warning.
+        nextInvasion = Date.now() + 10_000;
+        invasion = { startsAt: nextInvasion, endsAt: nextInvasion + INVASION.lastsMs, warned: INVASION.warnMs.length, started: false, lords: 0, scores: new Map() };
+        rooms.forEach((room) => room.sendChat({ from: "ระบบ", text: "😈 GM เรียกอสูร! อีก 10 วินาทีอสูรจะบุกทุกภาค", system: true }));
+        done("อสูรจะบุกใน 10 วินาที");
+        return;
+      case "rabbit":
+        if (rabbit) {
+          done(`มีกระต่ายทองคำอยู่แล้วที่${rabbit.room.region.name}`);
+          return;
+        }
+        this.summonRabbit();
+        done("ปล่อยกระต่ายทองคำแล้ว");
         return;
       case "report-close":
       case "report-ban":

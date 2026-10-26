@@ -54,6 +54,9 @@ interface Mind {
   once: boolean;
   /** How far it notices players, when not the usual for its kind (the dungeon's monsters). */
   aggro?: number;
+  /** Runs from players instead of fighting them (the golden rabbit), once one is this close. */
+  fleeFrom?: number;
+  fleeSpeed?: number;
 }
 
 export class MonsterSystem {
@@ -123,6 +126,11 @@ export class MonsterSystem {
         return;
       }
 
+      if (mind.fleeFrom) {
+        this.flee(monster, mind, deltaMs, now);
+        return;
+      }
+
       const target = this.chooseTarget(monster, mind, kind);
       if (target) {
         const range = attackRange(kind);
@@ -158,6 +166,35 @@ export class MonsterSystem {
         mind.wanderTo = undefined;
       }
     });
+  }
+
+  /** Away from the closest player in sight, with a dodge now and then; ambling when nobody is near. */
+  private flee(monster: Monster, mind: Mind, deltaMs: number, now: number) {
+    let closest: Player | undefined;
+    let closestDistance = mind.fleeFrom!;
+    for (const [, player] of this.arena.targets()) {
+      const distance = Math.hypot(player.x - monster.x, player.y - monster.y);
+      if (distance < closestDistance) {
+        closest = player;
+        closestDistance = distance;
+      }
+    }
+    if (!closest) {
+      if (now >= mind.nextWanderAt) {
+        mind.nextWanderAt = now + 1500 + Math.random() * 2000;
+        mind.wanderTo = { x: monster.x + (Math.random() - 0.5) * 200, y: monster.y + (Math.random() - 0.5) * 200 };
+      }
+      if (mind.wanderTo && this.step(monster, mind.wanderTo.x, mind.wanderTo.y, MONSTER_SPEED, deltaMs) < 4) {
+        mind.wanderTo = undefined;
+      }
+      return;
+    }
+    // Straight away, bent a little each second so it zigzags; near a wall, along it.
+    const away = Math.atan2(monster.y - closest.y, monster.x - closest.x) + Math.sin(now / 900) * 0.7;
+    const { bounds } = this.arena.region;
+    const toX = Math.min(bounds.maxX - 40, Math.max(bounds.minX + 40, monster.x + Math.cos(away) * 200));
+    const toY = Math.min(bounds.maxY - 40, Math.max(bounds.minY + 40, monster.y + Math.sin(away) * 200));
+    this.step(monster, toX, toY, mind.fleeSpeed ?? MONSTER_CHASE_SPEED, deltaMs);
   }
 
   /** Keeps chasing the current target while it's in reach, or picks the closest player that comes near. */
@@ -239,6 +276,15 @@ export class MonsterSystem {
     monster.maxHp = maxHp;
     monster.hp = maxHp;
     this.minds.get(id)!.aggro = aggro;
+    return id;
+  }
+
+  /** A one-off that runs from players instead of fighting: the golden rabbit. */
+  summonFleeing(kindId: string, maxHp: number, x: number, y: number, fleeFrom: number, speed: number) {
+    const id = this.summonAt(kindId, maxHp, x, y, 0);
+    const mind = this.minds.get(id)!;
+    mind.fleeFrom = fleeFrom;
+    mind.fleeSpeed = speed;
     return id;
   }
 

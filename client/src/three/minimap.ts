@@ -15,7 +15,7 @@ export interface MapView {
   me?: MapDot & { facingX: number; facingY: number };
   mates: MapDot[];
   others: MapDot[];
-  monsters: (MapDot & { boss: boolean; world: boolean })[];
+  monsters: (MapDot & { boss: boolean; world: boolean; elite: string })[];
 }
 
 export class Minimap {
@@ -104,13 +104,21 @@ export class Minimap {
       if (monster.world) {
         // The world boss throbs, so nobody misses it.
         dot(monster, unit * (4 + Math.sin(now / 200)), "#ff2fb4", "#fff");
+      } else if (monster.elite === "rabbit") {
+        // So does the golden rabbit: it won't stay long.
+        dot(monster, unit * (3 + Math.sin(now / 150)), "#ffd60a", "#fff");
+        if (this.big) {
+          this.label("กระต่ายทอง", monster.x * sx, monster.y * sy - unit * 5, unit * 3.5);
+        }
+      } else if (monster.elite === "lord") {
+        dot(monster, unit * 3, "#ff006e", "#fff");
       } else if (monster.boss) {
         dot(monster, unit * 3, "#b5179e", "#ffd60a");
         if (this.big) {
           this.label("บอส", monster.x * sx, monster.y * sy - unit * 5, unit * 3.5);
         }
       } else {
-        dot(monster, unit * 1.3, "#e63946");
+        dot(monster, unit * (monster.elite === "invader" ? 1.7 : 1.3), monster.elite === "invader" ? "#ff4d6d" : "#e63946");
       }
     }
     view.others.forEach((player) => dot(player, unit * 1.8, "#ffffff"));

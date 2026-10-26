@@ -5,6 +5,7 @@ import { heroOf, HEROES, type ShotEvent } from "../../shared/heroes.ts";
 import { isRegionId, REGIONS, type RegionId, START_REGION } from "../../shared/regions.ts";
 import { type Achievement, type ProgressView, type QuestState, rewardText, thaiDay } from "../../shared/quests.ts";
 import { type GmReport, REPORT_REASONS } from "../../shared/safety.ts";
+import type { GoldRabbitEvent, InvasionEnd, InvasionStatus } from "../../shared/events.ts";
 import { decorateTitle, findTitle, type Title, TITLES } from "../../shared/titles.ts";
 import { regionModels, type SelfState, World3D } from "./three/World3D.ts";
 import { preload } from "./three/assets.ts";
@@ -464,7 +465,22 @@ function startGame(joined: Room, region: RegionId) {
   joined.onMessage("progress", renderProgress);
   joined.onMessage("achievement", showToast);
   joined.onMessage("swing", (message: { id: string; x: number; y: number }) => scene?.showSwing(message.id, message.x, message.y));
-  joined.onMessage("hit", (event: HitEvent) => scene?.showHit(event));
+  joined.onMessage("hit", (event: HitEvent) => {
+    scene?.showHit(event);
+    if (event.attacker === joined.sessionId && event.damage > 0) {
+      countCombo();
+    } else if (event.target === joined.sessionId && event.damage > 0) {
+      breakCombo();
+    }
+  });
+  joined.onMessage("invasion", showInvasion);
+  joined.onMessage("invasion-end", endInvasion);
+  joined.onMessage("gold-rabbit", (event: GoldRabbitEvent) => {
+    const here = event.region === currentRegion;
+    showToast({ kind: "title", text: here ? "✨ กระต่ายทองคำโผล่ในภาคนี้! ดูจุดทองบนแผนที่ รีบไล่ตี!" : `✨ กระต่ายทองคำโผล่ที่${REGIONS[event.region].name}! (60 วิ)` });
+    play("levelup", 0.4);
+    buzz(BUZZ.crit);
+  });
   joined.onMessage("levelup", (message: { id: string }) => scene?.showLevelUp(message.id));
   joined.onMessage("mattack", (message: { id: string }) => scene?.showMonsterAttack(message.id));
   joined.onMessage("shot", (shot: ShotEvent) => scene?.showShot(shot));
@@ -525,6 +541,9 @@ function startGame(joined: Room, region: RegionId) {
   joined.onMessage("world-boss-end", endWorldBoss);
   // A world boss of the world just left is not this one's; the server tells again if there is one here.
   hideWorldBoss();
+  // The same for the invasion: each world has its own scores (and the dungeon none).
+  hideInvasion();
+  breakCombo();
   joined.onMessage("notice", (message: { text: string; ok: boolean }) => {
     showToast({ kind: message.ok ? "quest" : "title", text: message.text });
     if (message.ok) {
@@ -1047,6 +1066,127 @@ window.addEventListener("keydown", (event) => {
 });
 
 // The world boss: a banner with the region and the time left, while it is up.
+// ---- Combo: your blows landing one after another ----
+const comboBox = document.querySelector<HTMLDivElement>("#combo")!;
+const comboCount = document.querySelector<HTMLElement>("#combo-count")!;
+const comboWord = document.querySelector<HTMLElement>("#combo-word")!;
+/** Blows further apart than this start a new combo. */
+const COMBO_GAP_MS = 2500;
+const COMBO_TIERS = [
+  { from: 100, word: "GODLIKE!", tier: 4 },
+  { from: 50, word: "UNSTOPPABLE!", tier: 3 },
+  { from: 25, word: "RAMPAGE!", tier: 2 },
+  { from: 10, word: "GREAT!", tier: 1 },
+  { from: 0, word: "COMBO", tier: 0 },
+];
+let combo = 0;
+let comboTimer: ReturnType<typeof setTimeout> | undefined;
+
+function countCombo() {
+  combo++;
+  clearTimeout(comboTimer);
+  comboTimer = setTimeout(breakCombo, COMBO_GAP_MS);
+  if (combo < 3) {
+    return;
+  }
+  const { word, tier, from } = COMBO_TIERS.find((t) => combo >= t.from)!;
+  comboCount.textContent = String(combo);
+  comboWord.textContent = word;
+  comboBox.dataset.tier = String(tier);
+  comboBox.hidden = false;
+  comboBox.classList.remove("bump", "fading");
+  // Restart the pop on every blow.
+  void comboBox.offsetWidth;
+  comboBox.classList.add("bump");
+  if (combo === from && tier > 0) {
+    play("levelup", 0.3);
+    buzz(BUZZ.crit);
+  }
+}
+
+function breakCombo() {
+  clearTimeout(comboTimer);
+  combo = 0;
+  if (!comboBox.hidden) {
+    comboBox.classList.add("fading");
+    comboTimer = setTimeout(() => {
+      comboBox.hidden = true;
+      comboBox.classList.remove("fading");
+    }, 400);
+  }
+}
+
+// ---- The invasion: a banner while it is near or on ----
+const eventBanner = document.querySelector<HTMLButtonElement>("#event-banner")!;
+let invasionStatus: InvasionStatus | undefined;
+let invasionTimer: ReturnType<typeof setInterval> | undefined;
+
+function clock(ms: number) {
+  const left = Math.max(0, ms);
+  return `${Math.floor(left / 60_000)}:${String(Math.floor((left % 60_000) / 1000)).padStart(2, "0")}`;
+}
+
+function drawInvasion() {
+  const status = invasionStatus;
+  if (!status) {
+    return;
+  }
+  const now = Date.now();
+  const on = status.phase === "on" && now >= status.startsAt;
+  eventBanner.classList.toggle("on", on);
+  document.querySelector("#event-text")!.textContent = on
+    ? `😈 อสูรบุก! แต้มคุณ ${status.mine}${status.rank ? ` · อันดับ ${status.rank}` : ""}`
+    : "😈 อสูรจะบุกใน";
+  document.querySelector("#event-time")!.textContent = clock((on ? status.endsAt : status.startsAt) - now);
+  if (now >= status.endsAt) {
+    hideInvasion();
+  }
+}
+
+function showInvasion(status: InvasionStatus) {
+  const first = !invasionStatus;
+  invasionStatus = status;
+  eventBanner.hidden = false;
+  const medals = ["🥇", "🥈", "🥉", "4.", "5."];
+  document.querySelector("#event-top")!.replaceChildren(
+    ...(status.top.length > 0 ? status.top : [{ name: "ยังไม่มีใครได้แต้ม", score: 0 }]).map((entry, index) => {
+      const row = document.createElement("li");
+      row.textContent = status.top.length > 0 ? `${medals[index]} ${entry.name} · ${entry.score}` : entry.name;
+      return row;
+    }),
+  );
+  if (first) {
+    clearInterval(invasionTimer);
+    invasionTimer = setInterval(drawInvasion, 1000);
+  }
+  drawInvasion();
+}
+
+function hideInvasion() {
+  clearInterval(invasionTimer);
+  invasionTimer = undefined;
+  invasionStatus = undefined;
+  eventBanner.hidden = true;
+}
+
+function endInvasion(end: InvasionEnd) {
+  hideInvasion();
+  const next = new Date(Math.ceil(Date.now() / 3_600_000) * 3_600_000).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+  const text = end.rank
+    ? `🏆 อสูรบุกจบ! คุณได้อันดับ ${end.rank} (${end.mine} แต้ม)${end.prize ? ` · ได้ ${end.prize}` : ""}`
+    : `😈 อสูรบุกจบแล้ว · รอบหน้า ${next} น.`;
+  showToast({ kind: end.rank && end.rank <= 3 ? "title" : "daily", text });
+  if (end.rank && end.rank <= 3) {
+    play("levelup", 0.5);
+  }
+}
+
+eventBanner.addEventListener("click", () => {
+  const open = !eventBanner.classList.contains("open");
+  eventBanner.classList.toggle("open", open);
+  eventBanner.setAttribute("aria-expanded", String(open));
+});
+
 const worldBossBanner = document.querySelector<HTMLElement>("#world-boss")!;
 let worldBossCountdown: ReturnType<typeof setInterval> | undefined;
 
@@ -1883,6 +2023,12 @@ gmPanel.addEventListener("click", (event) => {
         break;
       case "worldboss":
         sendGm({ action: "worldboss", target });
+        break;
+      case "invasion":
+        sendGm({ action: "invasion" });
+        break;
+      case "rabbit":
+        sendGm({ action: "rabbit" });
         break;
     }
     return;

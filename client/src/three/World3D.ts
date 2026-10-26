@@ -90,7 +90,16 @@ interface MonsterState {
   hp: number;
   maxHp: number;
   dead: boolean;
+  /** From a timed event: "invader", "lord", "rabbit"; "" otherwise. */
+  elite: string;
 }
+
+/** How event monsters are marked: a word before the name, and a ring of their colour. */
+const ELITE_LOOK: Record<string, { prefix: string; color: string; size: number }> = {
+  invader: { prefix: "😈 อสูร ", color: "#ff2d55", size: 1 },
+  lord: { prefix: "👹 จอมอสูร ", color: "#ff006e", size: 3.4 },
+  rabbit: { prefix: "✨ ", color: "#ffd60a", size: 1.4 },
+};
 
 /** Where the camera sits relative to the player it follows: behind and above, looking down. */
 const CAMERA_OFFSET = new THREE.Vector3(0, 12.5, 15);
@@ -188,7 +197,7 @@ export class World3D {
   private effects = new Effects(this.scene);
   private scenery?: Scenery;
   private players = new Map<string, Actor>();
-  private monsters = new Map<string, { actor: Actor; boss: boolean; level: number }>();
+  private monsters = new Map<string, { actor: Actor; boss: boolean; level: number; elite: string }>();
   /** Actors still loading their model; a removal in the meantime cancels them. */
   private loading = new Set<string>();
   private auras = new Map<string, THREE.Mesh>();
@@ -362,11 +371,17 @@ export class World3D {
     actor.root.position.set(actor.targetX, 0, actor.targetZ);
     actor.label.object.element.classList.add(kind.boss ? "boss" : "monster");
     this.scene.add(actor.root);
-    this.monsters.set(id, { actor, boss: Boolean(kind.boss), level: kind.level });
-    actor.setName(`${kind.world ? "👹 บอสโลก " : kind.boss ? "👑 " : ""}Lv.${kind.level} ${kind.name}`, this.danger(kind.level, Boolean(kind.boss)));
+    this.monsters.set(id, { actor, boss: Boolean(kind.boss), level: kind.level, elite: monster.elite });
+    const elite = ELITE_LOOK[monster.elite];
+    actor.setName(
+      `${elite?.prefix ?? (kind.world ? "👹 บอสโลก " : kind.boss ? "👑 " : "")}Lv.${kind.level} ${kind.name}`,
+      monster.elite === "rabbit" ? "rabbit" : this.danger(kind.level, Boolean(kind.boss)),
+    );
     if (kind.world) {
       // A wide, throbbing ring of dark fire marks the world boss.
       this.setAura(id, actor, true, "#b5179e", 4.2);
+    } else if (elite) {
+      this.setAura(id, actor, true, elite.color, elite.size);
     }
     this.updateMonster(id, monster);
   }
@@ -439,8 +454,8 @@ export class World3D {
       });
       if (this.myLevel !== player.level) {
         this.myLevel = player.level;
-        this.monsters.forEach(({ actor: monster, boss, level }) => {
-          monster.label.name.className = `actor-name ${this.danger(level, boss)}`;
+        this.monsters.forEach(({ actor: monster, boss, level, elite }) => {
+          monster.label.name.className = `actor-name ${elite === "rabbit" ? "rabbit" : this.danger(level, boss)}`;
         });
       }
     }
@@ -615,7 +630,7 @@ export class World3D {
     state.monsters.forEach((monster: MonsterState) => {
       const kind = monsterKind(monster.kind);
       if (!monster.dead && kind) {
-        view.monsters.push({ x: monster.x, y: monster.y, boss: Boolean(kind.boss), world: Boolean(kind.world) });
+        view.monsters.push({ x: monster.x, y: monster.y, boss: Boolean(kind.boss), world: Boolean(kind.world), elite: monster.elite });
       }
     });
     return view;
@@ -719,8 +734,11 @@ export class World3D {
       const hard = event.crit || event.damage >= (this.playerStates.get(this.room.sessionId)?.maxHp ?? Infinity) * 0.2;
       buzz(event.killed ? BUZZ.death : hard ? BUZZ.hurtHard : BUZZ.hurt);
     } else if (mine) {
-      // Your own blows land with a little kick.
-      this.shake(event.crit ? 0.22 : 0.08);
+      // Your own blows land with a little kick; a crit or a kill holds your swing for a blink too.
+      this.shake(event.crit ? 0.3 : event.killed ? 0.18 : 0.08);
+      if (event.crit || event.killed) {
+        this.players.get(this.room.sessionId)?.freeze(event.crit ? 90 : 60);
+      }
       if (event.crit) {
         buzz(BUZZ.crit);
       }
@@ -1168,7 +1186,13 @@ export class World3D {
         }, 300);
       }
     });
-    this.monsters.forEach(({ actor }) => actor.update(delta, now));
+    this.monsters.forEach(({ actor, elite }) => {
+      actor.update(delta, now);
+      // The golden rabbit leaves a trail of glitter as it runs.
+      if (elite === "rabbit" && !actor.dead && this.frameCount % 5 === 0) {
+        this.effects.sparks(actor.root.position.clone().setY(0.6), "#ffd60a", 2);
+      }
+    });
     this.auras.forEach((ring) => {
       ring.scale.setScalar(1 + Math.sin(now / 250) * 0.12);
     });

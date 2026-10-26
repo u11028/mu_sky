@@ -49,6 +49,8 @@ export async function startServer() {
       ACCOUNTS_FILE: joinPath(data, "accounts.json"),
       GM_KEY,
       MONGODB_URI: "",
+      // Invasions and rabbits only when a test's GM starts them.
+      TIMED_EVENTS: "off",
     },
     stdio: ["ignore", "pipe", "pipe"],
   });

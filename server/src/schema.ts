@@ -47,6 +47,8 @@ export class Monster extends Schema {
   @type("uint32") hp = 1;
   @type("uint32") maxHp = 1;
   @type("boolean") dead = false;
+  /** From a timed event: "invader", "lord" (a demon lord) or "rabbit" (the golden rabbit); "" otherwise. */
+  @type("string") elite = "";
 }
 
 export class WorldState extends Schema {

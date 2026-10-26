@@ -231,6 +231,11 @@ export class Actor {
     }
   }
 
+  /** Holds the animation still for a blink: the attacker's side of a heavy blow. */
+  freeze(ms: number) {
+    this.frozenUntil = Math.max(this.frozenUntil, performance.now() + ms);
+  }
+
   update(delta: number, now: number) {
     if (now >= this.frozenUntil) {
       this.mixer?.update(delta / 1000);

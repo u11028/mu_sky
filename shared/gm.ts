@@ -15,6 +15,8 @@ export type GmAction =
   | { action: "errors" }
   | { action: "errors-clear" }
   | { action: "reports" }
+  | { action: "invasion" }
+  | { action: "rabbit" }
   | { action: "report-close"; id: string; all?: boolean }
   | { action: "report-ban"; id: string; days: number }
   | { action: "report-mute"; id: string }

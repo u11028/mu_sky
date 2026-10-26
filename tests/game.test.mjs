@@ -203,11 +203,14 @@ describe("teams and voice", () => {
     await until(() => b.got["team-invite"]);
     b.room.send("team-answer", { yes: true });
     await until(() => a.got.team?.at(-1)?.length === 2 && b.got.team?.at(-1)?.length === 2, 3000);
+    // The team message can come a moment before the state's next patch.
+    await until(() => a.me().team !== "" && b.me().team !== "", 3000);
     assert.equal(a.me().team, b.me().team);
     assert.notEqual(a.me().team, "");
 
     a.room.send("team-leave");
     await until(() => a.got.team.at(-1).length === 0 && b.got.team.at(-1).length === 0, 3000);
+    await until(() => a.me().team === "" && b.me().team === "", 3000);
     assert.equal(a.me().team, "");
     assert.equal(b.me().team, "");
     await a.room.leave();
@@ -579,6 +582,104 @@ describe("safety", () => {
     for (const bot of [target, gmBot, ...reporters]) {
       await bot.room.leave();
     }
+  });
+});
+
+describe("timed events", () => {
+  /** Walks to the nearest living monster that passes `pick` and strikes it, a few times. */
+  async function hunt(bot, pick, tries = 12) {
+    for (let i = 0; i < tries; i++) {
+      const me = bot.me();
+      let nearest;
+      let distance = Infinity;
+      bot.room.state.monsters.forEach((monster, id) => {
+        const d = Math.hypot(monster.x - me.x, monster.y - me.y);
+        if (!monster.dead && pick(monster) && d < distance) {
+          nearest = [id, monster];
+          distance = d;
+        }
+      });
+      if (!nearest) {
+        await wait(400);
+        continue;
+      }
+      await walkTo(bot, nearest[1].x + 20, nearest[1].y);
+      bot.room.send("attack");
+      await wait(600);
+      if (bot.got.hit?.some((hit) => hit.attacker === bot.room.sessionId && hit.target === nearest[0] && hit.killed)) {
+        return nearest;
+      }
+    }
+    return undefined;
+  }
+
+  test("an invasion: a warning, demons near the players, points, prizes and the banner", async () => {
+    const bot = await join(server, { name: "นักล่าอสูร", party: partyCode() });
+    await makeGm(bot);
+    gm(bot, "onehit", { on: true });
+    gm(bot, "god", { on: true });
+    bot.room.send("gm", { action: "invasion" });
+    await until(() => bot.said().some((text) => text.includes("อีก 10 วินาที")));
+    await until(() => bot.got.invasion?.some((status) => status.phase === "soon"));
+    assert.ok(await until(() => [...bot.room.state.monsters.values()].some((m) => m.elite === "invader"), 20_000), "demons came");
+    const goldBefore = bot.me().gold;
+    for (let kills = 0; kills < 2; kills++) {
+      assert.ok(await hunt(bot, (monster) => monster.elite === "invader"), "a demon beaten");
+    }
+    await until(() => (bot.got.invasion?.at(-1)?.mine ?? 0) >= 2, 5000);
+    const status = bot.got.invasion.at(-1);
+    assert.equal(status.phase, "on");
+    assert.equal(status.rank, 1);
+    assert.equal(status.top[0].name, "นักล่าอสูร");
+
+    // The GM ends it: the winner's prize, a title, and the demons gone.
+    bot.room.send("gm", { action: "invasion" });
+    await until(() => bot.got["invasion-end"], 5000);
+    const end = bot.got["invasion-end"][0];
+    assert.equal(end.rank, 1);
+    assert.match(end.prize, /ทอง/);
+    assert.ok(bot.me().gold > goldBefore);
+    assert.ok(bot.got.achievement?.some((a) => a.titleId === "invasion-champion"));
+    await until(() => ![...bot.room.state.monsters.values()].some((m) => m.elite === "invader" || m.elite === "lord"), 5000);
+    await bot.room.leave();
+  });
+
+  test("the golden rabbit runs from players, sheds coins when hit, and pays a jackpot", async () => {
+    const bot = await join(server, { name: "นักจับกระต่าย", party: partyCode() });
+    await makeGm(bot);
+    gm(bot, "god", { on: true });
+    bot.room.send("gm", { action: "rabbit" });
+    await until(() => bot.got["gold-rabbit"]);
+    // The news can come a moment before the rabbit itself.
+    await until(() => [...bot.room.state.monsters.values()].some((m) => m.elite === "rabbit"));
+    const [rabbitId, rabbit] = [...bot.room.state.monsters.entries()].find(([, m]) => m.elite === "rabbit");
+    const start = { x: rabbit.x, y: rabbit.y };
+    // Come close: it runs.
+    await walkTo(bot, start.x + 150, start.y);
+    await wait(800);
+    assert.ok(Math.hypot(rabbit.x - start.x, rabbit.y - start.y) > 40, "it ran");
+
+    // Chase it as a player would, steering at it all the time, and strike when close.
+    const chase = async (until) => {
+      for (let i = 0; i < 400 && !until(); i++) {
+        bot.room.send("target", { x: rabbit.x, y: rabbit.y });
+        if (Math.hypot(rabbit.x - bot.me().x, rabbit.y - bot.me().y) < 60) {
+          bot.room.send("attack");
+        }
+        await wait(100);
+      }
+    };
+    // A blow without one-hit: coins fall out. Then one-hit catches it.
+    const coins = () => (bot.got.gold ?? []).some((g) => g.amount > 0);
+    await chase(coins);
+    assert.ok(coins(), "coins from a hit");
+    gm(bot, "onehit", { on: true });
+    await chase(() => rabbit.dead);
+    assert.ok(rabbit.dead, "caught");
+    assert.ok(bot.got.hit.some((hit) => hit.target === rabbitId && hit.killed));
+    await until(() => bot.said().some((text) => text.includes("จับกระต่ายทองคำได้")));
+    await until(() => bot.got["gold-rabbit-end"]);
+    await bot.room.leave();
   });
 });
 
