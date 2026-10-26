@@ -1,0 +1,26 @@
+# Every push to master and every pull request: the code must type-check, build, and pass the game
+# tests (bots playing against a real server). Render deploys only after this passes (render.yaml).
+name: Checks
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Type-check
+        run: npm run typecheck
+      - name: Build the game
+        run: npm run build
+      - name: Game tests
+        run: npm test

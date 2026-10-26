@@ -9,6 +9,8 @@ services:
     name: mu-sky
     runtime: node
     plan: free
+    # Deploy a push only once its checks on GitHub (.github/workflows/ci.yml) have passed.
+    autoDeployTrigger: checksPass
     buildCommand: npm ci && npm run build
     startCommand: npm start
     healthCheckPath: /health
