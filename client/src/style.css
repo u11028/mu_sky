@@ -2847,3 +2847,319 @@ body.in-safe-zone #ultimate-button.offensive {
     font-size: 13px;
   }
 }
+
+/* ==== Buttons: one look ====
+ * Every button in play is a coin: a polished gold rim, a dark core lit in the colour of what it
+ * does, a highlight on top and shade below, and an icon from icons.ts (never emoji, which look
+ * different on every phone). Pressing sinks it and makes it glow. Sizes and places are unchanged.
+ */
+
+:root {
+  --gold-rim: linear-gradient(150deg, #fff5c8 0%, #e9c35c 20%, #8c6621 46%, #f2d27b 68%, #6c4c16 100%);
+}
+
+#attack-button.orb,
+#potion-button.orb,
+#ultimate-button.orb,
+#ride-button.orb,
+#auto-button.orb,
+#voice-button.orb,
+#actions .skill-button.orb {
+  --tint: #33405c;
+  --glow: #9db7ff;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 22%, color-mix(in srgb, var(--glow) 50%, transparent) 0%, transparent 52%) padding-box,
+    radial-gradient(circle at 50% 62%, var(--tint) 0%, color-mix(in srgb, var(--tint) 45%, #04060b) 78%) padding-box,
+    var(--gold-rim) border-box;
+  box-shadow:
+    0 6px 14px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    inset 0 2px 2px rgba(255, 255, 255, 0.3),
+    inset 0 -7px 12px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 0;
+  overflow: hidden;
+  transition: transform 0.08s ease-out, filter 0.08s ease-out;
+}
+
+.orb .icon-svg {
+  position: relative;
+  z-index: 0;
+  width: 50%;
+  height: 50%;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.7)) drop-shadow(0 0 5px var(--glow));
+}
+
+.orb:active,
+.orb.pressed {
+  transform: scale(0.92);
+  filter: brightness(1.25);
+}
+
+/* What each one does, in its colour. */
+#attack-button.orb {
+  --tint: #9a1c1c;
+  --glow: #ff7a62;
+  border-width: 4px;
+}
+
+#attack-button.orb .icon-svg {
+  width: 46%;
+  height: 46%;
+}
+
+#actions .skill-button.orb[data-skill="spin"] {
+  --tint: #1f418f;
+  --glow: #78b0ff;
+}
+
+#actions .skill-button.orb[data-skill="strike"] {
+  --tint: #8f5a00;
+  --glow: #ffd166;
+}
+
+#actions .skill-button.orb[data-skill="dash"] {
+  --tint: #0e6a6c;
+  --glow: #64f2e2;
+}
+
+#actions .skill-button.orb[data-skill="heal"] {
+  --tint: #136a34;
+  --glow: #84ffa2;
+}
+
+#potion-button.orb {
+  --tint: #7d1239;
+  --glow: #ff86b0;
+}
+
+/* The class skill: the biggest light, a thicker rim and a halo. */
+#ultimate-button.orb {
+  --tint: #4f1784;
+  --glow: #d9a6ff;
+  border-width: 4px;
+  box-shadow:
+    0 0 16px rgba(217, 166, 255, 0.55),
+    0 6px 14px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    inset 0 2px 2px rgba(255, 255, 255, 0.3),
+    inset 0 -7px 12px rgba(0, 0, 0, 0.5);
+}
+
+#ride-button.orb {
+  --tint: #6c4421;
+  --glow: #ffbe7a;
+}
+
+#auto-button.orb,
+#voice-button.orb {
+  --tint: #2c3442;
+  --glow: #b8c6da;
+}
+
+/* On: green, with a ring of light turning round the rim. */
+#auto-button.orb.on,
+#voice-button.orb.on {
+  --tint: #136a34;
+  --glow: #84ffa2;
+  animation: none;
+}
+
+#auto-button.orb.on::before,
+#voice-button.orb.on::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0 70%, #b9ffcb 85%, transparent 100%);
+  /* Measured from the circle's edge (closest-side), not the box's corner: a thin ring on the rim. */
+  -webkit-mask: radial-gradient(circle closest-side, transparent 86%, #000 88%);
+  mask: radial-gradient(circle closest-side, transparent 86%, #000 88%);
+  animation: orb-turn 1.6s linear infinite;
+}
+
+#voice-button.orb.speaking {
+  box-shadow: 0 0 0 4px rgba(82, 210, 115, 0.6), 0 0 18px #52d273, inset 0 2px 2px rgba(255, 255, 255, 0.3);
+}
+
+@keyframes orb-turn {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* AUTO: the loop over a small caption. */
+#auto-button.orb {
+  grid-template-rows: auto auto;
+  align-content: center;
+  gap: 1px;
+}
+
+#auto-button.orb .icon-svg {
+  width: 46%;
+  height: 46%;
+}
+
+#auto-button.orb .label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 2px #000;
+}
+
+/* Cooldowns: a dark sweep over the core and the seconds, large. */
+.orb .cd {
+  font-size: 19px !important;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 4px #000, 0 1px 2px #000;
+}
+
+/* Keyboard keys: a small plate at the bottom, on computers only. */
+.orb .key {
+  position: absolute;
+  right: 50% !important;
+  bottom: 3px !important;
+  z-index: 2;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.55);
+  font-size: 9px !important;
+  line-height: 13px;
+  color: #f3e3b5;
+  opacity: 1 !important;
+  transform: translateX(50%);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .orb .key {
+    display: none;
+  }
+}
+
+/* How many potions: a gold badge on the rim. */
+#potion-button.orb .count {
+  right: 2px !important;
+  top: 2px;
+  bottom: auto !important;
+  z-index: 2;
+  min-width: 18px;
+  height: 18px;
+  border: 1px solid #fff2c2;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f5cf6b, #a8731d);
+  color: #2b1a00 !important;
+  font-size: 11px !important;
+  line-height: 16px;
+  text-align: center;
+  text-shadow: none !important;
+}
+
+/* ---- The menu: dark glass tiles with a thin gold edge ---- */
+
+#menu-bar > button {
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(233, 196, 106, 0.55);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(42, 48, 64, 0.94), rgba(13, 16, 23, 0.94));
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  color: #f3e3b5;
+  font-size: 0;
+  transition: transform 0.08s ease-out;
+}
+
+#menu-bar > button .icon-svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ☰ only where the menu folds (short screens); the tile style above must not bring it back. */
+#menu-bar > #menu-toggle {
+  display: none;
+}
+
+@media (max-height: 799px) {
+  #menu-bar > #menu-toggle {
+    display: grid;
+  }
+}
+
+#menu-bar > button:active {
+  transform: scale(0.92);
+}
+
+#menu-bar > #gm-button {
+  border-color: #ffb3b3;
+  background: linear-gradient(180deg, #b3191e, #5a0a0d);
+  color: #fff;
+}
+
+/* The small round buttons at the edges: the same glass. (Their own rules decide when they show:
+ * this sets no display, the icon is centred on its own.) */
+#fullscreen-button,
+#chat-toggle,
+#chat-min {
+  border: 1px solid rgba(233, 196, 106, 0.5);
+  background: linear-gradient(180deg, rgba(42, 48, 64, 0.94), rgba(13, 16, 23, 0.94));
+  color: #f3e3b5;
+  font-size: 0;
+}
+
+#fullscreen-button .icon-svg,
+#chat-toggle .icon-svg,
+#chat-min .icon-svg {
+  position: absolute;
+  inset: 0;
+  width: 19px;
+  height: 19px;
+  margin: auto;
+}
+
+#chat-min .icon-svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* ---- The joystick: a rim marked at the four ways, a metal knob ---- */
+
+#joystick {
+  border: 2px solid rgba(233, 196, 106, 0.45);
+  background: radial-gradient(circle, rgba(8, 11, 18, 0.12) 45%, rgba(8, 11, 18, 0.55) 74%);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45), 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+/* Short marks just inside the rim, at the four ways. */
+#joystick::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from -3deg,
+    rgba(243, 227, 181, 0.75) 0 6deg,
+    transparent 6deg 90deg,
+    rgba(243, 227, 181, 0.75) 90deg 96deg,
+    transparent 96deg 180deg,
+    rgba(243, 227, 181, 0.75) 180deg 186deg,
+    transparent 186deg 270deg,
+    rgba(243, 227, 181, 0.75) 270deg 276deg,
+    transparent 276deg
+  );
+  -webkit-mask: radial-gradient(circle closest-side, transparent 84%, #000 86%);
+  mask: radial-gradient(circle closest-side, transparent 84%, #000 86%);
+  pointer-events: none;
+}
+
+.stick-knob {
+  border: 3px solid transparent;
+  background:
+    radial-gradient(circle at 40% 32%, #ffffff 0%, #c7d0de 45%, #6e7889 100%) padding-box,
+    var(--gold-rim) border-box;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.55), inset 0 -4px 6px rgba(0, 0, 0, 0.25);
+}

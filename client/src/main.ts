@@ -34,6 +34,7 @@ import {
 import { HeroPicker } from "./three/HeroPicker.ts";
 import { startErrorReports } from "./errors.ts";
 import { BUZZ, buzz } from "./haptics.ts";
+import { applyIcons, setIcon } from "./icons.ts";
 import { CODEX_KINDS, CODEX_PAGES, codexGoal, codexReward, type CodexView } from "../../shared/codex.ts";
 import type { DungeonStatus } from "../../shared/dungeon.ts";
 import { monsterKind } from "../../shared/monsters.ts";
@@ -55,6 +56,9 @@ const chatLog = document.querySelector<HTMLOListElement>("#chat-log")!;
 const chatForm = document.querySelector<HTMLFormElement>("#chat-form")!;
 const chatInput = document.querySelector<HTMLInputElement>("#chat-input")!;
 const online = document.querySelector<HTMLSpanElement>("#online")!;
+// The icons, drawn in once: every button marked data-icon gets its own.
+applyIcons();
+
 // From here on, errors on this page are reported to the GMs, with where the player was.
 startErrorReports(() => `${online.textContent ?? ""} · ${room ? "ในเกม" : "หน้าแรก"}`);
 const questButton = document.querySelector<HTMLButtonElement>("#quest-button")!;
@@ -800,7 +804,7 @@ const ultimateButton = document.querySelector<HTMLButtonElement>("#ultimate-butt
 
 function showUltimateButton(skin: number) {
   const ultimate = ULTIMATES[heroOf(skin).ultimate];
-  ultimateButton.querySelector(".icon")!.textContent = ultimate.icon;
+  setIcon(ultimateButton, heroOf(skin).ultimate);
   ultimateButton.title = `${ultimate.name}: ${ultimate.text} (T)`;
   ultimateButton.classList.toggle("offensive", ultimate.offensive);
 }
@@ -1410,7 +1414,7 @@ const menuToggle = document.querySelector<HTMLButtonElement>("#menu-toggle")!;
 function foldMenu(open: boolean) {
   menuBar.classList.toggle("open", open);
   menuToggle.setAttribute("aria-expanded", String(open));
-  menuToggle.textContent = open ? "✕" : "☰";
+  setIcon(menuToggle, open ? "close" : "menu");
 }
 
 menuToggle.addEventListener("click", () => {
@@ -1505,7 +1509,7 @@ const voice = new Voice((type, message) => room?.send(type, message), {
 function renderVoiceButton() {
   voiceButton.classList.toggle("on", voice.on);
   voiceButton.setAttribute("aria-pressed", String(voice.on));
-  voiceButton.textContent = voice.on ? "🎙" : "🎤";
+  voiceButton.title = voice.on ? "ปิดไมค์" : "เปิดไมค์คุยกับทีม";
 }
 
 voiceButton.addEventListener("click", async () => {
