@@ -1,7 +1,7 @@
 import "./style.css";
 import { Client, type Room } from "colyseus.js";
 import { type ChatMessage, cleanPartyCode, PARTY_ALPHABET, PARTY_CODE_LENGTH, RECONNECT_SECONDS, ROOM_NAME, SERVER_PORT } from "../../shared/world.ts";
-import { HEROES, type ShotEvent } from "../../shared/heroes.ts";
+import { heroOf, HEROES, type ShotEvent } from "../../shared/heroes.ts";
 import { isRegionId, REGIONS, type RegionId, START_REGION } from "../../shared/regions.ts";
 import type { Achievement, ProgressView } from "../../shared/quests.ts";
 import { decorateTitle, findTitle, type Title, TITLES } from "../../shared/titles.ts";
@@ -19,6 +19,7 @@ import { BAG_SIZE, type BagView, type Gear, gearEffect, type GearSlot, type Loot
 import { HeroPicker } from "./three/HeroPicker.ts";
 import { startErrorReports } from "./errors.ts";
 import { BUZZ, buzz } from "./haptics.ts";
+import { ULTIMATES, type UltimateEvent } from "../../shared/ultimates.ts";
 import type { ErrorGroup } from "../../shared/errors.ts";
 import { RESPAWN_MS, type HitEvent, isSkillId, SKILLS, type SkillId, xpToNext } from "../../shared/combat.ts";
 import { BAN_DAYS, type GmAction, type GmList, type GmPlayer } from "../../shared/gm.ts";
@@ -440,6 +441,12 @@ function startGame(joined: Room, region: RegionId) {
   joined.onMessage("shot", (shot: ShotEvent) => scene?.showShot(shot));
   joined.onMessage("shot-end", (message: { id: number; x: number; y: number }) => scene?.endShot(message.id, message.x, message.y));
   joined.onMessage("xp", (message: { amount: number }) => scene?.showXp(message.amount));
+  joined.onMessage("ultimate", (event: UltimateEvent) => {
+    scene?.showUltimate(event);
+    if (event.by === joined.sessionId) {
+      startUltimateCooldown(ULTIMATES[event.id].cooldownMs);
+    }
+  });
   joined.onMessage("skill", (message: { id: SkillId; by: string; fromX?: number; fromY?: number; x?: number; y?: number; amount?: number }) => {
     scene?.showSkill(message);
     if (message.by === joined.sessionId) {
@@ -457,6 +464,7 @@ function startGame(joined: Room, region: RegionId) {
   joystick.hidden = false;
   menuBar.hidden = false;
   autoButton.hidden = false;
+  showUltimateButton(player.skin);
   scene.setAuto(hunting);
   joined.onMessage("gold", (message: { amount: number; x: number; y: number }) => scene?.showGold(message.amount, message.x, message.y));
   joined.onMessage("potion", (message: { by: string; amount: number }) => {
@@ -754,6 +762,41 @@ function startCooldown(id: SkillId) {
   };
   frame();
 }
+
+// The class skill: its icon follows the hero chosen; T or the button uses it.
+const ultimateButton = document.querySelector<HTMLButtonElement>("#ultimate-button")!;
+
+function showUltimateButton(skin: number) {
+  const ultimate = ULTIMATES[heroOf(skin).ultimate];
+  ultimateButton.querySelector(".icon")!.textContent = ultimate.icon;
+  ultimateButton.title = `${ultimate.name}: ${ultimate.text} (T)`;
+  ultimateButton.classList.toggle("offensive", ultimate.offensive);
+}
+
+function startUltimateCooldown(total: number) {
+  const ends = performance.now() + total;
+  const countdown = ultimateButton.querySelector<HTMLSpanElement>(".cd")!;
+  const frame = () => {
+    const left = Math.max(0, ends - performance.now());
+    ultimateButton.style.setProperty("--cooldown", `${(left / total) * 360}deg`);
+    ultimateButton.classList.toggle("cooling", left > 0);
+    countdown.textContent = left > 0 ? String(Math.ceil(left / 1000)) : "";
+    if (left > 0) {
+      requestAnimationFrame(frame);
+    }
+  };
+  frame();
+}
+
+ultimateButton.addEventListener("pointerdown", (event) => {
+  event.preventDefault();
+  scene?.useUltimate();
+});
+window.addEventListener("keydown", (event) => {
+  if (document.activeElement !== chatInput && !event.repeat && event.code === "KeyT") {
+    scene?.useUltimate();
+  }
+});
 
 for (const button of document.querySelectorAll<HTMLButtonElement>(".skill-button")) {
   button.addEventListener("pointerdown", (event) => {

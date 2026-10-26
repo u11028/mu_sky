@@ -1,6 +1,8 @@
 // The heroes a player can be, and how each one fights. The server stores the chosen one's index
 // as the player's `skin`, and uses its class for health, damage and the basic attack.
 
+import type { UltimateId } from "./ultimates.ts";
+
 /** Swings at whatever is in front, or shoots something that flies. */
 export type Attack =
   | {
@@ -34,6 +36,8 @@ export interface Hero {
   hp: number;
   power: number;
   crit: number;
+  /** The class's own skill (see ultimates.ts). */
+  ultimate: UltimateId;
 }
 
 const SWORD_AND_SHIELD = {
@@ -42,6 +46,7 @@ const SWORD_AND_SHIELD = {
   hp: 1.3,
   power: 1,
   crit: 0.1,
+  ultimate: "bulwark",
 } as const;
 const HEAVY_AXE = {
   attack: { kind: "melee", range: 82, arc: -0.1 },
@@ -49,6 +54,7 @@ const HEAVY_AXE = {
   hp: 1.15,
   power: 1.3,
   crit: 0.1,
+  ultimate: "berserk",
 } as const;
 const QUICK_BLADES = {
   attack: { kind: "melee", range: 64, arc: 0.3 },
@@ -56,6 +62,7 @@ const QUICK_BLADES = {
   hp: 0.95,
   power: 0.8,
   crit: 0.3,
+  ultimate: "shadowStrike",
 } as const;
 const MAGIC = {
   attack: { kind: "ranged", range: 330, projectile: "magic", speed: 560 },
@@ -63,6 +70,7 @@ const MAGIC = {
   hp: 0.85,
   power: 1.25,
   crit: 0.1,
+  ultimate: "meteor",
 } as const;
 
 export const HEROES: readonly Hero[] = [
@@ -79,6 +87,7 @@ export const HEROES: readonly Hero[] = [
     hp: 0.9,
     power: 0.95,
     crit: 0.15,
+    ultimate: "arrowRain",
   },
   { id: "Rogue", name: "โจรเงา", role: "สายลอบ · มีดคู่ ตีไว คริติคอลสูง", right: "dagger", left: "dagger", ...QUICK_BLADES },
   {
@@ -92,6 +101,7 @@ export const HEROES: readonly Hero[] = [
     hp: 0.9,
     power: 1.1,
     crit: 0.25,
+    ultimate: "pierce",
   },
   { id: "Skeleton_Warrior", name: "อัศวินกระดูก", role: "สายแทงค์ · ดาบกับโล่ เลือดเยอะ", right: "Skeleton_Blade", left: "Skeleton_Shield_Small_A", ...SWORD_AND_SHIELD },
   { id: "Skeleton_Mage", name: "จอมเวทกระดูก", role: "สายเวท · ยิงลูกเวทระยะไกล", right: "Skeleton_Staff", ...MAGIC },

@@ -30,6 +30,8 @@ export interface HuntMove {
   dir: { x: number; y: number };
   attack: boolean;
   skill?: SkillId;
+  /** The class skill, when it is ready and a fight is on. */
+  ultimate: boolean;
   potion: boolean;
 }
 
@@ -47,6 +49,9 @@ export class AutoHunt {
   private nextAttack = 0;
   private nextPotion = 0;
   private nextSkill: Partial<Record<SkillId, number>> = {};
+  private nextUltimate = 0;
+
+  constructor(private readonly ultimateCooldownMs: () => number) {}
 
   reset() {
     this.targetId = undefined;
@@ -54,7 +59,7 @@ export class AutoHunt {
   }
 
   decide(view: HuntView, now: number): HuntMove {
-    const move: HuntMove = { dir: { x: 0, y: 0 }, attack: false, potion: false };
+    const move: HuntMove = { dir: { x: 0, y: 0 }, attack: false, ultimate: false, potion: false };
     if (view.hp <= 0) {
       return move;
     }
@@ -85,6 +90,10 @@ export class AutoHunt {
     }
     // The spinning blade when several are close, the lightning strike now and then.
     const crowd = view.monsters.filter((m) => Math.hypot(m.x - view.x, m.y - view.y) < 100).length;
+    if (now >= this.nextUltimate) {
+      move.ultimate = true;
+      this.nextUltimate = now + this.ultimateCooldownMs() + 500;
+    }
     if (crowd >= 2 && now >= (this.nextSkill.spin ?? 0)) {
       move.skill = "spin";
       this.nextSkill.spin = now + 7000;

@@ -33,6 +33,9 @@ export class Player extends Schema {
   @type("boolean") riding = false;
   /** The connection dropped and the game is waiting for them to come back: shown, but out of reach. */
   @type("boolean") away = false;
+  /** Class skills in effect: under a bulwark (half damage taken), or berserk (harder, faster). */
+  @type("boolean") guarded = false;
+  @type("boolean") rage = false;
 }
 
 export class Monster extends Schema {

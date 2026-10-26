@@ -312,6 +312,92 @@ describe("web", () => {
   });
 });
 
+describe("class skills", () => {
+  /** A GM hero of the given class standing by the nearest ordinary monster, out of any safe zone. */
+  async function nearMonster(skin, party = partyCode(), immortal = true) {
+    const bot = await join(server, { skin, party });
+    await makeGm(bot);
+    if (immortal) gm(bot, "god", { on: true });
+    let found;
+    let distance = Infinity;
+    bot.room.state.monsters.forEach((monster, id) => {
+      const d = Math.hypot(monster.x - 800, monster.y - 600);
+      if (!monster.dead && monster.kind !== "rahu" && monster.level <= 3 && d < distance) {
+        found = [id, monster];
+        distance = d;
+      }
+    });
+    const [id, monster] = found;
+    await walkTo(bot, monster.x - 90, monster.y);
+    return { bot, id, monster: () => bot.room.state.monsters.get(id) };
+  }
+  const hitsOn = (bot, target) => (bot.got.hit ?? []).filter((hit) => hit.attacker === bot.room.sessionId && hit.target === target && hit.damage > 0);
+
+  test("knight's bulwark shields the team; berserk rages; both wear off", async () => {
+    const party = partyCode();
+    const knight = await join(server, { skin: 0, party });
+    const mate = await join(server, { skin: 2, party });
+    knight.room.send("team-invite", { target: mate.room.sessionId });
+    await until(() => mate.got["team-invite"]);
+    mate.room.send("team-answer", { yes: true });
+    await until(() => knight.me().team !== "" && knight.me().team === mate.me().team);
+    knight.room.send("ultimate");
+    await until(() => knight.me().guarded && mate.room.state.players.get(mate.room.sessionId).guarded, 2000);
+    assert.ok(knight.me().guarded && mate.me().guarded, "both shielded");
+    knight.room.send("ultimate");
+    await wait(300);
+    assert.equal(knight.got.ultimate?.filter((u) => u.by === knight.room.sessionId).length, 1, "not again before its cooldown");
+
+    const barbarian = await join(server, { skin: 1, party });
+    barbarian.room.send("ultimate");
+    await until(() => barbarian.me().rage, 2000);
+    assert.ok(barbarian.me().rage);
+    await until(() => !barbarian.me().rage && !knight.me().guarded, 8000);
+    assert.equal(barbarian.me().rage, false, "rage wears off");
+    assert.equal(knight.me().guarded, false, "the shield wears off");
+    for (const bot of [knight, mate, barbarian]) await bot.room.leave();
+  });
+
+  test("offensive class skills can't be used in a safe zone", async () => {
+    const mage = await join(server, { skin: 2, party: partyCode() });
+    await walkTo(mage, 800, 600);
+    mage.room.send("ultimate");
+    await wait(600);
+    assert.equal(mage.got.ultimate, undefined);
+    assert.ok(mage.said().some((text) => text.includes("เขตปลอดภัย")));
+    await mage.room.leave();
+  });
+
+  test("meteor, arrow rain and the piercing shot hurt the monsters they reach", async () => {
+    for (const skin of [2, 3, 5]) {
+      const { bot, id } = await nearMonster(skin);
+      bot.room.send("ultimate");
+      await until(() => hitsOn(bot, id).length > 0, 4000);
+      assert.ok(hitsOn(bot, id).length > 0, `class ${skin} hurt the monster`);
+      if (skin === 3) {
+        // Arrow rain falls in waves.
+        await wait(2000);
+        assert.ok(hitsOn(bot, id).length >= 2 || bot.got.xp, "more than one wave (or it died first)");
+      }
+      await bot.room.leave();
+    }
+  });
+
+  test("the shadow strike lands behind the target with a critical hit", async () => {
+    const { bot, id, monster } = await nearMonster(4);
+    const from = { x: bot.me().x, y: bot.me().y };
+    bot.room.send("ultimate");
+    await until(() => hitsOn(bot, id).length > 0, 3000);
+    await wait(200); // the blow is told at once; the new position comes with the next state update
+    const strike = hitsOn(bot, id)[0];
+    assert.equal(strike.crit, true);
+    const target = monster() ?? { x: from.x + 90, y: from.y };
+    assert.ok(Math.hypot(bot.me().x - target.x, bot.me().y - target.y) < 80, "next to it");
+    assert.ok(Math.hypot(bot.me().x - from.x, bot.me().y - from.y) > 60, "blinked there");
+    await bot.room.leave();
+  });
+});
+
 // Last: the lock it sets holds for every bot here, since they all come from the same address.
 describe("the GM key", () => {
   test("wrong GM keys lock the key for a while, even after leaving and coming back", async () => {

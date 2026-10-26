@@ -21,6 +21,7 @@ import { BUZZ, buzz } from "../haptics.ts";
 import { AutoQuality, type Level } from "./autoQuality.ts";
 import { type MapView, Minimap } from "./minimap.ts";
 import { AutoHunt } from "./autoHunt.ts";
+import { ARROW_RAIN_WAVES, BERSERK_SPEED, ULTIMATES, type UltimateEvent } from "../../../shared/ultimates.ts";
 import { onSettings, type Settings } from "../settings.ts";
 import { WEAPON_TIERS } from "../../../shared/items.ts";
 import { type LootEvent, RARITIES } from "../../../shared/loot.ts";
@@ -77,6 +78,8 @@ interface PlayerState {
   mount: number;
   riding: boolean;
   away: boolean;
+  guarded: boolean;
+  rage: boolean;
 }
 
 interface MonsterState {
@@ -218,7 +221,7 @@ export class World3D {
   private autoQuality = new AutoQuality();
   private minimap?: Minimap;
   /** Auto-hunting: on or off, and the way it is walking now. */
-  private hunt = new AutoHunt();
+  private hunt = new AutoHunt(() => ULTIMATES[heroOf(this.playerStates.get(this.room.sessionId)?.skin ?? 0).ultimate].cooldownMs);
   private hunting = false;
   private huntDir = { x: 0, y: 0 };
   /** Which way the local player last walked, for the minimap's arrow. */
@@ -404,6 +407,9 @@ export class World3D {
     this.setMount(actor, player.riding && !player.dead ? player.mount : 0);
     actor.setHp(player.hp, player.maxHp);
     actor.setTitle(player.title);
+    // Class skills in effect: a golden shield ring under a bulwark, a red one in a berserk rage.
+    this.setGlow(actor, "guard", player.guarded, "#ffd60a", 1.3);
+    this.setGlow(actor, "rage", player.rage, "#ff2d2d", 1.6);
     if (player.dead && !actor.dead) {
       actor.die();
     } else if (!player.dead && actor.dead) {
@@ -488,6 +494,86 @@ export class World3D {
         this.effects.dust(actor.root.position, 1.2, "#f4e9d8");
       }
     });
+  }
+
+  /** A ring of light under an actor while an effect holds; `name` keeps each effect's ring apart. */
+  private setGlow(actor: Actor, name: string, on: boolean, color: string, size: number) {
+    const key = `glow-${name}`;
+    const ring = actor.root.getObjectByName(key) as THREE.Mesh | undefined;
+    if (on && !ring) {
+      const glow = new THREE.Mesh(
+        new THREE.RingGeometry(0.75 * size, 1.05 * size, 40),
+        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }),
+      );
+      glow.name = key;
+      glow.rotation.x = -Math.PI / 2;
+      glow.position.y = 0.07;
+      actor.root.add(glow);
+    } else if (!on && ring) {
+      ring.removeFromParent();
+      ring.geometry.dispose();
+      (ring.material as THREE.Material).dispose();
+    }
+  }
+
+  /** A class skill, as everyone sees it. */
+  showUltimate(event: UltimateEvent) {
+    const actor = this.players.get(event.by);
+    if (!actor) {
+      return;
+    }
+    const ultimate = ULTIMATES[event.id];
+    const at = actor.root.position.clone();
+    const spot = event.x !== undefined && event.y !== undefined ? new THREE.Vector3(event.x / PX, 0, event.y / PX) : at;
+    actor.once("attack");
+    this.effects.floatText(at.clone().add(new THREE.Vector3(0, actor.height + 0.9, 0)), `${ultimate.icon} ${ultimate.name}`, "levelup", 1400);
+    switch (event.id) {
+      case "bulwark":
+        this.effects.dome(at, ultimate.radius / PX, "#ffd60a");
+        break;
+      case "berserk":
+        this.effects.explosion(at.clone().add(new THREE.Vector3(0, 1, 0)), "#ff2d2d");
+        break;
+      case "meteor":
+        this.effects.meteor(spot, ultimate.durationMs, ultimate.radius / PX);
+        break;
+      case "arrowRain":
+        for (let wave = 1; wave <= ARROW_RAIN_WAVES; wave++) {
+          setTimeout(() => {
+            if (this.disposed) {
+              return;
+            }
+            for (let i = 0; i < 6; i++) {
+              const angle = Math.random() * Math.PI * 2;
+              const off = Math.random() * (ultimate.radius / PX);
+              const hit = spot.clone().add(new THREE.Vector3(Math.cos(angle) * off, 0.4, Math.sin(angle) * off));
+              this.effects.trail(hit.clone().add(new THREE.Vector3(0, 2.5, 0)), "#c7f464", 0.9);
+              this.effects.sparks(hit, "#e9ffb0", 3);
+            }
+            this.effects.shockwave(spot, ultimate.radius / PX, "#c7f464");
+          }, ultimate.durationMs * wave);
+        }
+        break;
+      case "pierce":
+        this.effects.beam(at, event.dirX ?? 0, event.dirY ?? 1, ultimate.reach / PX, "#7df9ff");
+        break;
+      case "shadowStrike":
+        // Smoke where the hero was, a blade where they appear.
+        this.effects.dust(spot, 1.4, "#3c096c");
+        this.effects.slash(at.clone().add(new THREE.Vector3(0, 1, 0)), 0, "#c77dff", true);
+        break;
+    }
+    this.playNear(event.id === "bulwark" ? "levelup" : "swing", actor, 0.5);
+    if (event.by === this.room.sessionId) {
+      this.shake(event.id === "meteor" ? 0.35 : 0.2);
+    }
+  }
+
+  /** The local player's class skill. */
+  useUltimate() {
+    if (!this.players.get(this.room.sessionId)?.dead) {
+      this.room.send("ultimate");
+    }
   }
 
   /** Who is where, for the minimap. */
@@ -947,6 +1033,9 @@ export class World3D {
     if (move.skill) {
       this.useSkill(move.skill);
     }
+    if (move.ultimate) {
+      this.useUltimate();
+    }
   }
 
   private sendKeyboardDirection() {
@@ -967,7 +1056,7 @@ export class World3D {
     }
     const position = this.predicted;
     const state = this.playerStates.get(this.room.sessionId);
-    const pace = state?.riding ? (MOUNTS[state.mount]?.speed ?? 1) : 1;
+    const pace = (state?.riding ? (MOUNTS[state.mount]?.speed ?? 1) : 1) * (state?.rage ? BERSERK_SPEED : 1);
     const step = (PLAYER_SPEED * pace * delta) / 1000;
     const input = this.inputDirection();
     let dx = 0;

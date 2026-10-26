@@ -230,6 +230,54 @@ export class Effects {
     }
   }
 
+  /** A ball of fire falls from the sky onto a spot, a warning ring under it, and bursts as it lands. */
+  meteor(at: THREE.Vector3, fallMs: number, radius: number) {
+    const warning = glowMaterial("#ff7b00", 0.5);
+    const ring = new THREE.Mesh(new THREE.RingGeometry(radius * 0.9, radius, 48), warning);
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.copy(at).add(new THREE.Vector3(0, 0.08, 0));
+    this.add(ring, fallMs, (t) => {
+      warning.opacity = 0.3 + Math.sin(t * Math.PI * 6) * 0.2;
+    });
+    const rock = glowSprite("#ff9a2e", 2.2);
+    const start = at.clone().add(new THREE.Vector3(-6, 16, -4));
+    this.add(rock, fallMs, (t) => {
+      rock.position.lerpVectors(start, at, t * t);
+      this.trail(rock.position, "#ff5a1f", 1.2);
+    });
+    setTimeout(() => {
+      this.explosion(at.clone().add(new THREE.Vector3(0, 0.6, 0)), "#ff7b00");
+      this.shockwave(at, radius * 1.2, "#ff4d00");
+      this.dust(at, radius / 2, "#5a4636");
+    }, fallMs);
+  }
+
+  /** A straight beam of light from a point along a direction: a shot that goes through everything. */
+  beam(from: THREE.Vector3, dirX: number, dirZ: number, length: number, color: string) {
+    const material = glowMaterial(color, 0.95);
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, length, 8, 1, true), material);
+    beam.rotation.z = Math.PI / 2;
+    beam.rotation.y = -Math.atan2(dirZ, dirX);
+    beam.position.copy(from).add(new THREE.Vector3((dirX * length) / 2, 1, (dirZ * length) / 2));
+    this.add(beam, 380, (t) => {
+      beam.scale.set(1, 1 + t * 3, 1 + t * 3);
+      material.opacity = 0.95 * (1 - t);
+    });
+    this.muzzle(from.clone().add(new THREE.Vector3(dirX, 1, dirZ)), color);
+  }
+
+  /** A dome of golden light rising over a spot and fading: a shield over the team. */
+  dome(at: THREE.Vector3, radius: number, color: string) {
+    const material = glowMaterial(color, 0.4);
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), material);
+    dome.position.copy(at);
+    this.add(dome, 900, (t) => {
+      dome.scale.setScalar(radius * Math.min(1, t * 3));
+      material.opacity = 0.4 * (1 - t);
+    });
+    this.shockwave(at, radius, color);
+  }
+
   /** Puffs of dust or smoke. */
   dust(at: THREE.Vector3, size = 1, color = "#e8dcc8") {
     for (let i = 0; i < 5; i++) {

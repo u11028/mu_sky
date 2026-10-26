@@ -55,6 +55,7 @@ import { type CosmeticKind, cosmeticList, isCosmeticKind, MOUNTS, WINGS } from "
 import * as progress from "./progress.ts";
 import { type DropSource, LEGENDARY, type LootEvent, RARITIES, rollGear } from "../../shared/loot.ts";
 import { DAILY_GIFTS, type DailyGiftEvent } from "../../shared/rewards.ts";
+import { ARROW_RAIN_WAVES, BERSERK_SPEED, BULWARK_TAKEN, ULTIMATES, type UltimateEvent } from "../../shared/ultimates.ts";
 import { type Monster, Player, WorldState } from "./schema.ts";
 
 // colyseus 0.15 is CommonJS: Node's ESM loader only sees its default export.
@@ -95,6 +96,10 @@ interface Movement {
   safeNoticeAt: number;
   /** Kicked or banned by a GM: never kept for a reconnection. */
   removed?: boolean;
+  /** The class skill: when it may be used again, and until when its effect holds. */
+  ultimateReadyAt: number;
+  guardUntil: number;
+  rageUntil: number;
 }
 
 /** Teammates within this distance share a monster's reward even if they didn't hit it. */
@@ -313,6 +318,7 @@ export class WorldRoom extends Room<WorldState> {
         this.teamChanged(teams.leave(movement.playerId), [movement.playerId]);
       }
     });
+    this.onMessage("ultimate", (client) => this.useUltimate(client.sessionId));
     this.onMessage("skill", (client, message: { id?: unknown }) => {
       if (isSkillId(message?.id)) {
         this.useSkill(client.sessionId, message.id);
@@ -405,6 +411,9 @@ export class WorldRoom extends Room<WorldState> {
       skillReadyAt: {},
       potionReadyAt: 0,
       safeNoticeAt: 0,
+      ultimateReadyAt: 0,
+      guardUntil: 0,
+      rageUntil: 0,
     });
 
     client.send("chat-history", this.chatHistory);
@@ -771,6 +780,178 @@ export class WorldRoom extends Room<WorldState> {
     this.broadcast("skill", { id: skillId, by: sessionId, fromX: from.x, fromY: from.y });
   }
 
+  /** A blow's damage after a bulwark over the one taking it. */
+  private guarded(target: Player, damage: number) {
+    return target.guarded ? Math.max(1, Math.round(damage * BULWARK_TAKEN)) : damage;
+  }
+
+  // ---- Class skills ----
+
+  /** The class's own skill, each with its effect (see shared/ultimates.ts). */
+  private useUltimate(sessionId: string) {
+    const attacker = this.fighter(sessionId);
+    const now = Date.now();
+    if (!attacker || now < attacker.movement.ultimateReadyAt) {
+      return;
+    }
+    const { player, movement } = attacker;
+    const id = heroOf(player.skin).ultimate;
+    const ultimate = ULTIMATES[id];
+    if (ultimate.offensive && this.isSafe(player)) {
+      this.safeNotice(sessionId, movement);
+      return;
+    }
+    movement.ultimateReadyAt = now + ultimate.cooldownMs;
+    movement.shieldUntil = 0;
+    player.riding = false;
+    const event: UltimateEvent = { id, by: sessionId };
+
+    switch (id) {
+      case "bulwark":
+        // The hero and teammates around: half the damage for a while.
+        this.state.players.forEach((other, otherId) => {
+          const otherMovement = this.movements.get(otherId);
+          const near = Math.hypot(other.x - player.x, other.y - player.y) <= ultimate.radius;
+          if (otherMovement && !other.dead && near && (otherId === sessionId || sameTeam(player, other))) {
+            other.guarded = true;
+            otherMovement.guardUntil = now + ultimate.durationMs;
+          }
+        });
+        break;
+      case "berserk":
+        player.rage = true;
+        movement.rageUntil = now + ultimate.durationMs;
+        break;
+      case "meteor":
+      case "arrowRain": {
+        // On the nearest foe in reach, or ahead.
+        this.aim(sessionId, player, movement, ultimate.reach);
+        const target = this.nearestFoe(sessionId, player, ultimate.reach);
+        const x = target?.x ?? player.x + movement.facingX * ultimate.reach * 0.5;
+        const y = target?.y ?? player.y + movement.facingY * ultimate.reach * 0.5;
+        Object.assign(event, { x, y });
+        const waves = id === "meteor" ? 1 : ARROW_RAIN_WAVES;
+        for (let wave = 1; wave <= waves; wave++) {
+          this.clock.setTimeout(() => this.strikeArea(sessionId, x, y, ultimate.radius, ultimate.multiplier), ultimate.durationMs * wave);
+        }
+        break;
+      }
+      case "pierce": {
+        this.aim(sessionId, player, movement, ultimate.reach);
+        const { facingX: dirX, facingY: dirY } = movement;
+        Object.assign(event, { dirX, dirY });
+        this.strikeLine(sessionId, player.x, player.y, dirX, dirY, ultimate.reach, ultimate.radius, ultimate.multiplier);
+        break;
+      }
+      case "shadowStrike": {
+        const target = this.nearestFoe(sessionId, player, ultimate.reach);
+        if (!target) {
+          // Nobody to strike: the skill isn't spent.
+          movement.ultimateReadyAt = 0;
+          this.clients.find((c) => c.sessionId === sessionId)?.send("notice", { text: "ไม่มีศัตรูในระยะ", ok: false });
+          return;
+        }
+        Object.assign(event, { x: player.x, y: player.y });
+        // Behind them, as seen from where the hero stood (or beside them, if a rock is there).
+        const away = Math.hypot(target.x - player.x, target.y - player.y) || 1;
+        const behind = { x: target.x + ((target.x - player.x) / away) * 36, y: target.y + ((target.y - player.y) / away) * 36 };
+        const { bounds } = this.region;
+        if (!isBlocked(this.layout, behind.x, behind.y, 12)) {
+          player.x = clamp(behind.x, bounds.minX, bounds.maxX);
+          player.y = clamp(behind.y, bounds.minY, bounds.maxY);
+        }
+        movement.target = undefined;
+        movement.facingX = (target.x - player.x) / (Math.hypot(target.x - player.x, target.y - player.y) || 1);
+        movement.facingY = (target.y - player.y) / (Math.hypot(target.x - player.x, target.y - player.y) || 1);
+        if (target.monsterId) {
+          const monster = this.state.monsters.get(target.monsterId)!;
+          this.hitMonster(sessionId, player, movement, target.monsterId, monster, ultimate.multiplier, true);
+        } else if (target.playerId) {
+          const victim = this.state.players.get(target.playerId)!;
+          this.hit(sessionId, player, movement, target.playerId, victim, this.movements.get(target.playerId)!, ultimate.multiplier, true);
+        }
+        break;
+      }
+    }
+    this.broadcast("ultimate", event);
+  }
+
+  /** The closest monster, or player who can be fought, within reach. */
+  private nearestFoe(sessionId: string, player: Player, reach: number) {
+    let best: { x: number; y: number; monsterId?: string; playerId?: string } | undefined;
+    let bestDistance = reach;
+    this.state.monsters.forEach((monster, monsterId) => {
+      const distance = Math.hypot(monster.x - player.x, monster.y - player.y);
+      if (!monster.dead && distance <= bestDistance) {
+        best = { x: monster.x, y: monster.y, monsterId };
+        bestDistance = distance;
+      }
+    });
+    if (!best) {
+      this.state.players.forEach((other, otherId) => {
+        const otherMovement = this.movements.get(otherId);
+        const distance = Math.hypot(other.x - player.x, other.y - player.y);
+        if (otherId !== sessionId && !other.dead && otherMovement && !otherMovement.travelling && !sameTeam(player, other) && !this.isSafe(other) && distance <= bestDistance) {
+          best = { x: other.x, y: other.y, playerId: otherId };
+          bestDistance = distance;
+        }
+      });
+    }
+    return best;
+  }
+
+  /** Everyone (but the hero's team) and every monster within `radius` of a point. */
+  private strikeArea(sessionId: string, x: number, y: number, radius: number, multiplier: number) {
+    const attacker = this.fighter(sessionId);
+    if (!attacker) {
+      return;
+    }
+    const now = Date.now();
+    this.state.monsters.forEach((monster, monsterId) => {
+      const extra = this.monsters.kind(monster).boss ? 40 : 0;
+      if (!monster.dead && Math.hypot(monster.x - x, monster.y - y) <= radius + extra) {
+        this.hitMonster(sessionId, attacker.player, attacker.movement, monsterId, monster, multiplier);
+      }
+    });
+    this.state.players.forEach((target, targetId) => {
+      const targetMovement = this.movements.get(targetId);
+      if (targetId === sessionId || target.dead || !targetMovement || targetMovement.travelling || sameTeam(attacker.player, target)) {
+        return;
+      }
+      if (Math.hypot(target.x - x, target.y - y) <= radius && now >= targetMovement.shieldUntil) {
+        this.hit(sessionId, attacker.player, attacker.movement, targetId, target, targetMovement, multiplier);
+      }
+    });
+  }
+
+  /** Everything along a straight line from a point, `width` either side of it. */
+  private strikeLine(sessionId: string, x: number, y: number, dirX: number, dirY: number, length: number, width: number, multiplier: number) {
+    const attacker = this.fighter(sessionId);
+    if (!attacker) {
+      return;
+    }
+    const now = Date.now();
+    const onLine = (px: number, py: number, extra: number) => {
+      const along = (px - x) * dirX + (py - y) * dirY;
+      const aside = Math.abs((px - x) * dirY - (py - y) * dirX);
+      return along >= 0 && along <= length && aside <= width + extra;
+    };
+    this.state.monsters.forEach((monster, monsterId) => {
+      if (!monster.dead && onLine(monster.x, monster.y, this.monsters.kind(monster).boss ? 40 : 14)) {
+        this.hitMonster(sessionId, attacker.player, attacker.movement, monsterId, monster, multiplier);
+      }
+    });
+    this.state.players.forEach((target, targetId) => {
+      const targetMovement = this.movements.get(targetId);
+      if (targetId === sessionId || target.dead || !targetMovement || targetMovement.travelling || sameTeam(attacker.player, target)) {
+        return;
+      }
+      if (onLine(target.x, target.y, 14) && now >= targetMovement.shieldUntil) {
+        this.hit(sessionId, attacker.player, attacker.movement, targetId, target, targetMovement, multiplier);
+      }
+    });
+  }
+
   /** Hits every player and monster within reach that `aims` accepts, with the attacker's power times `multiplier`. */
   private strikeAround(
     sessionId: string,
@@ -811,15 +992,16 @@ export class WorldRoom extends Room<WorldState> {
   }
 
   /** Damage from the attacker's level and class, a little random, sometimes critical. */
-  private rollDamage(attacker: Player, multiplier: number) {
+  private rollDamage(attacker: Player, multiplier: number, sureCrit = false) {
     const hero = heroOf(attacker.skin);
-    const crit = Math.random() < hero.crit;
+    const crit = sureCrit || Math.random() < hero.crit;
     const rolled =
       attackPower(attacker.level) *
       hero.power *
       (WEAPON_TIERS[attacker.weapon]?.bonus ?? 1) *
       attacker.gearPower *
       (WINGS[attacker.wing]?.power ?? 1) *
+      (attacker.rage ? ULTIMATES.berserk.multiplier : 1) *
       multiplier *
       (0.85 + Math.random() * 0.3) *
       (crit ? CRIT_MULTIPLIER : 1);
@@ -834,6 +1016,7 @@ export class WorldRoom extends Room<WorldState> {
     target: Player,
     targetMovement: Movement,
     multiplier = 1,
+    sureCrit = false,
   ) {
     if (this.isSafe(target)) {
       return;
@@ -843,9 +1026,9 @@ export class WorldRoom extends Room<WorldState> {
       return;
     }
 
-    const rolled = this.rollDamage(attacker, multiplier);
-    // A one-hit GM always kills.
-    const damage = attackerMovement.oneHit ? target.hp : rolled.damage;
+    const rolled = this.rollDamage(attacker, multiplier, sureCrit);
+    // A one-hit GM always kills; a bulwark halves the rest.
+    const damage = attackerMovement.oneHit ? target.hp : this.guarded(target, rolled.damage);
     target.hp = Math.max(0, target.hp - damage);
     targetMovement.lastHitAt = Date.now();
     const killed = target.hp === 0;
@@ -863,8 +1046,9 @@ export class WorldRoom extends Room<WorldState> {
     monsterId: string,
     monster: Monster,
     multiplier: number,
+    sureCrit = false,
   ) {
-    const rolled = this.rollDamage(attacker, multiplier);
+    const rolled = this.rollDamage(attacker, multiplier, sureCrit);
     const damage = attackerMovement.oneHit ? monster.hp : Math.min(monster.hp, rolled.damage);
     monster.hp -= damage;
     this.monsters.hurt(monsterId, attackerId, damage);
@@ -922,7 +1106,7 @@ export class WorldRoom extends Room<WorldState> {
   }
 
   /** A monster's blow on a player, through the same shields as a player's. */
-  private monsterHit(monsterId: string, sessionId: string, damage: number) {
+  private monsterHit(monsterId: string, sessionId: string, blow: number) {
     const target = this.state.players.get(sessionId);
     const movement = this.movements.get(sessionId);
     if (!target || !movement || target.dead || Date.now() < movement.shieldUntil || this.isSafe(target)) {
@@ -933,6 +1117,7 @@ export class WorldRoom extends Room<WorldState> {
       return;
     }
 
+    const damage = this.guarded(target, blow);
     target.hp = Math.max(0, target.hp - damage);
     movement.lastHitAt = Date.now();
     const killed = target.hp === 0;
@@ -1717,7 +1902,14 @@ export class WorldRoom extends Room<WorldState> {
         return;
       }
 
-      const step = baseStep * (player.riding ? (MOUNTS[player.mount]?.speed ?? 1) : 1);
+      // Class skills wear off.
+      if (player.guarded && now >= movement.guardUntil) {
+        player.guarded = false;
+      }
+      if (player.rage && now >= movement.rageUntil) {
+        player.rage = false;
+      }
+      const step = baseStep * (player.riding ? (MOUNTS[player.mount]?.speed ?? 1) : 1) * (player.rage ? BERSERK_SPEED : 1);
 
       // A safe zone is a place to rest: health comes back three times as fast, at once.
       const safe = this.isSafe(player);

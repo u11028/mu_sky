@@ -2668,3 +2668,59 @@ body.in-safe-zone .skill-button[data-skill="strike"] {
     font-size: 12px;
   }
 }
+
+/* ---- Class skill ---- */
+
+/* Above the dash, beside the potion: bigger than the others, in gold, with the class's icon. */
+#ultimate-button {
+  position: absolute;
+  right: 78px;
+  bottom: 162px;
+  width: 62px;
+  height: 62px;
+  padding: 0;
+  border: 3px solid #ffd60a;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #c77dff, #3c096c 75%);
+  box-shadow: 0 0 14px rgba(255, 214, 10, 0.55), 0 4px 12px rgba(0, 0, 0, 0.4);
+  font-size: 28px;
+  overflow: hidden;
+  touch-action: none;
+}
+
+#ultimate-button .icon {
+  position: relative;
+  z-index: 0;
+}
+
+#ultimate-button .key {
+  position: absolute;
+  right: 6px;
+  bottom: 3px;
+  font-size: 10px;
+  color: #fff;
+}
+
+#ultimate-button .cd {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+#ultimate-button.cooling::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(rgba(0, 0, 0, 0.6) var(--cooldown, 0deg), transparent 0);
+}
+
+/* Only a class skill that strikes is held back in a safe zone; a shield or a rage is not. */
+body.in-safe-zone #ultimate-button.offensive {
+  filter: grayscale(0.85) brightness(0.75);
+}
