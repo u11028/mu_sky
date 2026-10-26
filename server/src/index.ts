@@ -1,5 +1,6 @@
 import { createServer } from "node:http";
 import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
 import colyseus from "colyseus";
@@ -20,6 +21,20 @@ const app = express();
 // After `npm run build` the server also hands out the game itself, so one port is enough.
 const clientDist = fileURLToPath(new URL("../../client/dist", import.meta.url));
 if (existsSync(clientDist)) {
+  // Models have a gzipped twin made at build time: browsers that take gzip (all of them) get that,
+  // a quarter of the size, at no cost to the server.
+  app.get(/\.glb$/, (req, res, next) => {
+    const packed = join(clientDist, decodeURIComponent(req.path) + ".gz");
+    if (!/gzip/.test(String(req.headers["accept-encoding"] ?? "")) || !packed.startsWith(clientDist) || !existsSync(packed)) {
+      next();
+      return;
+    }
+    res.setHeader("Content-Encoding", "gzip");
+    res.setHeader("Vary", "Accept-Encoding");
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.type("model/gltf-binary");
+    res.sendFile(packed);
+  });
   app.use(
     express.static(clientDist, {
       setHeaders(res, path) {

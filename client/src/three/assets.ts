@@ -2,9 +2,11 @@
 
 import * as THREE from "three";
 import { type GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 
-const loader = new GLTFLoader();
+// The models are packed with meshopt (about half the size, and a quarter once gzipped).
+const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 const cache = new Map<string, Promise<GLTF>>();
 
 /** Loads a model once; later calls share it. Paths are under assets/3d without the extension. */
@@ -109,11 +111,21 @@ function restBounds(model: THREE.Object3D) {
   const part = new THREE.Box3();
   model.traverse((child) => {
     const mesh = child as THREE.Mesh;
-    if (mesh.isMesh) {
+    if (!mesh.isMesh) {
+      return;
+    }
+    const skinned = mesh as THREE.SkinnedMesh;
+    if (skinned.isSkinnedMesh) {
+      // Through the bones, as drawn: packed (meshopt) models keep their vertices in a small
+      // grid and put the scale back in the skeleton, so the raw vertices say nothing of the size.
+      skinned.skeleton.update();
+      skinned.computeBoundingBox();
+      part.copy(skinned.boundingBox!).applyMatrix4(mesh.matrixWorld);
+    } else {
       mesh.geometry.computeBoundingBox();
       part.copy(mesh.geometry.boundingBox!).applyMatrix4(mesh.matrixWorld);
-      box.union(part);
     }
+    box.union(part);
   });
   return box;
 }

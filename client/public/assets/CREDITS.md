@@ -49,3 +49,8 @@ https://pixel-boy.itch.io/ninja-adventure-asset-pack
 Horse, White Horse, Wolf and Stag from Quaternius' animated animal models, the velociraptor from
 Quaternius' animated dinosaurs, and the dragon from his Ultimate Monsters (all CC0, files from
 https://poly.pizza/u/Quaternius). Wings are drawn in code, not taken from a pack.
+
+## Packing
+
+The .glb models are packed with glTF Transform (`resample`, then `meshopt --level medium`), about half
+their original size; the build adds a gzipped copy of each, which the server sends to browsers.
