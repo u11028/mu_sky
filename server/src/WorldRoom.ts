@@ -53,6 +53,8 @@ import { isGmKey } from "./gmKey.ts";
 import * as teams from "./teams.ts";
 import * as voice from "./voice.ts";
 import { clearErrors, errorGroups, reportServer } from "./errors.ts";
+import { closeReport, fileReport, openReports, reportTarget } from "./reports.ts";
+import { AUTO_MUTE_MINUTES, censor, type GmReport, REPORT_REASONS } from "../../shared/safety.ts";
 import { ARMOR_TIERS, isShopItem, monsterGold, POTION, type ShopItem, WEAPON_TIERS } from "../../shared/items.ts";
 import { type CosmeticKind, cosmeticList, isCosmeticKind, MOUNTS, WINGS } from "../../shared/cosmetics.ts";
 import * as progress from "./progress.ts";
@@ -103,7 +105,12 @@ interface Movement {
   ultimateReadyAt: number;
   guardUntil: number;
   rageUntil: number;
+  /** The last lines the player wrote, for a report about them. */
+  recentChats: string[];
 }
+
+/** Lines of a player's chat kept for a report. */
+const REPORT_CHATS = 5;
 
 /** Teammates within this distance share a monster's reward even if they didn't hit it. */
 const SHARE_DISTANCE = 800;
@@ -198,7 +205,8 @@ export class WorldRoom extends Room<WorldState> {
   private regionId: RegionId = START_REGION;
   private region: Region = REGIONS[START_REGION];
   private movements = new Map<string, Movement>();
-  private chatHistory: ChatMessage[] = [];
+  /** Recent chat, each line with who wrote it, so those who blocked them don't see it on joining. */
+  private chatHistory: { message: ChatMessage; writer?: string }[] = [];
   private ticks = 0;
   private projectiles: Projectile[] = [];
   private nextShotId = 1;
@@ -289,7 +297,17 @@ export class WorldRoom extends Room<WorldState> {
         this.runCommand(client, movement, player, text);
         return;
       }
-      this.sendChat({ from: player.name, text, title: player.title || undefined }, client.sessionId);
+      const muted = progress.mutedUntil(movement.playerId);
+      if (muted) {
+        this.tell(client, `🔇 คุณถูกปิดแชทชั่วคราวเพราะมีผู้เล่นรายงาน อีก ${Math.ceil((muted - now) / 60_000)} นาที`);
+        return;
+      }
+      const clean = censor(text);
+      movement.recentChats.push(clean === text ? text : `${clean}  (เดิม: ${text})`);
+      if (movement.recentChats.length > REPORT_CHATS) {
+        movement.recentChats.shift();
+      }
+      this.sendChat({ from: player.name, text: clean, title: player.title || undefined }, client.sessionId);
       this.celebrate(movement.playerId, progress.recordChat(movement.playerId, text));
     });
 
@@ -360,6 +378,16 @@ export class WorldRoom extends Room<WorldState> {
       }
     });
     this.onMessage("voice-signal", (client, message: { to?: unknown; data?: unknown }) => this.passVoiceSignal(client, message));
+    this.onMessage("block", (client, message: { target?: unknown }) => this.block(client, String(message?.target)));
+    this.onMessage("unblock", (client, message: { index?: unknown }) => {
+      const movement = this.movements.get(client.sessionId);
+      if (movement && progress.unblock(movement.playerId, Number(message?.index))) {
+        client.send("blocked", progress.blockedNames(movement.playerId));
+      }
+    });
+    this.onMessage("report", (client, message: { target?: unknown; reason?: unknown; note?: unknown }) =>
+      this.report(client, String(message?.target), message?.reason, message?.note),
+    );
 
     this.setSimulationInterval((deltaMs) => this.update(deltaMs), 50);
   }
@@ -393,7 +421,7 @@ export class WorldRoom extends Room<WorldState> {
 
   onJoin(client: Client, options: JoinOptions) {
     const player = new Player();
-    player.name = playerName(options?.name);
+    player.name = censor(playerName(options?.name));
     const skin = Number(options?.skin);
     player.skin = Number.isInteger(skin) && skin >= 0 && skin < HEROES.length ? skin : 0;
 
@@ -445,9 +473,13 @@ export class WorldRoom extends Room<WorldState> {
       ultimateReadyAt: 0,
       guardUntil: 0,
       rageUntil: 0,
+      recentChats: [],
     });
 
-    client.send("chat-history", this.chatHistory);
+    client.send(
+      "chat-history",
+      this.chatHistory.filter((entry) => !entry.writer || !progress.blocks(playerId, entry.writer)).map((entry) => entry.message),
+    );
     client.send("progress", progress.view(playerId));
     this.giveDailyGift(client, player, playerId);
     this.sendChat({ from: "ระบบ", text: `${player.name} มาถึง${this.region.name}แล้ว`, system: true });
@@ -471,6 +503,7 @@ export class WorldRoom extends Room<WorldState> {
   private sendInventory(client: Client, playerId: string) {
     client.send("wardrobe", progress.wardrobe(playerId));
     client.send("bag", progress.bag(playerId));
+    client.send("blocked", progress.blockedNames(playerId));
     if (worldBoss && worldBoss.room.party === this.party) {
       client.send("world-boss", worldBoss.room.worldBossEvent());
     }
@@ -520,6 +553,16 @@ export class WorldRoom extends Room<WorldState> {
   /** Tells a player what they just achieved and sends their updated progress. */
   private celebrate(playerId: string, achievements: Achievement[]) {
     const entry = [...this.movements].find(([, movement]) => movement.playerId === playerId);
+    // Quest rewards went into the saved gold and potions: the player carries them now.
+    const player = entry && this.state.players.get(entry[0]);
+    if (player && achievements.length > 0) {
+      const { gold, potions } = progress.inventory(playerId);
+      if (gold > player.gold) {
+        this.clients.find((c) => c.sessionId === entry[0])?.send("gold", { amount: gold - player.gold, x: player.x, y: player.y });
+      }
+      player.gold = gold;
+      player.potions = potions;
+    }
     const client = entry && this.clients.find((c) => c.sessionId === entry[0]);
     if (!client) {
       return;
@@ -553,12 +596,20 @@ export class WorldRoom extends Room<WorldState> {
   }
 
   private sendChat(message: ChatMessage, senderId?: string) {
-    this.chatHistory.push(message);
+    const writer = senderId ? this.movements.get(senderId)?.playerId : undefined;
+    this.chatHistory.push({ message, writer });
     if (this.chatHistory.length > CHAT_HISTORY_SIZE) {
       this.chatHistory.shift();
     }
 
-    this.broadcast("chat", { ...message, senderId });
+    const line = { ...message, senderId };
+    for (const client of this.clients) {
+      const reader = this.movements.get(client.sessionId)?.playerId;
+      // Those who blocked the writer don't see it.
+      if (!writer || !reader || !progress.blocks(reader, writer)) {
+        client.send("chat", line);
+      }
+    }
   }
 
   /** A system line only one player sees. */
@@ -834,6 +885,7 @@ export class WorldRoom extends Room<WorldState> {
     }
     movement.ultimateReadyAt = now + ultimate.cooldownMs;
     movement.shieldUntil = 0;
+    this.celebrate(movement.playerId, progress.recordUltimate(movement.playerId));
     player.riding = false;
     const event: UltimateEvent = { id, by: sessionId };
 
@@ -1457,6 +1509,7 @@ export class WorldRoom extends Room<WorldState> {
     }
     player.gold -= outcome.cost;
     progress.saveInventory(movement.playerId, { gold: player.gold });
+    this.celebrate(movement.playerId, progress.recordEnhance(movement.playerId));
     const { gear } = outcome;
     const plus = gear.plus ?? 0;
     this.broadcast("enhance", { by: client.sessionId, ok: outcome.result === "done", plus, rarity: gear.rarity });
@@ -1638,12 +1691,148 @@ export class WorldRoom extends Room<WorldState> {
     return undefined;
   }
 
+  // ---- Safety ----
+
+  /** Someone here no longer bothers this player: their chat, team invites and voice stay away. */
+  private block(client: Client, targetSession: string) {
+    const movement = this.movements.get(client.sessionId);
+    const target = this.movements.get(targetSession);
+    const name = this.state.players.get(targetSession)?.name;
+    if (!movement || !target || targetSession === client.sessionId) {
+      return;
+    }
+    if (progress.block(movement.playerId, target.playerId)) {
+      client.send("blocked", progress.blockedNames(movement.playerId));
+      client.send("notice", { text: `บล็อก ${name} แล้ว จะไม่เห็นแชทและคำชวนของเขาอีก · เลิกบล็อกได้ในตั้งค่า`, ok: true });
+    }
+  }
+
+  private report(client: Client, targetSession: string, reason: unknown, note: unknown) {
+    const movement = this.movements.get(client.sessionId);
+    const player = this.state.players.get(client.sessionId);
+    const target = this.movements.get(targetSession);
+    const targetPlayer = this.state.players.get(targetSession);
+    const why = REPORT_REASONS.find((known) => known === reason);
+    if (!movement || !player || !target || !targetPlayer || !why || targetSession === client.sessionId) {
+      return;
+    }
+    const filed = fileReport({
+      reporterId: movement.playerId,
+      reporter: player.name,
+      targetId: target.playerId,
+      target: targetPlayer.name,
+      reason: why,
+      note: cleanText(note, 100),
+      region: this.region.name,
+      chats: [...target.recentChats],
+    });
+    const notice = (text: string, ok: boolean) => client.send("notice", { text, ok });
+    if (filed.result === "again") {
+      notice("รายงานผู้เล่นคนนี้ไปแล้ว GM จะตรวจสอบให้", true);
+      return;
+    }
+    if (filed.result === "busy") {
+      notice("รายงานบ่อยเกินไป ลองใหม่ภายหลัง", false);
+      return;
+    }
+    notice(`ส่งรายงาน ${targetPlayer.name} ถึง GM แล้ว ขอบคุณที่ช่วยดูแลเกม`, true);
+    if (filed.mute && !progress.mutedUntil(target.playerId)) {
+      progress.mute(target.playerId, AUTO_MUTE_MINUTES);
+      const targetClient = this.clients.find((c) => c.sessionId === targetSession);
+      if (targetClient) {
+        this.tell(targetClient, `🔇 มีผู้เล่นหลายคนรายงานคุณ แชทถูกปิด ${AUTO_MUTE_MINUTES} นาที · กรุณาเล่นอย่างสุภาพ`);
+      }
+    }
+    WorldRoom.tellGms(`📣 รายงานใหม่: ${targetPlayer.name} (${why}) โดย ${player.name} · ดูในแผง GM`);
+  }
+
+  /** A line for every GM online, wherever they are. */
+  private static tellGms(text: string) {
+    for (const room of rooms) {
+      for (const [sessionId, movement] of room.movements) {
+        const client = room.clients.find((c) => c.sessionId === sessionId);
+        if (client && progress.profile(movement.playerId).gm) {
+          room.tell(client, text);
+        }
+      }
+    }
+  }
+
+  private static gmReports(): GmReport[] {
+    return openReports().map((report) => ({
+      id: report.id,
+      at: report.at,
+      reporter: report.reporter,
+      target: report.target,
+      reason: report.reason,
+      note: report.note,
+      region: report.region,
+      chats: report.chats,
+      count: report.count,
+      mutedUntil: progress.mutedUntil(report.targetId),
+    }));
+  }
+
+  private actOnReport(client: Client, message: Extract<GmAction, { id: string }>) {
+    const id = String(message.id);
+    const target = reportTarget(id);
+    const why = openReports().find((report) => report.id === id)?.reason ?? "";
+    const done = (text: string) => {
+      this.tell(client, `[GM] ${text}`);
+      client.send("gm-reports", WorldRoom.gmReports());
+    };
+    if (!target) {
+      done("ไม่พบรายงานนี้ (อาจถูกปิดไปแล้ว)");
+      return;
+    }
+    const name = target.name || progress.nameOf(target.id);
+    switch (message.action) {
+      case "report-close":
+        closeReport(id, Boolean(message.all));
+        done(message.all ? `ปิดทุกรายงานของ ${name} แล้ว` : "ปิดรายงานแล้ว");
+        return;
+      case "report-mute":
+        progress.mute(target.id, 60);
+        done(`ปิดแชท ${name} 1 ชั่วโมงแล้ว`);
+        return;
+      case "report-unmute":
+        progress.unmute(target.id);
+        done(`เปิดแชทให้ ${name} แล้ว`);
+        return;
+      case "report-ban": {
+        if (progress.profile(target.id).gm) {
+          done("แบน GM ไม่ได้");
+          return;
+        }
+        const days = Number(message.days) > 0 ? Math.min(Number(message.days), PERMANENT_BAN_DAYS) : PERMANENT_BAN_DAYS;
+        const reason = `ถูกรายงาน: ${why}`;
+        const until = progress.ban(target.id, days, reason);
+        // Online now: out they go.
+        const where = WorldRoom.sessionOf(target.id);
+        const targetClient = where?.room.clients.find((c) => c.sessionId === where.sessionId);
+        const targetMovement = where?.room.movements.get(where.sessionId);
+        if (targetClient && targetMovement) {
+          targetClient.send("removed", { text: banText({ until, reason }) });
+          targetMovement.removed = true;
+          targetClient.leave(4003);
+        }
+        closeReport(id, true);
+        done(`แบน ${name} ${days === PERMANENT_BAN_DAYS ? "ถาวร" : `${days} วัน`} แล้ว`);
+        return;
+      }
+    }
+  }
+
   private teamInvite(client: Client, targetSession: string) {
     const movement = this.movements.get(client.sessionId);
     const target = this.movements.get(targetSession);
     const player = this.state.players.get(client.sessionId);
     const targetClient = this.clients.find((c) => c.sessionId === targetSession);
     if (!movement || !target || !player || !targetClient) {
+      return;
+    }
+    if (progress.blocks(target.playerId, movement.playerId)) {
+      client.send("notice", { text: `ส่งคำชวนให้ ${this.state.players.get(targetSession)?.name} แล้ว`, ok: true });
       return;
     }
     const problem = teams.invite(movement.playerId, target.playerId);
@@ -1700,6 +1889,9 @@ export class WorldRoom extends Room<WorldState> {
     const team = from && teams.teamIdOf(from);
     // Teammates only, and only while one of the two talks: a listener needs a link too.
     if (!from || !to || !team || teams.teamIdOf(to) !== team || !(voice.isTalking(from) || voice.isTalking(to))) {
+      return;
+    }
+    if (progress.blocks(from, to) || progress.blocks(to, from)) {
       return;
     }
     if (JSON.stringify(message.data ?? null).length > voice.MAX_SIGNAL_LENGTH) {
@@ -1855,6 +2047,15 @@ export class WorldRoom extends Room<WorldState> {
       case "errors-clear":
         clearErrors();
         client.send("gm-errors", errorGroups());
+        return;
+      case "reports":
+        client.send("gm-reports", WorldRoom.gmReports());
+        return;
+      case "report-close":
+      case "report-ban":
+      case "report-mute":
+      case "report-unmute":
+        this.actOnReport(client, message);
         return;
       case "unban":
         if (typeof message.playerId === "string") {

@@ -22,7 +22,22 @@ import {
 import { BOARD_SIZE, type BoardId, BOARDS, DAILY_GIFTS, type Leaderboards } from "../../shared/rewards.ts";
 import { codexGoal, type CodexView } from "../../shared/codex.ts";
 import { monsterKind } from "../../shared/monsters.ts";
-import { type Achievement, dailyQuests, type ProgressView, type QuestId, thaiDay } from "../../shared/quests.ts";
+import { POTION } from "../../shared/items.ts";
+import {
+  type Achievement,
+  DAILY_BONUS,
+  dailyQuests,
+  type ProgressView,
+  type Quest,
+  type QuestId,
+  questReward,
+  type Reward,
+  rewardText,
+  thaiDay,
+  thaiWeek,
+  WEEKLY_BONUS,
+  WEEKLY_QUESTS,
+} from "../../shared/quests.ts";
 import { decorateTitle, findTitle, type LifeStat, TITLES } from "../../shared/titles.ts";
 
 interface Daily {
@@ -30,6 +45,12 @@ interface Daily {
   counts: Partial<Record<QuestId, number>>;
   /** Players met today, so meeting the same one twice counts once. */
   met: string[];
+  done: boolean;
+}
+
+interface Weekly {
+  week: number;
+  counts: Partial<Record<QuestId, number>>;
   done: boolean;
 }
 
@@ -59,6 +80,7 @@ interface Life {
 
 interface Progress {
   daily: Daily;
+  weekly: Weekly;
   life: Life;
   equipped: string;
   level: number;
@@ -93,6 +115,10 @@ interface Progress {
   /** The last Thai day a daily gift was given, and how many days in a row (1 to 7) so far. */
   giftDay: number;
   giftStreak: number;
+  /** Players whose chat, invites and voice this player doesn't want. */
+  blocked: string[];
+  /** Unix time in ms until which the player may not chat (too many reports); 0 = may. */
+  mutedUntil: number;
 }
 
 /** Enough to earn every title; older ids are dropped first. */
@@ -120,6 +146,10 @@ export function saveNow() {
 
 function newDaily(day: number): Daily {
   return { day, counts: {}, met: [], done: false };
+}
+
+function newWeekly(week: number): Weekly {
+  return { week, counts: {}, done: false };
 }
 
 function newLife(): Life {
@@ -150,6 +180,7 @@ function newLife(): Life {
 function newProgress(): Progress {
   return {
     daily: newDaily(thaiDay()),
+    weekly: newWeekly(thaiWeek()),
     life: newLife(),
     equipped: "rookie",
     level: 1,
@@ -177,6 +208,8 @@ function newProgress(): Progress {
     nextGear: 1,
     giftDay: 0,
     giftStreak: 0,
+    blocked: [],
+    mutedUntil: 0,
   };
 }
 
@@ -194,11 +227,29 @@ function get(playerId: string): Progress {
   if (progress.daily.day !== today) {
     progress.daily = newDaily(today);
   }
+  const week = thaiWeek();
+  if (progress.weekly.week !== week) {
+    progress.weekly = newWeekly(week);
+  }
   return progress;
 }
 
 function questProgress(daily: Daily, id: QuestId) {
   return id === "meet" ? daily.met.length : daily.counts[id] ?? 0;
+}
+
+/** Counts something done towards today's quests and this week's. */
+function bump({ daily, weekly }: Progress, id: QuestId, amount = 1) {
+  daily.counts[id] = (daily.counts[id] ?? 0) + amount;
+  weekly.counts[id] = (weekly.counts[id] ?? 0) + amount;
+}
+
+function questStates(quests: readonly Quest[], progress: (id: QuestId) => number, level: number) {
+  return quests.map((quest) => ({
+    ...quest,
+    reward: questReward(quest.reward, level),
+    progress: Math.min(quest.goal, progress(quest.id)),
+  }));
 }
 
 /** Monster kinds with enough kills to be complete in the collection book. */
@@ -237,13 +288,14 @@ function titleStates({ life, granted }: Progress) {
 
 export function view(playerId: string): ProgressView {
   const record = get(playerId);
-  const { daily, life, equipped } = record;
+  const { daily, weekly, life, equipped, level } = record;
   return {
-    quests: dailyQuests(daily.day).map((quest) => ({
-      ...quest,
-      progress: Math.min(quest.goal, questProgress(daily, quest.id)),
-    })),
+    quests: questStates(dailyQuests(daily.day), (id) => questProgress(daily, id), level),
     dailyDone: daily.done,
+    dailyBonus: questReward(DAILY_BONUS, level),
+    weekly: questStates(WEEKLY_QUESTS, (id) => weekly.counts[id] ?? 0, level),
+    weeklyDone: weekly.done,
+    weeklyBonus: questReward(WEEKLY_BONUS, level),
     days: life.days,
     titles: titleStates(record),
     equipped,
@@ -271,9 +323,15 @@ export function equip(playerId: string, titleId: string) {
   return true;
 }
 
+function pay(progress: Progress, reward: Reward) {
+  progress.gold += reward.gold;
+  progress.potions = Math.min(POTION.max, progress.potions + reward.potions);
+}
+
 /**
- * Changes a player's progress and reports what it completed: quests, the whole day, titles.
- * Every change to progress goes through here.
+ * Changes a player's progress and reports what it completed: quests, the whole day or week, titles.
+ * Every change to progress goes through here. Quest rewards are paid into the saved gold and
+ * potions at once; the room copies them onto the player (see WorldRoom.celebrate).
  */
 function update(playerId: string, change: (progress: Progress) => void): Achievement[] {
   const before = view(playerId);
@@ -286,16 +344,29 @@ function update(playerId: string, change: (progress: Progress) => void): Achieve
   if (allDone && !progress.daily.done) {
     progress.daily.done = true;
     progress.life.days++;
+    progress.weekly.counts.daily = (progress.weekly.counts.daily ?? 0) + 1;
+  }
+  if (!progress.weekly.done && WEEKLY_QUESTS.every((quest) => (progress.weekly.counts[quest.id] ?? 0) >= quest.goal)) {
+    progress.weekly.done = true;
   }
 
   const after = view(playerId);
-  after.quests.forEach((quest, index) => {
-    if (quest.progress >= quest.goal && before.quests[index].progress < quest.goal) {
-      achievements.push({ kind: "quest", text: `ภารกิจสำเร็จ: ${quest.text}` });
-    }
-  });
+  const finished = (now: ProgressView["quests"], then: ProgressView["quests"], label: string) =>
+    now.forEach((quest, index) => {
+      if (quest.progress >= quest.goal && then[index].progress < quest.goal) {
+        pay(progress, quest.reward);
+        achievements.push({ kind: "quest", text: `${label}สำเร็จ: ${quest.text} · ได้ ${rewardText(quest.reward)}` });
+      }
+    });
+  finished(after.quests, before.quests, "ภารกิจ");
+  finished(after.weekly, before.weekly, "ภารกิจสัปดาห์");
   if (after.dailyDone && !before.dailyDone) {
-    achievements.push({ kind: "daily", text: "ทำภารกิจประจำวันครบแล้ว! พรุ่งนี้มาใหม่นะ" });
+    pay(progress, after.dailyBonus);
+    achievements.push({ kind: "daily", text: `ทำภารกิจประจำวันครบแล้ว! โบนัส ${rewardText(after.dailyBonus)} · พรุ่งนี้มาใหม่นะ` });
+  }
+  if (after.weeklyDone && !before.weeklyDone) {
+    pay(progress, after.weeklyBonus);
+    achievements.push({ kind: "daily", text: `ภารกิจประจำสัปดาห์ครบทุกข้อ! โบนัสใหญ่ ${rewardText(after.weeklyBonus)}` });
   }
   after.titles.forEach((title, index) => {
     if (title.unlocked && !before.titles[index].unlocked) {
@@ -331,8 +402,9 @@ export function recordVisit(
 }
 
 export function recordChat(playerId: string, text: string) {
-  return update(playerId, ({ daily, life }) => {
-    daily.counts.chat = (daily.counts.chat ?? 0) + 1;
+  return update(playerId, (record) => {
+    const { life } = record;
+    bump(record, "chat");
     life.chats++;
     if (text.includes("555")) {
       life.laughs++;
@@ -345,8 +417,9 @@ export function recordChat(playerId: string, text: string) {
 
 /** What a player did in the last moments: steps walked, seconds standing still or pushing into the sea. */
 export function recordActivity(playerId: string, activity: { steps: number; idle: number; shore: number }) {
-  return update(playerId, ({ daily, life }) => {
-    daily.counts.walk = (daily.counts.walk ?? 0) + activity.steps;
+  return update(playerId, (record) => {
+    const { life } = record;
+    bump(record, "walk", activity.steps);
     life.steps += activity.steps;
     life.idle += activity.idle;
     life.shore += activity.shore;
@@ -481,18 +554,19 @@ export function bans(): GmBan[] {
     .map(([playerId, record]) => ({ playerId, name: record.name, until: record.bannedUntil, reason: record.banReason }));
 }
 
-/** A monster fell; everyone who fought it counts it for the hunting quest. */
 /**
  * A monster beaten. `completed` is true when this kill completes its kind in the collection book
  * (the caller hands out the gold for it).
  */
 export function recordMonsterKill(playerId: string, kindId: string, boss: boolean) {
   let completed = false;
-  const achievements = update(playerId, ({ daily, life }) => {
-    daily.counts.hunt = (daily.counts.hunt ?? 0) + 1;
+  const achievements = update(playerId, (record) => {
+    const { life } = record;
+    bump(record, "hunt");
     life.monsters++;
     if (boss) {
       life.bosses++;
+      bump(record, "boss");
     }
     const kind = monsterKind(kindId);
     if (kind) {
@@ -505,9 +579,19 @@ export function recordMonsterKill(playerId: string, kindId: string, boss: boolea
 }
 
 export function recordDungeon(playerId: string) {
-  return update(playerId, ({ life }) => {
-    life.dungeons++;
+  return update(playerId, (record) => {
+    record.life.dungeons++;
+    bump(record, "dungeon");
   });
+}
+
+/** One try at enhancing, whether it took or not. */
+export function recordEnhance(playerId: string) {
+  return update(playerId, (record) => bump(record, "enhance"));
+}
+
+export function recordUltimate(playerId: string) {
+  return update(playerId, (record) => bump(record, "ultimate"));
 }
 
 export function codex(playerId: string): CodexView {
@@ -709,4 +793,69 @@ export function enhanceGear(playerId: string, gearId: string, gold: number) {
   }
   scheduleSave();
   return { result: worked ? ("done" as const) : ("failed" as const), gear, cost, before: plus };
+}
+
+// ---- Safety ----
+
+/** Enough for anyone; the oldest block is dropped first. */
+const MAX_BLOCKED = 100;
+
+/** Blocks another player; false when they were blocked already. */
+export function block(playerId: string, otherId: string) {
+  const record = get(playerId);
+  if (playerId === otherId || record.blocked.includes(otherId)) {
+    return false;
+  }
+  record.blocked.push(otherId);
+  if (record.blocked.length > MAX_BLOCKED) {
+    record.blocked.shift();
+  }
+  scheduleSave();
+  return true;
+}
+
+/** Unblocks the player at this place in the list blocked() gave. */
+export function unblock(playerId: string, index: number) {
+  const record = get(playerId);
+  if (!Number.isInteger(index) || index < 0 || index >= record.blocked.length) {
+    return false;
+  }
+  record.blocked.splice(index, 1);
+  scheduleSave();
+  return true;
+}
+
+export function blocks(playerId: string, otherId: string) {
+  return players.get(playerId)?.blocked?.includes(otherId) ?? false;
+}
+
+/** The names of the players blocked, in order: the ids stay on the server. */
+export function blockedNames(playerId: string) {
+  return get(playerId).blocked.map((id) => players.get(id)?.name || "ผู้เล่น");
+}
+
+export function mute(playerId: string, minutes: number) {
+  const record = get(playerId);
+  record.mutedUntil = Math.max(record.mutedUntil, Date.now() + minutes * 60_000);
+  scheduleSave();
+  return record.mutedUntil;
+}
+
+export function unmute(playerId: string) {
+  const record = players.get(playerId);
+  if (record) {
+    record.mutedUntil = 0;
+    scheduleSave();
+  }
+}
+
+/** Unix time in ms until which the player may not chat; 0 when they may. */
+export function mutedUntil(playerId: string) {
+  const until = players.get(playerId)?.mutedUntil ?? 0;
+  return until > Date.now() ? until : 0;
+}
+
+/** The name a player was last seen with, even when they're offline. */
+export function nameOf(playerId: string) {
+  return players.get(playerId)?.name ?? "";
 }

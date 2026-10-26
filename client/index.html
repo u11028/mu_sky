@@ -177,6 +177,9 @@
         </div>
       </div>
       <p class="muted">"อัตโนมัติ" ลดหรือเพิ่มความละเอียดเองตามความลื่นของเครื่อง · ตั้งค่าจำไว้ในเครื่องนี้</p>
+      <h3>🚫 ผู้เล่นที่บล็อก</h3>
+      <ul id="blocked-list"></ul>
+      <p class="muted">คนที่บล็อกจะไม่เห็นแชท คำชวน และไม่ได้ยินเสียงกันและกัน · คำหยาบในแชทถูกซ่อนให้อัตโนมัติ</p>
       <button type="button" id="log-out">🚪 ออกจากระบบ</button>
       <p id="log-out-note" class="muted"></p>
     </aside>
@@ -190,6 +193,22 @@
       <ol id="daily-gift-days"></ol>
       <p id="daily-gift-got"></p>
       <button type="button" id="daily-gift-ok">รับรางวัล</button>
+    </div>
+
+    <div id="player-menu" hidden role="dialog" aria-labelledby="player-menu-name">
+      <p><b id="player-menu-name"></b></p>
+      <div id="player-menu-main">
+        <button type="button" id="player-menu-invite">👥 ชวนเข้าทีม</button>
+        <button type="button" id="player-menu-block" class="secondary">🚫 บล็อก</button>
+        <button type="button" id="player-menu-report" class="danger">⚑ รายงาน</button>
+      </div>
+      <form id="player-report" hidden autocomplete="off">
+        <p class="muted">เลือกเหตุผล · GM จะดูแชทล่าสุดของผู้เล่นคนนี้ประกอบ</p>
+        <div id="player-report-reasons"></div>
+        <input id="player-report-note" maxlength="100" placeholder="รายละเอียดเพิ่มเติม (ไม่ใส่ก็ได้)" />
+        <button type="submit" class="danger">ส่งรายงาน</button>
+      </form>
+      <button type="button" id="player-menu-close" class="secondary">ปิด</button>
     </div>
 
     <div id="team-invite" hidden role="dialog">
@@ -262,6 +281,11 @@
       </section>
       <h3>ผู้เล่นที่ถูกแบน</h3>
       <ul id="gm-bans"></ul>
+      <h3>📣 รายงานผู้เล่น
+        <span><button id="gm-reports-refresh" type="button" class="small">รีเฟรช</button></span>
+      </h3>
+      <p class="muted">ผู้เล่นรายงานกันเอง · ถูก 3 คนรายงานใน 1 ชม. แชทจะปิดเอง 30 นาที</p>
+      <ul id="gm-reports"></ul>
       <h3>🐞 บัคที่รายงานเข้ามา
         <span>
           <button id="gm-errors-refresh" type="button" class="small">รีเฟรช</button>
@@ -285,8 +309,14 @@
       </header>
       <section>
         <h3>ภารกิจประจำวัน</h3>
-        <ol id="quest-list"></ol>
+        <ol id="quest-list" class="quest-list"></ol>
+        <p id="quest-bonus" class="quest-bonus"></p>
         <p id="quest-days"></p>
+      </section>
+      <section>
+        <h3>ภารกิจประจำสัปดาห์ <small id="weekly-ends" class="muted"></small></h3>
+        <ol id="weekly-list" class="quest-list"></ol>
+        <p id="weekly-bonus" class="quest-bonus"></p>
       </section>
       <section>
         <h3>ฉายา</h3>

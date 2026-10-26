@@ -472,6 +472,117 @@ describe("enhancing and the dungeon", () => {
 });
 
 // Last: the lock it sets holds for every bot here, since they all come from the same address.
+describe("quests", () => {
+  test("a quest done pays gold at once, and the week has its own quests", async () => {
+    // The region of the day, as shared/quests.ts picks it.
+    const day = Math.floor((Date.now() + 7 * 3600_000) / 86_400_000);
+    const region = ["north", "northeast", "east", "west", "south"][day % 5];
+    const bot = await join(server, { region, party: partyCode() });
+    await until(() => bot.got.achievement?.some((a) => a.text.includes("ไปเยือน")));
+    const done = bot.got.achievement.find((a) => a.text.includes("ไปเยือน"));
+    assert.match(done.text, /ได้ 100 ทอง/);
+    // The day's gift (100) and the quest (100).
+    await until(() => bot.me().gold === 200);
+    assert.equal(bot.me().gold, 200);
+    const view = bot.got.progress.at(-1);
+    assert.equal(view.quests.length, 5);
+    assert.equal(view.weekly.length, 4);
+    assert.ok(view.quests.every((quest) => quest.reward.gold > 0));
+    await bot.room.leave();
+  });
+});
+
+describe("safety", () => {
+  test("rude words are hidden from chat and names, even spaced out", async () => {
+    const party = partyCode();
+    const writer = await join(server, { name: "fuckboy", party });
+    const reader = await join(server, { name: "ผู้อ่าน", party });
+    assert.equal(writer.me().name, "***boy");
+    for (const text of ["ไอ้ ค ว ย", "เหี้ยมาก", "what the F.U.C.K", "หีบสมบัติ เหี่ยวแล้ว"]) {
+      writer.room.send("chat", { text });
+      await wait(750);
+    }
+    await until(() => (reader.got.chat ?? []).filter((m) => !m.system).length >= 4);
+    const lines = reader.got.chat.filter((m) => !m.system).map((m) => m.text);
+    assert.deepEqual(lines, ["ไอ้ ***", "***มาก", "what the ***", "หีบสมบัติ เหี่ยวแล้ว"]);
+    await writer.room.leave();
+    await reader.room.leave();
+  });
+
+  test("a blocked player's chat and invites stop reaching the one who blocked them", async () => {
+    const party = partyCode();
+    const pest = await join(server, { name: "ตัวป่วน", party });
+    const me = await join(server, { name: "ผู้บล็อก", party });
+    const other = await join(server, { name: "คนอื่น", party });
+    me.room.send("block", { target: pest.room.sessionId });
+    await until(() => me.got.blocked?.at(-1)?.length === 1);
+    assert.deepEqual(me.got.blocked.at(-1), ["ตัวป่วน"]);
+
+    pest.room.send("chat", { text: "สวัสดี" });
+    pest.room.send("team-invite", { target: me.room.sessionId });
+    await until(() => other.got.chat?.some((m) => m.text === "สวัสดี"));
+    await wait(300);
+    assert.ok(!me.got.chat?.some((m) => m.text === "สวัสดี"));
+    assert.ok(!me.got["team-invite"]);
+    // It seems sent, so the pest can't tell.
+    assert.ok(pest.said().some((text) => text.includes("ส่งคำชวน")));
+
+    me.room.send("unblock", { index: 0 });
+    await until(() => me.got.blocked?.at(-1)?.length === 0);
+    await wait(750);
+    pest.room.send("chat", { text: "อีกครั้ง" });
+    await until(() => me.got.chat?.some((m) => m.text === "อีกครั้ง"));
+    for (const bot of [pest, me, other]) {
+      await bot.room.leave();
+    }
+  });
+
+  test("reports reach the GMs; three players reporting the same one shut their chat", async () => {
+    const party = partyCode();
+    const target = await join(server, { name: "โดนรายงาน", party });
+    target.room.send("chat", { text: "ข้อความก่อนโดนรายงาน" });
+    const gmBot = await join(server, { name: "จีเอ็ม", party });
+    await makeGm(gmBot);
+    const reporters = [];
+    for (let i = 0; i < 3; i++) {
+      const bot = await join(server, { name: `ผู้แจ้ง${i}`, party });
+      bot.room.send("report", { target: target.room.sessionId, reason: "คำหยาบ / ด่าทอ", note: "ด่าคนอื่น" });
+      reporters.push(bot);
+    }
+    await until(() => target.said().some((text) => text.includes("แชทถูกปิด")));
+    assert.ok(await until(() => gmBot.said().some((text) => text.includes("รายงานใหม่: โดนรายงาน"))));
+    // The same report twice is not a new one; nonsense reasons are ignored.
+    reporters[0].room.send("report", { target: target.room.sessionId, reason: "คำหยาบ / ด่าทอ" });
+    reporters[1].room.send("report", { target: target.room.sessionId, reason: "made up" });
+    await until(() => reporters[0].said().some((text) => text.includes("รายงานผู้เล่นคนนี้ไปแล้ว")));
+
+    gmBot.room.send("gm", { action: "reports" });
+    await until(() => gmBot.got["gm-reports"]);
+    const list = gmBot.got["gm-reports"].at(-1).filter((r) => r.target === "โดนรายงาน");
+    assert.equal(list.length, 3);
+    assert.deepEqual(list[0].chats, ["ข้อความก่อนโดนรายงาน"]);
+    assert.ok(list[0].mutedUntil > Date.now());
+    assert.ok(!("targetId" in list[0]) && !("reporterId" in list[0]));
+
+    await wait(750);
+    target.room.send("chat", { text: "ยังพูดได้ไหม" });
+    await until(() => target.said().some((text) => text.includes("ถูกปิดแชทชั่วคราว")));
+    assert.ok(!reporters[2].got.chat?.some((m) => m.text === "ยังพูดได้ไหม"));
+
+    // The GM opens the chat again and closes every report.
+    gmBot.room.send("gm", { action: "report-unmute", id: list[0].id });
+    await wait(300);
+    gmBot.room.send("gm", { action: "report-close", id: list[0].id, all: true });
+    await until(() => gmBot.got["gm-reports"].at(-1).every((r) => r.target !== "โดนรายงาน"));
+    target.room.send("chat", { text: "กลับมาพูดได้แล้ว" });
+    await until(() => reporters[2].got.chat?.some((m) => m.text === "กลับมาพูดได้แล้ว"));
+    for (const bot of [target, gmBot, ...reporters]) {
+      await bot.room.leave();
+    }
+  });
+});
+
+// Last: its wrong guesses lock the GM key for every bot on this computer for a while.
 describe("the GM key", () => {
   test("wrong GM keys lock the key for a while, even after leaving and coming back", async () => {
     const id = `test_guess_${Date.now()}`;

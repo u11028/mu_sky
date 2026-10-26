@@ -14,6 +14,11 @@ export type GmAction =
   | { action: "worldboss"; target: string }
   | { action: "errors" }
   | { action: "errors-clear" }
+  | { action: "reports" }
+  | { action: "report-close"; id: string; all?: boolean }
+  | { action: "report-ban"; id: string; days: number }
+  | { action: "report-mute"; id: string }
+  | { action: "report-unmute"; id: string }
   | { action: "title"; target: string; titleId: string }
   | { action: "goto"; target: string }
   | { action: "summon"; target: string }

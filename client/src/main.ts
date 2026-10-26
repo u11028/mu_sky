@@ -3,7 +3,8 @@ import { Client, type Room } from "colyseus.js";
 import { type ChatMessage, cleanPartyCode, PARTY_ALPHABET, PARTY_CODE_LENGTH, RECONNECT_SECONDS, ROOM_NAME, SERVER_PORT } from "../../shared/world.ts";
 import { heroOf, HEROES, type ShotEvent } from "../../shared/heroes.ts";
 import { isRegionId, REGIONS, type RegionId, START_REGION } from "../../shared/regions.ts";
-import type { Achievement, ProgressView } from "../../shared/quests.ts";
+import { type Achievement, type ProgressView, type QuestState, rewardText, thaiDay } from "../../shared/quests.ts";
+import { type GmReport, REPORT_REASONS } from "../../shared/safety.ts";
 import { decorateTitle, findTitle, type Title, TITLES } from "../../shared/titles.ts";
 import { regionModels, type SelfState, World3D } from "./three/World3D.ts";
 import { preload } from "./three/assets.ts";
@@ -483,6 +484,8 @@ function startGame(joined: Room, region: RegionId) {
   });
   joined.onMessage("gm-list", renderGmList);
   joined.onMessage("gm-errors", renderGmErrors);
+  joined.onMessage("gm-reports", renderGmReports);
+  joined.onMessage("blocked", renderBlocked);
   joined.onMessage("removed", (message: { text: string }) => {
     removedReason = message.text;
   });
@@ -630,6 +633,11 @@ function addChatLine(message: ChatMessage) {
     const name = document.createElement("span");
     name.className = "name";
     name.textContent = `${message.from}: `;
+    const senderId = message.senderId;
+    if (senderId && senderId !== room?.sessionId) {
+      name.classList.add("tappable");
+      name.addEventListener("click", () => openPlayerMenu(senderId, message.from));
+    }
     const title = findTitle(message.title);
     if (title) {
       line.className = `framed rarity-${title.rarity}`;
@@ -666,19 +674,31 @@ function renderProgress(progress: ProgressView) {
   questCount.textContent = `${done}/${progress.quests.length}`;
   questButton.classList.toggle("complete", progress.dailyDone);
 
-  questList.replaceChildren(
-    ...progress.quests.map((quest) => {
-      const item = document.createElement("li");
-      item.classList.toggle("done", quest.progress >= quest.goal);
-      const text = document.createElement("span");
-      text.textContent = quest.text;
-      const count = document.createElement("span");
-      count.className = "count";
-      count.textContent = quest.progress >= quest.goal ? "สำเร็จ ✓" : `${quest.progress}/${quest.goal}`;
-      item.append(text, count, progressBar(quest.progress, quest.goal));
-      return item;
-    }),
-  );
+  const questItem = (quest: QuestState) => {
+    const item = document.createElement("li");
+    item.classList.toggle("done", quest.progress >= quest.goal);
+    const text = document.createElement("span");
+    text.textContent = quest.text;
+    const count = document.createElement("span");
+    count.className = "count";
+    count.textContent = quest.progress >= quest.goal ? "สำเร็จ ✓" : `${quest.progress.toLocaleString()}/${quest.goal.toLocaleString()}`;
+    const reward = document.createElement("small");
+    reward.className = "reward";
+    reward.textContent = `🎁 ${rewardText(quest.reward)}`;
+    item.append(text, count, reward, progressBar(quest.progress, quest.goal));
+    return item;
+  };
+  questList.replaceChildren(...progress.quests.map(questItem));
+  const bonus = (element: Element, done: boolean, text: string) => {
+    element.textContent = done ? `✓ รับโบนัสแล้ว: ${text}` : `🏆 ทำครบทุกข้อ รับโบนัส ${text}`;
+    element.classList.toggle("done", done);
+  };
+  bonus(document.querySelector("#quest-bonus")!, progress.dailyDone, rewardText(progress.dailyBonus));
+  document.querySelector("#weekly-list")!.replaceChildren(...progress.weekly.map(questItem));
+  bonus(document.querySelector("#weekly-bonus")!, progress.weeklyDone, rewardText(progress.weeklyBonus));
+  // Weeks start on Monday, Thai time.
+  const daysLeft = 7 - ((thaiDay() + 3) % 7);
+  document.querySelector("#weekly-ends")!.textContent = daysLeft === 1 ? "· รีเซ็ตคืนนี้" : `· เหลือ ${daysLeft} วัน`;
   questDays.textContent = progress.dailyDone
     ? `วันนี้ทำครบแล้ว · ทำครบมาแล้ว ${progress.days} วัน`
     : `ทำครบทุกข้อเพื่อนับวัน · ทำครบมาแล้ว ${progress.days} วัน · ภารกิจใหม่ทุกเที่ยงคืน`;
@@ -1577,6 +1597,83 @@ function renderTeam(list: TeamMember[]) {
   teamFrames.replaceChildren(...list.filter((member) => !member.me).map(frame));
 }
 
+// Another player: invite them, block them, or report them to the GMs.
+const playerMenu = document.querySelector<HTMLDivElement>("#player-menu")!;
+const playerReport = document.querySelector<HTMLFormElement>("#player-report")!;
+let menuTarget = "";
+
+document.querySelector("#player-report-reasons")!.replaceChildren(
+  ...REPORT_REASONS.map((reason, index) => {
+    const label = document.createElement("label");
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "report-reason";
+    input.value = reason;
+    input.checked = index === 0;
+    label.append(input, reason);
+    return label;
+  }),
+);
+
+function openPlayerMenu(sessionId: string, name: string, mate = false) {
+  menuTarget = sessionId;
+  document.querySelector("#player-menu-name")!.textContent = name;
+  document.querySelector<HTMLButtonElement>("#player-menu-invite")!.hidden = mate;
+  document.querySelector<HTMLDivElement>("#player-menu-main")!.hidden = false;
+  playerReport.hidden = true;
+  document.querySelector<HTMLInputElement>("#player-report-note")!.value = "";
+  playerMenu.hidden = false;
+}
+
+function closePlayerMenu() {
+  playerMenu.hidden = true;
+  menuTarget = "";
+}
+
+document.querySelector("#player-menu-close")!.addEventListener("click", closePlayerMenu);
+document.querySelector("#player-menu-invite")!.addEventListener("click", () => {
+  room?.send("team-invite", { target: menuTarget });
+  closePlayerMenu();
+});
+document.querySelector("#player-menu-block")!.addEventListener("click", () => {
+  room?.send("block", { target: menuTarget });
+  closePlayerMenu();
+});
+document.querySelector("#player-menu-report")!.addEventListener("click", () => {
+  document.querySelector<HTMLDivElement>("#player-menu-main")!.hidden = true;
+  playerReport.hidden = false;
+});
+playerReport.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const reason = playerReport.querySelector<HTMLInputElement>("input[name=report-reason]:checked")?.value;
+  const note = document.querySelector<HTMLInputElement>("#player-report-note")!.value.trim();
+  room?.send("report", { target: menuTarget, reason, note });
+  closePlayerMenu();
+});
+
+/** The players this one blocked, each with a way to undo it. */
+function renderBlocked(names: string[]) {
+  const rows = names.map((name, index) => {
+    const row = document.createElement("li");
+    const label = document.createElement("span");
+    label.textContent = name;
+    const undo = document.createElement("button");
+    undo.type = "button";
+    undo.className = "secondary";
+    undo.textContent = "เลิกบล็อก";
+    undo.addEventListener("click", () => room?.send("unblock", { index }));
+    row.append(label, undo);
+    return row;
+  });
+  if (rows.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "muted";
+    empty.textContent = "ยังไม่ได้บล็อกใคร";
+    rows.push(empty);
+  }
+  document.querySelector("#blocked-list")!.replaceChildren(...rows);
+}
+
 function renderNearby() {
   const list = scene?.nearbyPlayers() ?? [];
   const rows = list.map((player) => {
@@ -1592,7 +1689,16 @@ function renderNearby() {
       invite.disabled = true;
       invite.textContent = "ส่งแล้ว";
     });
-    row.append(invite);
+    const more = document.createElement("button");
+    more.type = "button";
+    more.className = "more secondary";
+    more.textContent = "⋯";
+    more.title = "บล็อก / รายงาน";
+    more.addEventListener("click", () => openPlayerMenu(player.id, player.name, player.mate));
+    const actions = document.createElement("span");
+    actions.className = "nearby-actions";
+    actions.append(invite, more);
+    row.append(actions);
     return row;
   });
   if (rows.length === 0) {
@@ -1827,8 +1933,73 @@ gmButton.addEventListener("click", () => {
   if (!gmPanel.hidden) {
     sendGm({ action: "list" });
     sendGm({ action: "errors" });
+    sendGm({ action: "reports" });
   }
 });
+document.querySelector("#gm-reports-refresh")!.addEventListener("click", () => sendGm({ action: "reports" }));
+
+/** Reports about players, newest first, each with what the player said last and what to do. */
+function renderGmReports(reports: GmReport[]) {
+  const ago = (at: number) => {
+    const minutes = Math.round((Date.now() - at) / 60_000);
+    return minutes < 1 ? "เมื่อกี้" : minutes < 60 ? `${minutes} นาทีก่อน` : minutes < 1440 ? `${Math.round(minutes / 60)} ชม.ก่อน` : `${Math.round(minutes / 1440)} วันก่อน`;
+  };
+  const rows = reports.map((report) => {
+    const item = document.createElement("li");
+    item.className = "gm-report";
+    const head = document.createElement("strong");
+    head.textContent = `⚑ ${report.target} · ${report.reason}${report.count > 1 ? ` · ถูกรายงาน ${report.count} ครั้ง` : ""}`;
+    const facts = document.createElement("small");
+    facts.textContent = [
+      `โดย ${report.reporter}`,
+      report.region,
+      ago(report.at),
+      report.mutedUntil > Date.now() && `🔇 ปิดแชทถึง ${new Date(report.mutedUntil).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}`,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    item.append(head, facts);
+    if (report.note) {
+      const note = document.createElement("small");
+      note.textContent = `“${report.note}”`;
+      item.append(note);
+    }
+    const chats = document.createElement("blockquote");
+    chats.textContent = report.chats.length > 0 ? report.chats.join("\n") : "(ไม่มีแชทล่าสุด)";
+    chats.style.whiteSpace = "pre-line";
+    item.append(chats);
+    const grid = document.createElement("div");
+    grid.className = "gm-grid";
+    const action = (text: string, send: GmAction, danger = false) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = text;
+      button.classList.toggle("danger", danger);
+      button.addEventListener("click", () => sendGm(send));
+      grid.append(button);
+    };
+    action("✓ ปิดเรื่อง", { action: "report-close", id: report.id });
+    if (report.mutedUntil > Date.now()) {
+      action("🔊 เปิดแชท", { action: "report-unmute", id: report.id });
+    } else {
+      action("🔇 ปิดแชท 1 ชม.", { action: "report-mute", id: report.id });
+    }
+    action("⛔ แบน 1 วัน", { action: "report-ban", id: report.id, days: 1 }, true);
+    action("⛔ แบน 7 วัน", { action: "report-ban", id: report.id, days: 7 }, true);
+    if (report.count > 1) {
+      action("✓ ปิดทุกเรื่อง", { action: "report-close", id: report.id, all: true });
+    }
+    item.append(grid);
+    return item;
+  });
+  if (rows.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "muted";
+    empty.textContent = "ไม่มีรายงานค้างอยู่ 👍";
+    rows.push(empty);
+  }
+  document.querySelector("#gm-reports")!.replaceChildren(...rows);
+}
 document.querySelector("#gm-close")!.addEventListener("click", () => {
   gmPanel.hidden = true;
 });

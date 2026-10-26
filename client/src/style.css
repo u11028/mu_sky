@@ -311,21 +311,21 @@ button {
   gap: 8px;
 }
 
-#quest-list li {
+.quest-list li {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 4px 8px;
 }
 
-#quest-list li.done {
+.quest-list li.done {
   color: var(--muted);
 }
 
-#quest-list .count {
+.quest-list .count {
   color: var(--accent);
 }
 
-#quest-list .bar,
+.quest-list .bar,
 #title-list .bar {
   grid-column: 1 / -1;
 }
@@ -2526,7 +2526,8 @@ body.in-safe-zone .skill-button[data-skill="strike"] {
 
 /* ---- Error reports in the GM panel ---- */
 
-#gm-errors {
+#gm-errors,
+#gm-reports {
   display: grid;
   gap: 6px;
   margin: 0;
@@ -3162,4 +3163,174 @@ body.in-safe-zone #ultimate-button.offensive {
     radial-gradient(circle at 40% 32%, #ffffff 0%, #c7d0de 45%, #6e7889 100%) padding-box,
     var(--gold-rim) border-box;
   box-shadow: 0 5px 12px rgba(0, 0, 0, 0.55), inset 0 -4px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* ---- Quest rewards ---- */
+
+.quest-list .reward {
+  grid-column: 1 / -1;
+  color: #ffd166;
+  font-size: 12px;
+}
+
+.quest-list li.done .reward {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.quest-bonus {
+  margin: 8px 0 0;
+  padding: 6px 10px;
+  border: 1px dashed rgba(255, 209, 102, 0.5);
+  border-radius: 10px;
+  color: #ffd166;
+  font-size: 13px;
+}
+
+.quest-bonus.done {
+  border-style: solid;
+  color: var(--muted);
+}
+
+/* ---- Another player: invite, block, report ---- */
+
+.nearby .nearby-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.nearby .more {
+  padding: 4px 10px;
+}
+
+#chat-log .name.tappable {
+  cursor: pointer;
+  text-decoration: underline dotted rgba(255, 255, 255, 0.35);
+}
+
+#player-menu {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 9;
+  display: grid;
+  gap: 10px;
+  width: min(320px, calc(100vw - 32px));
+  transform: translate(-50%, -50%);
+  padding: 16px;
+  border: 1px solid var(--accent);
+  border-radius: 14px;
+  background: rgba(16, 24, 20, 0.97);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+}
+
+#player-menu[hidden],
+#player-menu-main[hidden],
+#player-report[hidden],
+#player-menu button[hidden] {
+  display: none;
+}
+
+#player-menu > p {
+  margin: 0;
+  text-align: center;
+  font-size: 16px;
+}
+
+#player-menu-main {
+  display: grid;
+  gap: 8px;
+}
+
+#player-report {
+  display: grid;
+  gap: 8px;
+}
+
+#player-report p {
+  margin: 0;
+  font-size: 12px;
+}
+
+#player-report-reasons {
+  display: grid;
+  gap: 4px;
+}
+
+#player-report-reasons input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #ff4d6d;
+}
+
+#player-report-reasons label {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 14px;
+}
+
+#player-menu button.danger,
+#player-report button.danger {
+  background: linear-gradient(180deg, #ff4d6d, #b5172f);
+  color: #fff;
+}
+
+#blocked-list {
+  display: grid;
+  gap: 6px;
+  margin: 6px 0;
+  padding: 0;
+  list-style: none;
+}
+
+#blocked-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+#blocked-list button {
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+/* ---- Reports in the GM panel ---- */
+
+.gm-report {
+  display: grid;
+  gap: 4px;
+  padding: 6px 8px;
+  border-left: 3px solid #ff4d6d;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+}
+
+.gm-report small,
+.gm-report blockquote {
+  margin: 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.gm-report blockquote {
+  padding-left: 6px;
+  border-left: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.gm-report .gm-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.gm-report .gm-grid button {
+  padding: 4px;
+  font-size: 12px;
 }
