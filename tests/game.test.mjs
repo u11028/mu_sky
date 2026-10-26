@@ -102,8 +102,11 @@ describe("fighting", () => {
     await makeGm(bot);
     gm(bot, "onehit", { on: true });
     gm(bot, "god", { on: true });
+    // Each kill drops gear one time in five: keep at it until something drops (up to 40 kills,
+    // when nothing at all would be about one chance in seven thousand).
     let kills = 0;
-    for (let round = 0; round < 40 && kills < 15; round++) {
+    const found = () => (bot.got.bag?.at(-1)?.items.length ?? 0) > 0;
+    for (let round = 0; round < 90 && (kills < 10 || !found()) && kills < 40; round++) {
       const me = bot.me();
       let nearest;
       let distance = Infinity;
@@ -125,8 +128,7 @@ describe("fighting", () => {
     }
     assert.ok(kills >= 10, `killed ${kills}`);
     assert.ok(bot.me().gold > 0);
-    // About one in five drops something: with this many kills, at least one.
-    assert.ok((bot.got.bag?.at(-1)?.items.length ?? 0) > 0, "found some gear");
+    assert.ok(found(), `found some gear in ${kills} kills`);
     await bot.room.leave();
   });
 
