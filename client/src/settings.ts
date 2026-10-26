@@ -7,6 +7,8 @@ export interface Settings {
   music: boolean;
   musicVolume: number;
   sound: boolean;
+  /** The phone buzzes on blows taken, critical hits and big moments. */
+  vibrate: boolean;
   quality: Quality;
 }
 
@@ -18,6 +20,7 @@ const DEFAULTS: Settings = {
   music: true,
   musicVolume: 0.5,
   sound: true,
+  vibrate: true,
   quality: matchMedia("(pointer: coarse)").matches ? "medium" : "high",
 };
 

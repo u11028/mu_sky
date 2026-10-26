@@ -17,6 +17,7 @@ import { BORDER_MODELS, GRASS_MODELS, propModels, PX, REGION_LOOKS } from "./loo
 import { buildScenery, type Occluder, type Scenery } from "./scenery.ts";
 import { loadSounds, play } from "./sfx.ts";
 import { playMusic } from "./music.ts";
+import { BUZZ, buzz } from "../haptics.ts";
 import { onSettings, type Settings } from "../settings.ts";
 import { WEAPON_TIERS } from "../../../shared/items.ts";
 import { type LootEvent, RARITIES } from "../../../shared/loot.ts";
@@ -570,9 +571,14 @@ export class World3D {
     }
     if (isMe) {
       this.shake(event.killed ? 0.6 : 0.25);
+      const hard = event.crit || event.damage >= (this.playerStates.get(this.room.sessionId)?.maxHp ?? Infinity) * 0.2;
+      buzz(event.killed ? BUZZ.death : hard ? BUZZ.hurtHard : BUZZ.hurt);
     } else if (mine) {
       // Your own blows land with a little kick.
       this.shake(event.crit ? 0.22 : 0.08);
+      if (event.crit) {
+        buzz(BUZZ.crit);
+      }
     }
     if (event.killed) {
       const boss = this.monsters.get(event.target)?.boss;
@@ -635,6 +641,9 @@ export class World3D {
       const text = event.sold ? `${event.name} (กระเป๋าเต็ม ขาย +${event.sold} 💰)` : `${event.name} · ${name}`;
       this.effects.floatText(at.clone().add(new THREE.Vector3(0, 2.6, 0)), text, `loot rarity-${event.rarity}`, 2600);
       play(event.rarity >= 3 ? "levelup" : "buy", event.rarity >= 3 ? 0.5 : 0.35);
+      if (event.rarity >= 3) {
+        buzz(BUZZ.rareFind);
+      }
     }
   }
 
@@ -691,6 +700,9 @@ export class World3D {
     }
     this.effects.levelUp(actor.root.position);
     this.effects.floatText(actor.root.position.clone().add(new THREE.Vector3(0, actor.height + 0.8, 0)), "LEVEL UP!", "levelup");
+    if (id === this.room.sessionId) {
+      buzz(BUZZ.levelUp);
+    }
     this.playNear("levelup", actor, 0.4);
   }
 

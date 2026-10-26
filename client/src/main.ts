@@ -18,6 +18,7 @@ import { type BoardId, BOARDS, DAILY_GIFTS, type DailyGiftEvent, type Leaderboar
 import { BAG_SIZE, type BagView, type Gear, gearEffect, type GearSlot, type LootEvent, RARITIES, sellPrice } from "../../shared/loot.ts";
 import { HeroPicker } from "./three/HeroPicker.ts";
 import { startErrorReports } from "./errors.ts";
+import { BUZZ, buzz } from "./haptics.ts";
 import type { ErrorGroup } from "../../shared/errors.ts";
 import { RESPAWN_MS, type HitEvent, isSkillId, SKILLS, type SkillId, xpToNext } from "../../shared/combat.ts";
 import { BAN_DAYS, type GmAction, type GmList, type GmPlayer } from "../../shared/gm.ts";
@@ -946,6 +947,7 @@ function showWorldBoss(event: WorldBossEvent, announce: boolean) {
   if (announce && event.leftMs > 5000) {
     showToast({ kind: "title", text: `👹 บอสโลก ${event.name} บุก${REGIONS[event.region].name}! ไปช่วยกันล้ม รับของล้ำค่าทุกคน` });
     play("levelup", 0.5);
+    buzz(BUZZ.worldBoss);
   }
 }
 
@@ -1404,10 +1406,12 @@ function renderNearby() {
 const setMusic = document.querySelector<HTMLInputElement>("#set-music")!;
 const setVolume = document.querySelector<HTMLInputElement>("#set-volume")!;
 const setSound = document.querySelector<HTMLInputElement>("#set-sound")!;
+const setVibrate = document.querySelector<HTMLInputElement>("#set-vibrate")!;
 onSettings((options) => {
   setMusic.checked = options.music;
   setVolume.value = String(options.musicVolume);
   setSound.checked = options.sound;
+  setVibrate.checked = options.vibrate;
   for (const button of document.querySelectorAll<HTMLButtonElement>("#set-quality button")) {
     button.classList.toggle("selected", button.dataset.quality === options.quality);
   }
@@ -1415,6 +1419,11 @@ onSettings((options) => {
 setMusic.addEventListener("change", () => changeSettings({ music: setMusic.checked }));
 setVolume.addEventListener("input", () => changeSettings({ musicVolume: Number(setVolume.value) }));
 setSound.addEventListener("change", () => changeSettings({ sound: setSound.checked }));
+setVibrate.addEventListener("change", () => {
+  changeSettings({ vibrate: setVibrate.checked });
+  // A taste of it, so the player knows what they turned on.
+  buzz(BUZZ.hurt);
+});
 for (const button of document.querySelectorAll<HTMLButtonElement>("#set-quality button")) {
   button.addEventListener("click", () => changeSettings({ quality: button.dataset.quality as Quality }));
 }
