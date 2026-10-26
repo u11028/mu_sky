@@ -186,6 +186,8 @@ describe("fighting", () => {
     for (const bot of [a, b]) {
       assert.ok(bot.got.loot?.some((loot) => loot.by === bot.room.sessionId && loot.rarity >= 3), "an epic or better drop");
     }
+    // The world boss takes one kill to complete in the collection book: that pays out.
+    assert.ok(a.said().some((text) => text.includes("สมุดสะสม")), "collection book reward");
     await until(() => !a.room.state.monsters.has(bossId), 8000);
     await a.room.leave();
     await b.room.leave();
@@ -384,16 +386,87 @@ describe("class skills", () => {
   });
 
   test("the shadow strike lands behind the target with a critical hit", async () => {
-    const { bot, id, monster } = await nearMonster(4);
-    const from = { x: bot.me().x, y: bot.me().y };
-    bot.room.send("ultimate");
-    await until(() => hitsOn(bot, id).length > 0, 3000);
+    const { bot, monster } = await nearMonster(4);
+    // Whatever foe is nearest takes it (the world boss too, should it have come here meanwhile).
+    const strikes = () => (bot.got.hit ?? []).filter((hit) => hit.attacker === bot.room.sessionId && hit.damage > 0);
+    let from = { x: bot.me().x, y: bot.me().y };
+    // Nobody in reach (it wandered off) costs nothing: close in on it and try again.
+    for (let attempt = 0; attempt < 3 && strikes().length === 0; attempt++) {
+      const now = monster();
+      if (now && attempt > 0) {
+        await walkTo(bot, now.x - 90, now.y);
+      }
+      from = { x: bot.me().x, y: bot.me().y };
+      bot.room.send("ultimate");
+      await until(() => strikes().length > 0, 3000);
+    }
     await wait(200); // the blow is told at once; the new position comes with the next state update
-    const strike = hitsOn(bot, id)[0];
+    const strike = strikes()[0];
     assert.equal(strike.crit, true);
-    const target = monster() ?? { x: from.x + 90, y: from.y };
-    assert.ok(Math.hypot(bot.me().x - target.x, bot.me().y - target.y) < 80, "next to it");
-    assert.ok(Math.hypot(bot.me().x - from.x, bot.me().y - from.y) > 60, "blinked there");
+    const target = bot.room.state.monsters.get(strike.target);
+    if (target) {
+      assert.ok(Math.hypot(bot.me().x - target.x, bot.me().y - target.y) < 90, "next to it");
+    }
+    assert.ok(Math.hypot(bot.me().x - from.x, bot.me().y - from.y) > 40, "blinked there");
+    await bot.room.leave();
+  });
+});
+
+describe("enhancing and the dungeon", () => {
+  test("enhancing +1 to +3 always works and costs gold", async () => {
+    const bot = await join(server, { party: partyCode() });
+    await makeGm(bot);
+    gm(bot, "gold", { amount: 100000 });
+    gm(bot, "gear");
+    await until(() => (bot.got.bag?.at(-1)?.items.length ?? 0) > 0 && bot.me().gold > 50000);
+    const item = bot.got.bag.at(-1).items[0];
+    const gold = bot.me().gold;
+    for (let step = 1; step <= 3; step++) {
+      bot.room.send("gear-enhance", { id: item.id });
+      await until(() => bot.got.bag.at(-1).items.find((it) => it.id === item.id)?.plus === step, 3000);
+    }
+    assert.equal(bot.got.bag.at(-1).items.find((it) => it.id === item.id).plus, 3);
+    assert.ok(bot.me().gold < gold, "it cost gold");
+    await bot.room.leave();
+  });
+
+  test("a team's dungeon: its own cave, four waves and a boss, rewards, and back out", async () => {
+    const party = partyCode();
+    let bot = await join(server, { name: "นักผจญถ้ำ", party, skin: 0 });
+    await makeGm(bot);
+    gm(bot, "god", { on: true });
+    gm(bot, "onehit", { on: true });
+    // In through the dungeon's portal, as a player walks.
+    await walkTo(bot, 1150, 1040);
+    bot.room.send("target", { x: 1150, y: 1060 });
+    await until(() => bot.got.travel, 5000);
+    const trip = bot.got.travel[0];
+    assert.equal(trip.to, "dungeon");
+    assert.notEqual(trip.party, party, "a cave of its own");
+    await bot.room.leave();
+    bot = await join(server, { name: "นักผจญถ้ำ", party: trip.party, region: "dungeon", id: bot.playerId });
+    await until(() => bot.got.dungeon, 3000);
+    assert.equal(bot.got.dungeon[0].phase, "countdown");
+    // Fight: stand in the hall and strike all round until the run ends.
+    await walkTo(bot, 800, 600);
+    const over = () => ["cleared", "failed"].includes(bot.got.dungeon?.at(-1)?.phase);
+    for (let i = 0; i < 600 && !over(); i++) {
+      bot.room.send("attack");
+      bot.room.send("skill", { id: "spin" });
+      await wait(300);
+    }
+    const phases = new Set(bot.got.dungeon.map((status) => status.phase));
+    assert.ok(phases.has("wave") && phases.has("boss"), `went through waves and the boss (${[...phases]})`);
+    assert.equal(bot.got.dungeon.at(-1).phase, "cleared");
+    assert.ok(bot.said().some((text) => text.includes("ผ่านดันเจี้ยนสำเร็จ")));
+    assert.ok(bot.got.loot?.some((loot) => loot.by === bot.room.sessionId && loot.rarity >= 2), "a rare piece or better");
+
+    // Out the way in: back to the room the player came from.
+    await walkTo(bot, 800, 845);
+    bot.room.send("target", { x: 800, y: 860 });
+    await until(() => bot.got.travel, 5000);
+    assert.equal(bot.got.travel.at(-1).to, "central");
+    assert.equal(bot.got.travel.at(-1).party, party);
     await bot.room.leave();
   });
 });

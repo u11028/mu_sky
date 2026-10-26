@@ -159,7 +159,8 @@ export function regionModels(regionId: RegionId) {
     ...propModels(),
     ...BORDER_MODELS,
     ...GRASS_MODELS,
-    ...[...kinds, boss].map((kind) => `monsters/${monsterKind(kind)!.model}`),
+    // The dungeon's monsters depend on the team: they load as each kind first appears.
+    ...[...kinds, ...(boss ? [boss] : [])].map((kind) => `monsters/${monsterKind(kind)!.model}`),
     "anims/General",
     "anims/Movement",
   ];
@@ -566,6 +567,27 @@ export class World3D {
     this.playNear(event.id === "bulwark" ? "levelup" : "swing", actor, 0.5);
     if (event.by === this.room.sessionId) {
       this.shake(event.id === "meteor" ? 0.35 : 0.2);
+    }
+  }
+
+  /** An enhancement tried: a pillar of gold when it takes, smoke when it doesn't. */
+  showEnhance(event: { by: string; ok: boolean; plus: number; rarity: number }) {
+    const actor = this.players.get(event.by);
+    if (!actor) {
+      return;
+    }
+    const head = actor.root.position.clone().add(new THREE.Vector3(0, actor.height + 0.6, 0));
+    if (event.ok) {
+      this.effects.levelUp(actor.root.position);
+      this.effects.floatText(head, `⚒ +${event.plus}!`, "levelup", 1400);
+      this.playNear("levelup", actor, 0.4);
+      if (event.by === this.room.sessionId && event.plus >= 7) {
+        buzz(BUZZ.rareFind);
+      }
+    } else {
+      this.effects.dust(actor.root.position.clone().add(new THREE.Vector3(0, 1, 0)), 1.2, "#555555");
+      this.effects.floatText(head, "พลาด…", "hurt", 1200);
+      this.playNear("hit", actor, 0.35);
     }
   }
 

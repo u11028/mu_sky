@@ -1,7 +1,8 @@
-// The six regions of Thailand, each its own map and its own server room.
+// The six regions of Thailand, each its own map and its own server room, and the dungeon.
 // Portals link the central region to the other five; standing on one takes the player there.
+// The dungeon's portal, also in the middle region, takes a team into a cave of its own.
 
-export type RegionId = "central" | "north" | "northeast" | "east" | "west" | "south";
+export type RegionId = "central" | "north" | "northeast" | "east" | "west" | "south" | "dungeon";
 
 export interface Portal {
   to: RegionId;
@@ -36,6 +37,7 @@ export const REGIONS: Record<RegionId, Region> = {
       { to: "east", x: 1480, y: 900 },
       { to: "south", x: 800, y: 1090 },
       { to: "west", x: 120, y: 600 },
+      { to: "dungeon", x: 1150, y: 1060 },
     ],
   },
   north: {
@@ -67,6 +69,13 @@ export const REGIONS: Record<RegionId, Region> = {
     tagline: "หาดทราย ทะเลใส ป่าไผ่",
     bounds: { ...FULL, maxY: 900 },
     portals: [{ to: "central", x: 800, y: 110 }],
+  },
+  dungeon: {
+    name: "ถ้ำดันเจี้ยน",
+    tagline: "ฝ่าอสูร 4 ระลอกแล้วล้มบอส ก่อนหมดเวลา",
+    // A cave hall in the middle of the map, walled in all round.
+    bounds: { minX: 420, minY: 300, maxX: 1180, maxY: 900 },
+    portals: [{ to: "central", x: 800, y: 860 }],
   },
 };
 
@@ -112,7 +121,8 @@ export function safeZones(region: RegionId): SafeZone[] {
   if (!zones) {
     const centre = spawnPoint(region);
     zones = [
-      { ...centre, radius: SAFE_RADIUS },
+      // The dungeon's middle is where the fighting is: only its way out is safe.
+      ...(region === "dungeon" ? [] : [{ ...centre, radius: SAFE_RADIUS }]),
       ...REGIONS[region].portals.map((portal) => ({ x: portal.x, y: portal.y, radius: PORTAL_SAFE_RADIUS })),
     ];
     safeZoneCache.set(region, zones);

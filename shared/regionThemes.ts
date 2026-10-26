@@ -138,6 +138,18 @@ export const THEMES: Record<RegionId, Theme> = {
       return grove;
     },
   },
+  dungeon: {
+    ...RED_EARTH,
+    // Rocks and dead trees around the hall's edge; the middle stays clear for the fight.
+    scatter: { rockPileGrey: 3, bigRockGrey: 2, rockPileBrown: 2, deadTree: 2, stumpBig: 1 },
+    scatterCount: 14,
+    landmarks: (cx, cy) => [
+      ["bigRockGrey", cx - 300, cy - 220],
+      ["bigRockGrey", cx + 300, cy - 220],
+      ["rockPileGrey", cx - 330, cy + 120],
+      ["rockPileGrey", cx + 330, cy + 120],
+    ],
+  },
 };
 
 /** Props are drawn from 16 px tiles at three times their size. */

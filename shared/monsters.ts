@@ -49,13 +49,15 @@ export function monsterKind(id: string): MonsterKind | undefined {
 }
 
 /** Who lives where: a few of each kind, and one boss. Harder regions further from the centre. */
-export const REGION_MONSTERS: Record<RegionId, { kinds: MonsterKindId[]; count: number; boss: MonsterKindId }> = {
+/** The dungeon has none of its own: its waves come from DUNGEON (dungeon.ts). */
+export const REGION_MONSTERS: Record<RegionId, { kinds: MonsterKindId[]; count: number; boss?: MonsterKindId }> = {
   central: { kinds: ["slime", "mushroom"], count: 10, boss: "kingSlime" },
   northeast: { kinds: ["larva", "mole", "snake"], count: 12, boss: "frogKing" },
   north: { kinds: ["owl", "spirit"], count: 12, boss: "mistSpirit" },
   east: { kinds: ["racoon", "octopus", "axolot"], count: 12, boss: "giantRacoon" },
   south: { kinds: ["bamboo", "kappa", "snake2"], count: 12, boss: "giantBamboo" },
   west: { kinds: ["skull", "spider", "cyclope"], count: 12, boss: "demonCyclop" },
+  dungeon: { kinds: [], count: 0 },
 };
 
 export function monsterMaxHp(kind: MonsterKind) {

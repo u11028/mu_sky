@@ -52,6 +52,8 @@ interface Mind {
   damageBy: Map<string, number>;
   /** A one-off (the world boss): no leash, no healing on the way home, no coming back. */
   once: boolean;
+  /** How far it notices players, when not the usual for its kind (the dungeon's monsters). */
+  aggro?: number;
 }
 
 export class MonsterSystem {
@@ -63,7 +65,9 @@ export class MonsterSystem {
     for (let i = 0; i < count; i++) {
       this.spawn(kinds[i % kinds.length], this.findHome(false));
     }
-    this.spawn(boss, this.findHome(true));
+    if (boss) {
+      this.spawn(boss, this.findHome(true));
+    }
   }
 
   /** The bookkeeping of a monster, for the room's reward and aggro logic. */
@@ -173,7 +177,7 @@ export class MonsterSystem {
       return undefined;
     }
 
-    const aggro = kind.boss ? BOSS_AGGRO : MONSTER_AGGRO;
+    const aggro = mind.aggro ?? (kind.boss ? BOSS_AGGRO : MONSTER_AGGRO);
     let closest: [string, Player] | undefined;
     let closestDistance = aggro;
     for (const [sessionId, player] of players) {
@@ -225,6 +229,16 @@ export class MonsterSystem {
     const monster = this.arena.monsters.get(id)!;
     monster.maxHp = maxHp;
     monster.hp = maxHp;
+    return id;
+  }
+
+  /** A one-off monster at a given spot, with this much health and reach of notice: the dungeon's. */
+  summonAt(kindId: string, maxHp: number, x: number, y: number, aggro: number) {
+    const id = this.spawn(kindId, { x, y }, true);
+    const monster = this.arena.monsters.get(id)!;
+    monster.maxHp = maxHp;
+    monster.hp = maxHp;
+    this.minds.get(id)!.aggro = aggro;
     return id;
   }
 

@@ -2380,7 +2380,7 @@ button.secondary {
  * Too short for the column of menu buttons above the attack buttons: one ☰ button instead,
  * opening the menu as a row leftwards from it (wrapping onto a second row on narrow screens).
  */
-@media (max-height: 719px) {
+@media (max-height: 799px) {
   #menu-bar {
     z-index: 7;
     display: flex;
@@ -2600,7 +2600,7 @@ body.in-safe-zone .skill-button[data-skill="strike"] {
 }
 
 /* Short and landscape screens: the menu folds into ☰ at the same height, so the map sits beside it. */
-@media (max-height: 719px) {
+@media (max-height: 799px) {
   #minimap {
     top: calc(env(safe-area-inset-top, 0px) + 112px);
   }
@@ -2723,4 +2723,127 @@ body.in-safe-zone .skill-button[data-skill="strike"] {
 /* Only a class skill that strikes is held back in a safe zone; a shield or a rage is not. */
 body.in-safe-zone #ultimate-button.offensive {
   filter: grayscale(0.85) brightness(0.75);
+}
+
+.gear-enhance {
+  width: 100%;
+  margin-top: 4px;
+  padding: 5px 6px;
+  border: 1px solid rgba(255, 214, 10, 0.6);
+  background: rgba(255, 214, 10, 0.12);
+  color: #ffe9a8;
+  font-size: 11px;
+}
+
+.gear-enhance:disabled {
+  opacity: 0.5;
+}
+
+/* ---- Collection book ---- */
+
+.codex-page h3 {
+  margin: 12px 0 6px;
+  font-size: 14px;
+}
+
+.codex-row {
+  display: grid;
+  grid-template-columns: 1fr 70px auto;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 6px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.codex-row.complete {
+  background: rgba(82, 210, 115, 0.12);
+}
+
+.codex-row.unseen {
+  opacity: 0.5;
+}
+
+.codex-row small {
+  min-width: 52px;
+  text-align: right;
+  color: var(--muted);
+}
+
+.codex-row.complete small {
+  color: #7dff9a;
+}
+
+.codex-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.codex-bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #52d273, #c7f464);
+}
+
+#codex-gear {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#codex-gear li {
+  padding: 4px 10px;
+  border: 1px solid var(--rarity);
+  border-radius: 999px;
+  color: var(--rarity);
+  font-size: 12px;
+}
+
+/* ---- Dungeon ---- */
+
+#dungeon-banner {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 60px);
+  left: 50%;
+  z-index: 6;
+  padding: 6px 16px;
+  border: 1px solid #9d4edd;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(36, 0, 70, 0.92), rgba(90, 24, 154, 0.92));
+  box-shadow: 0 0 16px rgba(157, 78, 221, 0.6);
+  color: #f3e8ff;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+#dungeon-banner[hidden] {
+  display: none;
+}
+
+#dungeon-banner.boss {
+  border-color: #ffd60a;
+  background: linear-gradient(90deg, rgba(90, 10, 10, 0.92), rgba(150, 30, 30, 0.92));
+  animation: world-boss-pulse 1.2s ease-in-out infinite;
+}
+
+#dungeon-banner.cleared {
+  border-color: #52d273;
+  background: linear-gradient(90deg, rgba(10, 60, 30, 0.92), rgba(30, 110, 60, 0.92));
+}
+
+/* Phones: below the stats panel, where the world boss banner also goes. */
+@media (max-width: 600px) {
+  #dungeon-banner {
+    top: calc(env(safe-area-inset-top, 0px) + 230px);
+    font-size: 13px;
+  }
 }

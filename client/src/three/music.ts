@@ -124,7 +124,7 @@ function switchTo(track: string) {
 
 /** The tune for where the player is; `boss` switches to the fight theme. */
 export function playMusic(region: RegionId, boss = false) {
-  wanted = boss ? "boss" : region;
+  wanted = boss || region === "dungeon" ? "boss" : region;
   if (options?.music) {
     switchTo(wanted);
   }

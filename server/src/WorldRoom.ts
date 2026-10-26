@@ -39,6 +39,9 @@ import {
   SPAWN_SHIELD_MS,
 } from "../../shared/combat.ts";
 import { monsterKind, monsterXp, WORLD_BOSS, type WorldBossEnd, type WorldBossEvent } from "../../shared/monsters.ts";
+import { codexReward } from "../../shared/codex.ts";
+import { dungeonParty } from "../../shared/dungeon.ts";
+import { DungeonRun } from "./DungeonRun.ts";
 import { isBlocked, regionLayout, type RegionLayout, slide } from "../../shared/regionThemes.ts";
 import { heroOf, type ShotEvent } from "../../shared/heroes.ts";
 import { MonsterSystem } from "./MonsterSystem.ts";
@@ -144,6 +147,9 @@ const rooms = new Set<WorldRoom>();
 /** Where a player sent by a GM appears in the next region, instead of beside the portal. */
 const arrivals = new Map<string, { x: number; y: number }>();
 
+/** The room each player in a dungeon came from (its party code), to go back to on leaving. */
+const beforeDungeon = new Map<string, string>();
+
 /** The world boss now up, if any: its room, its monster id and when it leaves. */
 let worldBoss: { room: WorldRoom; monsterId: string; endsAt: number } | undefined;
 let nextWorldBossAt = Date.now() + WORLD_BOSS.firstMs;
@@ -201,6 +207,8 @@ export class WorldRoom extends Room<WorldState> {
 
   /** A private room's code; "" in the public world. */
   private party = "";
+  /** The waves and the boss, in the dungeon's rooms. */
+  private dungeon?: DungeonRun;
 
   onCreate(options: { region?: unknown; party?: unknown }) {
     this.regionId = isRegionId(options?.region) ? options.region : START_REGION;
@@ -223,6 +231,19 @@ export class WorldRoom extends Room<WorldState> {
       strikePlayer: (monsterId, sessionId, damage) => this.monsterHit(monsterId, sessionId, damage),
       announce: (text) => this.sendChat({ from: "ระบบ", text, system: true }),
     });
+    if (this.regionId === "dungeon") {
+      this.dungeon = new DungeonRun({
+        region: this.region,
+        layout: this.layout,
+        monsters: this.monsters,
+        monsterStates: this.state.monsters,
+        heroes: () =>
+          [...this.state.players].filter(([id, player]) => !player.away && !this.movements.get(id)?.travelling).map(([, player]) => player),
+        broadcast: (type, message) => this.broadcast(type, message),
+        announce: (text) => this.sendChat({ from: "ระบบ", text, system: true }),
+        cleared: (bossKind) => this.dungeonCleared(bossKind),
+      });
+    }
 
     this.onMessage("dir", (client, message: { x?: unknown; y?: unknown }) => {
       const movement = this.movements.get(client.sessionId);
@@ -294,6 +315,13 @@ export class WorldRoom extends Room<WorldState> {
     this.onMessage("gear-wear", (client, message: { id?: unknown }) => this.changeGear(client, "wear", String(message?.id)));
     this.onMessage("gear-off", (client, message: { slot?: unknown }) => this.changeGear(client, "off", String(message?.slot)));
     this.onMessage("gear-sell", (client, message: { id?: unknown }) => this.changeGear(client, "sell", String(message?.id)));
+    this.onMessage("gear-enhance", (client, message: { id?: unknown }) => this.enhance(client, String(message?.id)));
+    this.onMessage("codex", (client) => {
+      const movement = this.movements.get(client.sessionId);
+      if (movement) {
+        client.send("codex", progress.codex(movement.playerId));
+      }
+    });
     this.onMessage("buy-cosmetic", (client, message: { kind?: unknown; index?: unknown }) => {
       if (isCosmeticKind(message?.kind)) {
         this.buyCosmetic(client, message.kind, Number(message?.index));
@@ -387,6 +415,9 @@ export class WorldRoom extends Room<WorldState> {
     player.god = powers.god;
     Object.assign(player, progress.inventory(playerId));
     this.sendInventory(client, playerId);
+    if (this.dungeon) {
+      client.send("dungeon", this.dungeon.status());
+    }
     player.team = teams.teamIdOf(playerId);
     this.applyLevel(player, playerId);
     player.hp = player.maxHp;
@@ -1097,7 +1128,7 @@ export class WorldRoom extends Room<WorldState> {
       // Each fighter rolls for their own drop, so helping is worth it too.
       this.dropGear(client, player, movement.playerId, kind.boss ? "boss" : "monster", kind.level, monster);
       this.levelChanged(player, movement.playerId, progress.addXp(movement.playerId, xp));
-      this.celebrate(movement.playerId, progress.recordMonsterKill(movement.playerId, Boolean(kind.boss)));
+      this.recordKill(client, player, movement.playerId, monster.kind, Boolean(kind.boss));
     });
 
     if (kind.boss && names.length > 0) {
@@ -1211,6 +1242,56 @@ export class WorldRoom extends Room<WorldState> {
     client.send("daily-gift", { day, gearName } satisfies DailyGiftEvent);
   }
 
+  // ---- The dungeon ----
+
+  /**
+   * The room a portal leads into: the dungeon is the team's own (or the player's, alone), and its
+   * way out goes back to the world the player came from; every other portal stays in this world.
+   */
+  private partyBeyond(to: RegionId, playerId: string) {
+    if (to === "dungeon") {
+      beforeDungeon.set(playerId, this.party);
+      return dungeonParty(teams.teamIdOf(playerId) || playerId);
+    }
+    if (this.regionId === "dungeon") {
+      const back = beforeDungeon.get(playerId) ?? "";
+      beforeDungeon.delete(playerId);
+      return back;
+    }
+    return this.party;
+  }
+
+  /** A run won: everyone in the hall gets gold, experience and a fine piece of gear. */
+  private dungeonCleared(bossKind: string) {
+    const boss = monsterKind(bossKind)!;
+    const heroes = [...this.movements].filter(([id]) => {
+      const player = this.state.players.get(id);
+      return player && !player.away;
+    });
+    for (const [sessionId, movement] of heroes) {
+      const player = this.state.players.get(sessionId)!;
+      const client = this.clients.find((c) => c.sessionId === sessionId);
+      if (!client) {
+        continue;
+      }
+      const gold = Math.round(150 * (1 + player.level / 4) * (1 + heroes.length * 0.15));
+      const xp = monsterXp(boss);
+      player.gold += gold;
+      progress.saveInventory(movement.playerId, { gold: player.gold });
+      client.send("gold", { amount: gold, x: player.x, y: player.y });
+      client.send("xp", { amount: xp });
+      this.levelChanged(player, movement.playerId, progress.addXp(movement.playerId, xp));
+      // A rare piece or better for sure, and sometimes a second.
+      this.dropGear(client, player, movement.playerId, "boss", boss.level, player);
+      if (Math.random() < 0.4) {
+        this.dropGear(client, player, movement.playerId, "boss", boss.level, player);
+      }
+      this.celebrate(movement.playerId, progress.recordDungeon(movement.playerId));
+    }
+    const names = heroes.map(([id]) => this.state.players.get(id)!.name).join(", ");
+    this.sendChat({ from: "ระบบ", text: `🏆 ${names} ผ่านดันเจี้ยนสำเร็จ! รอบใหม่จะเริ่มในอีกครู่`, system: true });
+  }
+
   // ---- The world boss ----
 
   /** Every few seconds: send the world boss away when its time is up, or bring the next one. */
@@ -1226,7 +1307,8 @@ export class WorldRoom extends Room<WorldState> {
       return;
     }
     // A public region with players if there is one, else a private room with players.
-    const busy = [...rooms].filter((room) => room.clients.length > 0);
+    // Never into a dungeon: it is the team's own fight.
+    const busy = [...rooms].filter((room) => room.clients.length > 0 && room.regionId !== "dungeon");
     const choices = busy.some((room) => room.party === "") ? busy.filter((room) => room.party === "") : busy;
     if (choices.length === 0) {
       nextWorldBossAt = now + 60_000;
@@ -1301,7 +1383,7 @@ export class WorldRoom extends Room<WorldState> {
       progress.saveInventory(movement.playerId, { gold: player.gold });
       this.levelChanged(player, movement.playerId, progress.addXp(movement.playerId, xp));
       this.dropGear(client, player, movement.playerId, "world-boss", kind.level, monster);
-      this.celebrate(movement.playerId, progress.recordMonsterKill(movement.playerId, true));
+      this.recordKill(client, player, movement.playerId, monster.kind, true);
       this.celebrate(movement.playerId, progress.recordWorldBoss(movement.playerId, index === 0));
     });
     // Let it fall before it goes.
@@ -1337,6 +1419,62 @@ export class WorldRoom extends Room<WorldState> {
         system: true,
       });
     }
+  }
+
+  /** A monster beaten, in the quests, titles and collection book; a completed kind pays out. */
+  private recordKill(client: Client, player: Player, playerId: string, kindId: string, boss: boolean) {
+    const { achievements, completed } = progress.recordMonsterKill(playerId, kindId, boss);
+    this.celebrate(playerId, achievements);
+    const kind = monsterKind(kindId);
+    if (completed && kind) {
+      const gold = codexReward(kind);
+      player.gold += gold;
+      progress.saveInventory(playerId, { gold: player.gold });
+      client.send("gold", { amount: gold, x: player.x, y: player.y });
+      client.send("notice", { text: `📖 สมุดสะสม: ${kind.name} ครบแล้ว! +${gold.toLocaleString()} ทอง`, ok: true });
+    }
+  }
+
+  /** One try at enhancing a piece of gear: gold paid either way, the result shown to everyone near. */
+  private enhance(client: Client, gearId: string) {
+    const player = this.state.players.get(client.sessionId);
+    const movement = this.movements.get(client.sessionId);
+    if (!player || !movement) {
+      return;
+    }
+    const outcome = progress.enhanceGear(movement.playerId, gearId, player.gold);
+    const notice = (text: string, ok: boolean) => client.send("notice", { text, ok });
+    if (outcome.result === "missing") {
+      return;
+    }
+    if (outcome.result === "max") {
+      notice("ตีบวกสูงสุด +10 แล้ว", false);
+      return;
+    }
+    if (outcome.result === "poor") {
+      notice(`ทองไม่พอ ต้องใช้ ${outcome.cost.toLocaleString()} ทอง`, false);
+      return;
+    }
+    player.gold -= outcome.cost;
+    progress.saveInventory(movement.playerId, { gold: player.gold });
+    const { gear } = outcome;
+    const plus = gear.plus ?? 0;
+    this.broadcast("enhance", { by: client.sessionId, ok: outcome.result === "done", plus, rarity: gear.rarity });
+    if (outcome.result === "done") {
+      notice(`ตีบวกสำเร็จ! ${gear.name} +${plus}`, true);
+      if (plus >= 7) {
+        this.sendChat({ from: "ระบบ", text: `⚒ ${player.name} ตีบวก「${gear.name}」สำเร็จเป็น +${plus}!`, system: true });
+      }
+    } else {
+      notice(plus < outcome.before ? `ตีบวกพลาด! ${gear.name} ลดลงเหลือ +${plus}` : `ตีบวกพลาด! ${gear.name} ยังเป็น +${plus}`, false);
+    }
+    // Worn gear changes the hero's power and health at once.
+    const share = player.hp / player.maxHp;
+    this.applyLevel(player, movement.playerId);
+    if (!player.dead) {
+      player.hp = Math.max(1, Math.round(player.maxHp * share));
+    }
+    client.send("bag", progress.bag(movement.playerId));
   }
 
   private changeGear(client: Client, change: "wear" | "off" | "sell", what: string) {
@@ -1887,6 +2025,7 @@ export class WorldRoom extends Room<WorldState> {
     }
     const now = Date.now();
     this.monsters.update(deltaMs);
+    this.dungeon?.tick(now);
     this.updateProjectiles(deltaMs);
 
     this.movements.forEach((movement, sessionId) => {
@@ -1974,7 +2113,7 @@ export class WorldRoom extends Room<WorldState> {
         movement.travelling = true;
         this.clients
           .find((c) => c.sessionId === sessionId)
-          ?.send("travel", { to: portal.to, from: this.regionId, party: this.party });
+          ?.send("travel", { to: portal.to, from: this.regionId, party: this.partyBeyond(portal.to, movement.playerId) });
       }
     });
   }

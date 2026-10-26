@@ -7,8 +7,21 @@ import { MAX_LEVEL, xpToNext } from "../../shared/combat.ts";
 import { dataFile } from "./environment.ts";
 import { loadRecords, saveRecords } from "./store.ts";
 import type { GmBan } from "../../shared/gm.ts";
-import { BAG_SIZE, type BagView, type Gear, type GearSlot, sellPrice } from "../../shared/loot.ts";
+import {
+  BAG_SIZE,
+  type BagView,
+  enhanceChance,
+  enhanceCost,
+  ENHANCE_RISKY_FROM,
+  type Gear,
+  gearPower,
+  type GearSlot,
+  MAX_PLUS,
+  sellPrice,
+} from "../../shared/loot.ts";
 import { BOARD_SIZE, type BoardId, BOARDS, DAILY_GIFTS, type Leaderboards } from "../../shared/rewards.ts";
+import { codexGoal, type CodexView } from "../../shared/codex.ts";
+import { monsterKind } from "../../shared/monsters.ts";
 import { type Achievement, dailyQuests, type ProgressView, type QuestId, thaiDay } from "../../shared/quests.ts";
 import { decorateTitle, findTitle, type LifeStat, TITLES } from "../../shared/titles.ts";
 
@@ -38,6 +51,10 @@ interface Life {
   bosses: number;
   worldBosses: number;
   worldBossTop: number;
+  /** The collection book: kills by monster kind, and the names of the gear found. */
+  hunted: Record<string, number>;
+  found: string[];
+  dungeons: number;
 }
 
 interface Progress {
@@ -124,6 +141,9 @@ function newLife(): Life {
     bosses: 0,
     worldBosses: 0,
     worldBossTop: 0,
+    hunted: {},
+    found: [],
+    dungeons: 0,
   };
 }
 
@@ -181,7 +201,18 @@ function questProgress(daily: Daily, id: QuestId) {
   return id === "meet" ? daily.met.length : daily.counts[id] ?? 0;
 }
 
+/** Monster kinds with enough kills to be complete in the collection book. */
+function codexDone(life: Life) {
+  return Object.entries(life.hunted ?? {}).filter(([id, kills]) => {
+    const kind = monsterKind(id);
+    return kind && kills >= codexGoal(kind);
+  }).length;
+}
+
 function lifeValue(life: Life, stat: Exclude<LifeStat, "titles">) {
+  if (stat === "codex") {
+    return codexDone(life);
+  }
   const value = life[stat];
   return Array.isArray(value) ? value.length : value;
 }
@@ -287,7 +318,7 @@ export function recordVisit(
     if (!life.skins.includes(skin)) {
       life.skins.push(skin);
     }
-    if (!life.regions.includes(region)) {
+    if (region !== "dungeon" && !life.regions.includes(region)) {
       life.regions.push(region);
     }
     if (travelled) {
@@ -451,14 +482,37 @@ export function bans(): GmBan[] {
 }
 
 /** A monster fell; everyone who fought it counts it for the hunting quest. */
-export function recordMonsterKill(playerId: string, boss: boolean) {
-  return update(playerId, ({ daily, life }) => {
+/**
+ * A monster beaten. `completed` is true when this kill completes its kind in the collection book
+ * (the caller hands out the gold for it).
+ */
+export function recordMonsterKill(playerId: string, kindId: string, boss: boolean) {
+  let completed = false;
+  const achievements = update(playerId, ({ daily, life }) => {
     daily.counts.hunt = (daily.counts.hunt ?? 0) + 1;
     life.monsters++;
     if (boss) {
       life.bosses++;
     }
+    const kind = monsterKind(kindId);
+    if (kind) {
+      const kills = (life.hunted[kindId] ?? 0) + 1;
+      life.hunted[kindId] = kills;
+      completed = kills === codexGoal(kind);
+    }
   });
+  return { achievements, completed };
+}
+
+export function recordDungeon(playerId: string) {
+  return update(playerId, ({ life }) => {
+    life.dungeons++;
+  });
+}
+
+export function codex(playerId: string): CodexView {
+  const { life } = get(playerId);
+  return { hunted: { ...life.hunted }, found: [...life.found] };
 }
 
 /** A world boss beaten: everyone who hit it counts one; the hardest hitter also counts a top. */
@@ -525,13 +579,16 @@ export function gearBonus(playerId: string) {
   const { bag, gearOn } = get(playerId);
   const weapon = bag.find((gear) => gear.id === gearOn.weapon);
   const charm = bag.find((gear) => gear.id === gearOn.charm);
-  return { power: weapon?.bonus ?? 1, hp: charm?.bonus ?? 1, weaponRarity: weapon?.rarity ?? -1 };
+  return { power: weapon ? gearPower(weapon) : 1, hp: charm ? gearPower(charm) : 1, weaponRarity: weapon?.rarity ?? -1, weaponPlus: weapon?.plus ?? 0 };
 }
 
 /** Puts a find in the bag; with the bag full it is sold instead, for the gold returned (the caller adds it). */
 export function addGear(playerId: string, found: Omit<Gear, "id">): { gear: Gear; sold?: number } {
   const record = get(playerId);
   const gear = { ...found, id: `g${record.nextGear++}` };
+  if (!record.life.found.includes(gear.name)) {
+    record.life.found.push(gear.name);
+  }
   if (record.bag.length >= BAG_SIZE) {
     return { gear, sold: sellPrice(gear) };
   }
@@ -625,4 +682,31 @@ export function leaderboards(): Leaderboards {
   ) as Leaderboards;
   boards = { at: now, value };
   return value;
+}
+
+/**
+ * One try at the next enhancement step, paid for by the caller (the cost is returned for that).
+ * "max" and "missing" cost nothing; "failed" from +7 up takes the piece one step back.
+ */
+export function enhanceGear(playerId: string, gearId: string, gold: number) {
+  const gear = get(playerId).bag.find((item) => item.id === gearId);
+  if (!gear) {
+    return { result: "missing" as const };
+  }
+  const plus = gear.plus ?? 0;
+  if (plus >= MAX_PLUS) {
+    return { result: "max" as const, gear };
+  }
+  const cost = enhanceCost(gear);
+  if (gold < cost) {
+    return { result: "poor" as const, gear, cost };
+  }
+  const worked = Math.random() < enhanceChance(gear);
+  if (worked) {
+    gear.plus = plus + 1;
+  } else if (plus >= ENHANCE_RISKY_FROM) {
+    gear.plus = plus - 1;
+  }
+  scheduleSave();
+  return { result: worked ? ("done" as const) : ("failed" as const), gear, cost, before: plus };
 }

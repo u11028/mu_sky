@@ -45,6 +45,8 @@
 
     <div id="safe-badge" hidden role="status">🛡 เขตปลอดภัย · ต่อสู้ไม่ได้ · เลือดฟื้นเร็ว</div>
 
+    <div id="dungeon-banner" hidden role="status"></div>
+
     <div id="world-boss" hidden role="status">
       <span class="wb-icon">👹</span>
       <span><b id="world-boss-name"></b> บุก<span id="world-boss-region"></span>!</span>
@@ -90,6 +92,7 @@
       <button type="button" data-panel="bag-panel" title="กระเป๋า">🎒<span id="bag-dot" class="menu-dot" hidden></span></button>
       <button type="button" data-panel="shop-panel" title="ร้านค้า">🛒</button>
       <button type="button" data-panel="board-panel" title="อันดับ">🏆</button>
+      <button type="button" data-panel="codex-panel" title="สมุดสะสม">📖</button>
       <button type="button" data-panel="team-panel" title="ทีม">👥<span id="team-dot" hidden></span></button>
       <button type="button" data-panel="settings-panel" title="ตั้งค่า">⚙</button>
       <button id="gm-button" type="button" hidden aria-controls="gm-panel" title="แผง GM">🛡</button>
@@ -139,6 +142,14 @@
       <div class="segmented" id="board-tabs"></div>
       <ol id="board-list"></ol>
       <p class="muted">อัปเดตทุก 30 วินาที · GM ไม่ร่วมจัดอันดับ</p>
+    </aside>
+
+    <aside id="codex-panel" class="side-panel" hidden aria-labelledby="codex-title">
+      <header><h2 id="codex-title">📖 สมุดสะสม <small id="codex-count" class="muted"></small></h2><button type="button" class="panel-close" aria-label="ปิด">✕</button></header>
+      <p class="muted">ล้มมอนแต่ละชนิดให้ครบเพื่อรับทอง (ทั่วไป 10 ตัว · บอส 3 ครั้ง · บอสโลก 1 ครั้ง) · ครบ 10 ชนิดและครบทุกชนิดได้ฉายา</p>
+      <div id="codex-monsters"></div>
+      <h3>🎒 ของที่เคยเจอ</h3>
+      <ul id="codex-gear"></ul>
     </aside>
 
     <aside id="team-panel" class="side-panel" hidden aria-labelledby="team-title">

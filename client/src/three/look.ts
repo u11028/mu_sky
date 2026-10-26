@@ -85,6 +85,17 @@ export const REGION_LOOKS: Record<RegionId, RegionLook> = {
     sunStrength: 3,
     grassCount: 240,
   },
+  dungeon: {
+    ground: "#7d6f8f",
+    groundPatch: "#6a5d7c",
+    shore: "#8a7a6a",
+    sky: "#2a2048",
+    horizon: "#3d3360",
+    sun: "#e2d6ff",
+    sunStrength: 2.3,
+    petals: "#b388ff",
+    grassCount: 0,
+  },
 };
 
 /** How a 2D prop is drawn in 3D. */

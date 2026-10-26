@@ -26,6 +26,10 @@ export type LifeStat =
   /** Monsters and bosses defeated. */
   | "monsters"
   | "bosses"
+  /** Monster kinds completed in the collection book (see codex.ts). */
+  | "codex"
+  /** Dungeon runs cleared. */
+  | "dungeons"
   /** World bosses beaten (hitting them counts), and times dealing the most damage to one. */
   | "worldBosses"
   | "worldBossTop"
@@ -249,6 +253,42 @@ export const TITLES: readonly Title[] = [
     stat: "bosses",
     goal: 6,
     style: { color: "#ffb703", glow: "#fb8500", bubbleFill: "#2b1600", bubbleBorder: "#ffb703", bubbleText: "#ffe8c2" },
+  },
+  {
+    id: "dungeon-diver",
+    name: "ผู้ลงไปแล้วได้กลับขึ้นมา",
+    rarity: "rare",
+    hint: "ผ่านดันเจี้ยน 1 ครั้ง",
+    stat: "dungeons",
+    goal: 1,
+    style: { color: "#cdb8ff", glow: "#5a189a", bubbleFill: "#160a2b", bubbleBorder: "#9d4edd", bubbleText: "#efe4ff" },
+  },
+  {
+    id: "dungeon-king",
+    name: "ราชาใต้พิภพ",
+    rarity: "legendary",
+    hint: "ผ่านดันเจี้ยน 25 ครั้ง",
+    stat: "dungeons",
+    goal: 25,
+    style: { color: "#ffffff", glow: "#7b2cbf", bubbleFill: "#10002b", bubbleBorder: "#c77dff", bubbleText: "#f3e8ff" },
+  },
+  {
+    id: "codex-scribe",
+    name: "นักเขียนตำราอสูร",
+    rarity: "epic",
+    hint: "สะสมมอนสเตอร์ในสมุดสะสมครบ 10 ชนิด",
+    stat: "codex",
+    goal: 10,
+    style: { color: "#b8f2e6", glow: "#2a9d8f", bubbleFill: "#062925", bubbleBorder: "#5ee6d0", bubbleText: "#dcfff8" },
+  },
+  {
+    id: "codex-master",
+    name: "สารานุกรมอสูรเดินได้",
+    rarity: "legendary",
+    hint: "สะสมมอนสเตอร์ในสมุดสะสมครบทุกชนิด",
+    stat: "codex",
+    goal: 23,
+    style: { color: "#ffffff", glow: "#0096c7", bubbleFill: "#001d2b", bubbleBorder: "#48cae4", bubbleText: "#caf0f8" },
   },
   {
     id: "rahu-witness",

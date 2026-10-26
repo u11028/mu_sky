@@ -40,6 +40,9 @@ const NAMES: Record<GearSlot, readonly (readonly string[])[]> = {
   ],
 };
 
+/** Every name a piece of each rarity can have, weapons and charms, for the collection book. */
+export const GEAR_NAMES_BY_RARITY: readonly (readonly string[])[] = RARITIES.map((_, rarity) => [...NAMES.weapon[rarity], ...NAMES.charm[rarity]]);
+
 export interface Gear {
   /** Unique within the player's bag. */
   id: string;
@@ -50,6 +53,8 @@ export interface Gear {
   bonus: number;
   /** The level of the monster it came from: worth more gold when sold. */
   level: number;
+  /** Enhancement, +0 to +10 (see `enhance*` below); missing on gear from before it existed. */
+  plus?: number;
 }
 
 /** Bag space; past it a new find is sold at once. */
@@ -94,12 +99,23 @@ export function rollGear(source: DropSource, level: number): Omit<Gear, "id"> | 
   };
 }
 
-export function sellPrice(gear: Pick<Gear, "rarity" | "level">) {
-  return Math.round(RARITIES[gear.rarity].sell * (1 + gear.level / 10));
+export function sellPrice(gear: Pick<Gear, "rarity" | "level" | "plus">) {
+  // An enhanced piece fetches back some of the gold put into it.
+  return Math.round(RARITIES[gear.rarity].sell * (1 + gear.level / 10) * (1 + (gear.plus ?? 0) * 0.5));
 }
 
-export function gearEffect(gear: Pick<Gear, "slot" | "bonus">) {
-  return `${gear.slot === "weapon" ? "โจมตี" : "เลือดสูงสุด"} ×${gear.bonus}`;
+/** A piece's multiplier with its enhancement: each step makes it 6% stronger (a legendary ×1.35 is ×2.16 at +10). */
+export function gearPower(gear: Pick<Gear, "bonus" | "plus">) {
+  return Math.round(gear.bonus * (1 + (gear.plus ?? 0) * 0.06) * 100) / 100;
+}
+
+export function gearEffect(gear: Pick<Gear, "slot" | "bonus" | "plus">) {
+  return `${gear.slot === "weapon" ? "โจมตี" : "เลือดสูงสุด"} ×${gearPower(gear)}`;
+}
+
+/** The name with its enhancement, "+7 ดาบเทพอัสนีบาต". */
+export function gearName(gear: Pick<Gear, "name" | "plus">) {
+  return gear.plus ? `+${gear.plus} ${gear.name}` : gear.name;
 }
 
 /** The player's bag and what they have on, as the client shows it. */
@@ -118,4 +134,22 @@ export interface LootEvent {
   name: string;
   /** Sold at once because the bag was full. */
   sold?: number;
+}
+
+// ---- Enhancement ----
+
+export const MAX_PLUS = 10;
+/** Chance to reach each step, from +1 to +10. */
+const ENHANCE_CHANCE = [1, 1, 1, 0.8, 0.7, 0.6, 0.45, 0.35, 0.25, 0.15];
+/** From this step on, a failure takes the piece one step back (it never breaks). */
+export const ENHANCE_RISKY_FROM = 7;
+
+/** Gold to try for the next step: dearer with each step, and for rarer pieces. */
+export function enhanceCost(gear: Pick<Gear, "rarity" | "plus">) {
+  return Math.round(40 * 1.55 ** (gear.plus ?? 0) * (1 + gear.rarity * 0.75));
+}
+
+/** The chance (0 to 1) that the next step works. */
+export function enhanceChance(gear: Pick<Gear, "plus">) {
+  return ENHANCE_CHANCE[gear.plus ?? 0] ?? 0;
 }

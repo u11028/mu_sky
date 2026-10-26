@@ -15,10 +15,28 @@ import { ARMOR_TIERS, POTION, type ShopItem, WEAPON_TIERS } from "../../shared/i
 import { type CosmeticKind, MOUNTS, type Wardrobe, WINGS } from "../../shared/cosmetics.ts";
 import type { WorldBossEnd, WorldBossEvent } from "../../shared/monsters.ts";
 import { type BoardId, BOARDS, DAILY_GIFTS, type DailyGiftEvent, type Leaderboards } from "../../shared/rewards.ts";
-import { BAG_SIZE, type BagView, type Gear, gearEffect, type GearSlot, type LootEvent, RARITIES, sellPrice } from "../../shared/loot.ts";
+import {
+  BAG_SIZE,
+  type BagView,
+  GEAR_NAMES_BY_RARITY,
+  enhanceChance,
+  enhanceCost,
+  ENHANCE_RISKY_FROM,
+  type Gear,
+  gearEffect,
+  gearName,
+  type GearSlot,
+  type LootEvent,
+  MAX_PLUS,
+  RARITIES,
+  sellPrice,
+} from "../../shared/loot.ts";
 import { HeroPicker } from "./three/HeroPicker.ts";
 import { startErrorReports } from "./errors.ts";
 import { BUZZ, buzz } from "./haptics.ts";
+import { CODEX_KINDS, CODEX_PAGES, codexGoal, codexReward, type CodexView } from "../../shared/codex.ts";
+import type { DungeonStatus } from "../../shared/dungeon.ts";
+import { monsterKind } from "../../shared/monsters.ts";
 import { ULTIMATES, type UltimateEvent } from "../../shared/ultimates.ts";
 import type { ErrorGroup } from "../../shared/errors.ts";
 import { RESPAWN_MS, type HitEvent, isSkillId, SKILLS, type SkillId, xpToNext } from "../../shared/combat.ts";
@@ -279,7 +297,8 @@ function inviteLink() {
 }
 
 function renderPartyBadge() {
-  partyBadge.hidden = !player.party;
+  // In a dungeon the code is the team's cave, not a room to invite friends to.
+  partyBadge.hidden = !player.party || currentRegion === "dungeon";
   document.querySelector("#party-badge-code")!.textContent = player.party;
 }
 
@@ -403,7 +422,12 @@ function showJoinDialog(message: string) {
   joinDialog.hidden = false;
 }
 
+/** The region being played, for what differs in the dungeon. */
+let currentRegion: RegionId = START_REGION;
+
 function startGame(joined: Room, region: RegionId) {
+  currentRegion = region;
+  dungeonBanner.hidden = true;
   // The world shows the count once its models have loaded.
   online.textContent = "กำลังโหลด...";
   showRegionLoading(region);
@@ -481,6 +505,9 @@ function startGame(joined: Room, region: RegionId) {
     }
   });
   joined.onMessage("bag", renderBag);
+  joined.onMessage("codex", renderCodex);
+  joined.onMessage("dungeon", renderDungeon);
+  joined.onMessage("enhance", (event: { by: string; ok: boolean; plus: number; rarity: number }) => scene?.showEnhance(event));
   joined.onMessage("daily-gift", showDailyGift);
   joined.onMessage("voice-signal", (message: { from: string; data: Parameters<Voice["receive"]>[1] }) => {
     const mate = teamNow.find((member) => member.voice === message.from);
@@ -723,7 +750,12 @@ function renderSelf(self: SelfState) {
   document.querySelector("#stats-gold")!.textContent = `💰 ${self.gold.toLocaleString()}`;
   renderShop(self);
   document.querySelector("#potion-count")!.textContent = String(self.potions);
+  // Gold changed with the bag open: what can be enhanced now changes too.
+  const goldChanged = me?.gold !== self.gold;
   me = self;
+  if (goldChanged && !bagPanel.hidden) {
+    renderBag(bag);
+  }
   rideButton.hidden = self.mount === 0 || self.dead;
   rideButton.classList.toggle("on", self.riding);
   stats.classList.toggle("low", self.hp / self.maxHp <= 0.25);
@@ -1210,6 +1242,80 @@ async function renderBoards() {
   list.replaceChildren(...rows);
 }
 
+// The dungeon's run, in a banner: the countdown, the wave and what is left of it, the clock.
+const dungeonBanner = document.querySelector<HTMLElement>("#dungeon-banner")!;
+let dungeonPhase = "";
+
+function renderDungeon(status: DungeonStatus) {
+  const seconds = Math.ceil(status.ms / 1000);
+  const clock = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+  const text = {
+    countdown: status.wave === 0 ? `⚔ ระลอกแรกมาใน ${seconds}` : `⚔ ระลอก ${status.wave + 1} มาใน ${seconds}`,
+    wave: `⚔ ระลอก ${status.wave}/${status.waves} · เหลือ ${status.left} ตัว · ⏱ ${clock}`,
+    boss: `👑 บอส! · ⏱ ${clock}`,
+    cleared: `🏆 ผ่านดันเจี้ยน! รอบใหม่ใน ${seconds}`,
+    failed: `⌛ หมดเวลา · รอบใหม่ใน ${seconds}`,
+  }[status.phase];
+  dungeonBanner.textContent = text;
+  dungeonBanner.className = status.phase;
+  dungeonBanner.hidden = false;
+  // A new stage of the run: a sound, and a buzz for the big ones.
+  if (status.phase !== dungeonPhase) {
+    dungeonPhase = status.phase;
+    if (status.phase === "boss" || status.phase === "cleared") {
+      play("levelup", 0.5);
+      buzz(BUZZ.worldBoss);
+    }
+  }
+}
+
+// The collection book: kills of each monster kind against its goal, and the gear found by rarity.
+function renderCodex(view: CodexView) {
+  let done = 0;
+  const pages = CODEX_PAGES.map((page) => {
+    const section = document.createElement("section");
+    section.className = "codex-page";
+    const title = document.createElement("h3");
+    title.textContent = page.region ? REGIONS[page.region].name : page.title;
+    const rows = page.kinds.map((id) => {
+      const kind = monsterKind(id)!;
+      const goal = codexGoal(kind);
+      const kills = view.hunted[id] ?? 0;
+      const complete = kills >= goal;
+      done += complete ? 1 : 0;
+      const row = document.createElement("div");
+      row.className = `codex-row${complete ? " complete" : kills === 0 ? " unseen" : ""}`;
+      const name = document.createElement("span");
+      name.textContent = `${kind.world ? "👹" : kind.boss ? "👑" : "•"} ${kills === 0 ? "???" : kind.name} Lv.${kind.level}`;
+      const bar = document.createElement("span");
+      bar.className = "codex-bar";
+      const fill = document.createElement("span");
+      fill.style.width = `${Math.min(100, (kills / goal) * 100)}%`;
+      bar.append(fill);
+      const count = document.createElement("small");
+      count.textContent = complete ? `✓ +${codexReward(kind).toLocaleString()}💰` : `${kills}/${goal}`;
+      row.append(name, bar, count);
+      return row;
+    });
+    section.append(title, ...rows);
+    return section;
+  });
+  document.querySelector("#codex-count")!.textContent = `${done}/${CODEX_KINDS.length}`;
+  document.querySelector("#codex-monsters")!.replaceChildren(...pages);
+  // Gear: how many of each rarity's names have been found.
+  const found = new Set(view.found);
+  const gear = RARITIES.map((rarity, index) => {
+    const names = GEAR_NAMES_BY_RARITY[index];
+    const have = names.filter((name) => found.has(name));
+    const item = document.createElement("li");
+    item.style.setProperty("--rarity", rarity.color);
+    item.textContent = `${rarity.name} ${have.length}/${names.length}`;
+    item.title = have.join(", ");
+    return item;
+  });
+  document.querySelector("#codex-gear")!.replaceChildren(...gear);
+}
+
 // Bag: gear found on monsters.
 const bagPanel = document.querySelector<HTMLElement>("#bag-panel")!;
 const bagDot = document.querySelector<HTMLElement>("#bag-dot")!;
@@ -1221,7 +1327,7 @@ function gearCard(gear: Gear, worn: boolean) {
   card.className = `shop-card gear-card${worn ? " worn" : ""}`;
   card.style.setProperty("--rarity", color);
   const title = document.createElement("strong");
-  title.textContent = `${gear.slot === "weapon" ? "⚔" : "🔮"} ${gear.name}`;
+  title.textContent = `${gear.slot === "weapon" ? "⚔" : "🔮"} ${gearName(gear)}`;
   const info = document.createElement("small");
   info.textContent = `${name} · ${gearEffect(gear)}`;
   const buttons = document.createElement("div");
@@ -1241,7 +1347,23 @@ function gearCard(gear: Gear, worn: boolean) {
   sell.textContent = `ขาย ${sellPrice(gear)}`;
   sell.addEventListener("click", () => room?.send("gear-sell", { id: gear.id }));
   buttons.append(wear, sell);
-  card.append(title, info, buttons);
+  // Enhancing: the price and the chance, and a warning where a miss takes a step back.
+  const enhance = document.createElement("button");
+  enhance.type = "button";
+  enhance.className = "gear-enhance";
+  const plus = gear.plus ?? 0;
+  if (plus >= MAX_PLUS) {
+    enhance.textContent = "⚒ +10 สูงสุดแล้ว";
+    enhance.disabled = true;
+  } else {
+    const chance = Math.round(enhanceChance(gear) * 100);
+    const risky = plus >= ENHANCE_RISKY_FROM - 1 && chance < 100 ? " ⚠" : "";
+    enhance.textContent = `⚒ ตีบวก +${plus + 1} · ${enhanceCost(gear).toLocaleString()}💰 · ${chance}%${risky}`;
+    enhance.title = risky ? "ถ้าพลาดจะลดลง 1 ขั้น (ของไม่แตก)" : "ถ้าพลาดเสียแค่ทอง";
+    enhance.disabled = (me?.gold ?? 0) < enhanceCost(gear);
+    enhance.addEventListener("click", () => room?.send("gear-enhance", { id: gear.id }));
+  }
+  card.append(title, info, buttons, enhance);
   return card;
 }
 
@@ -1310,9 +1432,14 @@ for (const button of menuBar.querySelectorAll<HTMLButtonElement>("[data-panel]")
     }
     if (opening && button.dataset.panel === "bag-panel") {
       bagDot.hidden = true;
+      // Drawn fresh: the gold may have changed since, and with it what can be enhanced.
+      renderBag(bag);
     }
     if (opening && button.dataset.panel === "board-panel") {
       void renderBoards();
+    }
+    if (opening && button.dataset.panel === "codex-panel") {
+      room?.send("codex");
     }
     play("click", 0.3);
   });
