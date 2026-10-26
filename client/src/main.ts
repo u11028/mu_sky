@@ -17,6 +17,8 @@ import type { WorldBossEnd, WorldBossEvent } from "../../shared/monsters.ts";
 import { type BoardId, BOARDS, DAILY_GIFTS, type DailyGiftEvent, type Leaderboards } from "../../shared/rewards.ts";
 import { BAG_SIZE, type BagView, type Gear, gearEffect, type GearSlot, type LootEvent, RARITIES, sellPrice } from "../../shared/loot.ts";
 import { HeroPicker } from "./three/HeroPicker.ts";
+import { startErrorReports } from "./errors.ts";
+import type { ErrorGroup } from "../../shared/errors.ts";
 import { RESPAWN_MS, type HitEvent, isSkillId, SKILLS, type SkillId, xpToNext } from "../../shared/combat.ts";
 import { BAN_DAYS, type GmAction, type GmList, type GmPlayer } from "../../shared/gm.ts";
 
@@ -33,6 +35,8 @@ const chatLog = document.querySelector<HTMLOListElement>("#chat-log")!;
 const chatForm = document.querySelector<HTMLFormElement>("#chat-form")!;
 const chatInput = document.querySelector<HTMLInputElement>("#chat-input")!;
 const online = document.querySelector<HTMLSpanElement>("#online")!;
+// From here on, errors on this page are reported to the GMs, with where the player was.
+startErrorReports(() => `${online.textContent ?? ""} · ${room ? "ในเกม" : "หน้าแรก"}`);
 const questButton = document.querySelector<HTMLButtonElement>("#quest-button")!;
 const questCount = document.querySelector<HTMLSpanElement>("#quest-count")!;
 const questPanel = document.querySelector<HTMLElement>("#quests")!;
@@ -438,6 +442,7 @@ function startGame(joined: Room, region: RegionId) {
     }
   });
   joined.onMessage("gm-list", renderGmList);
+  joined.onMessage("gm-errors", renderGmErrors);
   joined.onMessage("removed", (message: { text: string }) => {
     removedReason = message.text;
   });
@@ -1610,12 +1615,52 @@ gmButton.addEventListener("click", () => {
   gmPanel.hidden = !gmPanel.hidden;
   if (!gmPanel.hidden) {
     sendGm({ action: "list" });
+    sendGm({ action: "errors" });
   }
 });
 document.querySelector("#gm-close")!.addEventListener("click", () => {
   gmPanel.hidden = true;
 });
 document.querySelector("#gm-refresh")!.addEventListener("click", () => sendGm({ action: "list" }));
+document.querySelector("#gm-errors-refresh")!.addEventListener("click", () => sendGm({ action: "errors" }));
+document.querySelector("#gm-errors-clear")!.addEventListener("click", () => sendGm({ action: "errors-clear" }));
+
+/** Errors reported from players' browsers and the server, newest first, each with how often. */
+function renderGmErrors(groups: ErrorGroup[]) {
+  const ago = (at: number) => {
+    const minutes = Math.round((Date.now() - at) / 60_000);
+    return minutes < 1 ? "เมื่อกี้" : minutes < 60 ? `${minutes} นาทีก่อน` : `${Math.round(minutes / 60)} ชม.ก่อน`;
+  };
+  const rows = groups.map((group) => {
+    const item = document.createElement("li");
+    item.className = `gm-error ${group.source}`;
+    const details = document.createElement("details");
+    const summary = document.createElement("summary");
+    summary.textContent = `${group.source === "server" ? "🖥" : "📱"} ×${group.count} · ${group.message}`;
+    const facts = document.createElement("small");
+    facts.textContent = [
+      `ล่าสุด ${ago(group.lastAt)}`,
+      group.where,
+      group.context,
+      group.devices.join(" / "),
+      group.version && `build ${group.version}`,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    const stack = document.createElement("pre");
+    stack.textContent = group.stack;
+    details.append(summary, facts, stack);
+    item.append(details);
+    return item;
+  });
+  if (rows.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "muted";
+    empty.textContent = "ยังไม่มีบัครายงานเข้ามา 🎉";
+    rows.push(empty);
+  }
+  document.querySelector("#gm-errors")!.replaceChildren(...rows);
+}
 document.querySelector("#gm-announce")!.addEventListener("submit", (event) => {
   event.preventDefault();
   const input = document.querySelector<HTMLInputElement>("#gm-announce-text")!;

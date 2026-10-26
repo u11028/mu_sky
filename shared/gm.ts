@@ -12,6 +12,8 @@ export type GmAction =
   | { action: "cosmetics"; target: string }
   | { action: "gear"; target: string }
   | { action: "worldboss"; target: string }
+  | { action: "errors" }
+  | { action: "errors-clear" }
   | { action: "title"; target: string; titleId: string }
   | { action: "goto"; target: string }
   | { action: "summon"; target: string }

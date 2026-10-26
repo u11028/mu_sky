@@ -9,6 +9,7 @@ import * as accounts from "./accounts.ts";
 import { clientAddress } from "./environment.ts";
 import { leaderboards, saveNow, summary } from "./progress.ts";
 import { flushed } from "./store.ts";
+import { report, reportServer } from "./errors.ts";
 import { WorldRoom } from "./WorldRoom.ts";
 
 // colyseus 0.15 is CommonJS: Node's ESM loader only sees its default export.
@@ -46,6 +47,13 @@ app.get("/api/leaderboards", (_req, res) => {
   res.json(leaderboards());
 });
 
+// Errors from players' browsers: grouped for the GM panel (see errors.ts). Bigger than the other
+// requests, for the stack trace.
+app.post("/api/errors", express.json({ limit: "8kb" }), (req, res) => {
+  const result = report(req.body, clientAddress(req));
+  res.status(result === "taken" ? 204 : result === "busy" ? 429 : 400).end();
+});
+
 // Accounts: the reply carries the player id, plus the name and look last used, to fill in the join form.
 app.use("/api", express.json({ limit: "2kb" }));
 app.post("/api/register", (req, res) => {
@@ -69,6 +77,15 @@ gameServer.define(ROOM_NAME, WorldRoom).filterBy(["region", "party"]);
 
 await gameServer.listen(port);
 console.log(`Game server listening on port ${port}`);
+
+// Errors outside any room: noted for the GM panel. A promise nobody waited on is noted and the
+// game goes on; a thrown error leaves the server in an unknown state, so it saves and restarts.
+process.on("unhandledRejection", (reason) => reportServer(reason, "unhandled promise"));
+process.on("uncaughtException", (error) => {
+  reportServer(error, "uncaught");
+  saveNow();
+  void Promise.race([flushed(), new Promise((done) => setTimeout(done, 5000))]).then(() => process.exit(1));
+});
 
 // Keep the last few seconds of progress when the server is stopped (a free host stops it when it
 // sleeps), waiting up to a few seconds for the database to take it.

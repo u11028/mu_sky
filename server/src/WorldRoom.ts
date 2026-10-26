@@ -49,6 +49,7 @@ import { clientAddress } from "./environment.ts";
 import { isGmKey } from "./gmKey.ts";
 import * as teams from "./teams.ts";
 import * as voice from "./voice.ts";
+import { clearErrors, errorGroups, reportServer } from "./errors.ts";
 import { ARMOR_TIERS, isShopItem, monsterGold, POTION, type ShopItem, WEAPON_TIERS } from "../../shared/items.ts";
 import { type CosmeticKind, cosmeticList, isCosmeticKind, MOUNTS, WINGS } from "../../shared/cosmetics.ts";
 import * as progress from "./progress.ts";
@@ -327,6 +328,11 @@ export class WorldRoom extends Room<WorldState> {
     this.onMessage("voice-signal", (client, message: { to?: unknown; data?: unknown }) => this.passVoiceSignal(client, message));
 
     this.setSimulationInterval((deltaMs) => this.update(deltaMs), 50);
+  }
+
+  /** An error in this room's code: noted for the GM panel; the room and everyone in it carry on. */
+  onUncaughtException(error: Error, methodName: string) {
+    reportServer(error, `${methodName} · ${this.regionId}${this.party ? ` · ห้อง ${this.party}` : ""}`);
   }
 
   onDispose() {
@@ -1520,6 +1526,13 @@ export class WorldRoom extends Room<WorldState> {
         }
         return;
       }
+      case "errors":
+        client.send("gm-errors", errorGroups());
+        return;
+      case "errors-clear":
+        clearErrors();
+        client.send("gm-errors", errorGroups());
+        return;
       case "unban":
         if (typeof message.playerId === "string") {
           progress.unban(message.playerId);

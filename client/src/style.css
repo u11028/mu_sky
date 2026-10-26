@@ -2522,3 +2522,45 @@ body.in-safe-zone .skill-button[data-skill="strike"] {
   margin-top: 6px;
   font-size: 12px;
 }
+
+/* ---- Error reports in the GM panel ---- */
+
+#gm-errors {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gm-error {
+  padding: 6px 8px;
+  border-left: 3px solid #ffb703;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+}
+
+.gm-error.server {
+  border-left-color: #ff4d4d;
+}
+
+.gm-error summary {
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.gm-error small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.gm-error pre {
+  max-height: 160px;
+  margin: 6px 0 0;
+  overflow: auto;
+  font-size: 10px;
+  white-space: pre-wrap;
+}
