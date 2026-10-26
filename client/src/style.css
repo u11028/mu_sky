@@ -1394,7 +1394,8 @@ button.secondary {
   #chat {
     top: calc(env(safe-area-inset-top, 0px) + 96px);
     bottom: auto;
-    width: min(240px, 56vw);
+    /* Clear of the minimap and the menu on the right. */
+    width: min(240px, calc(100vw - 192px));
     gap: 4px;
   }
 
@@ -2563,4 +2564,107 @@ body.in-safe-zone .skill-button[data-skill="strike"] {
   overflow: auto;
   font-size: 10px;
   white-space: pre-wrap;
+}
+
+/* ---- Minimap ---- */
+
+#minimap {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 128px);
+  right: calc(env(safe-area-inset-right, 0px) + 66px);
+  z-index: 4;
+  width: 112px;
+  height: 84px;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  opacity: 0.92;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+#minimap[hidden] {
+  display: none;
+}
+
+/* Tapped: the region big in the middle of the screen; another tap puts it back. */
+#minimap.big {
+  top: 50%;
+  right: 50%;
+  z-index: 9;
+  width: min(92vw, 560px);
+  height: min(69vw, 420px);
+  border-width: 3px;
+  opacity: 1;
+  transform: translate(50%, -50%);
+}
+
+/* Short and landscape screens: the menu folds into ☰ at the same height, so the map sits beside it. */
+@media (max-height: 719px) {
+  #minimap {
+    top: calc(env(safe-area-inset-top, 0px) + 112px);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  #minimap {
+    top: calc(env(safe-area-inset-top, 0px) + 128px);
+    right: calc(env(safe-area-inset-right, 0px) + 12px);
+    width: 96px;
+    height: 72px;
+  }
+}
+
+/* ---- Auto-hunting ---- */
+
+#auto-button {
+  position: fixed;
+  left: calc(env(safe-area-inset-left, 0px) + 52px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 240px);
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  background: var(--panel);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  touch-action: none;
+}
+
+#auto-button[hidden] {
+  display: none;
+}
+
+/* On: a turning ring of light, so it is plain at a glance that the hero hunts by itself. */
+#auto-button.on {
+  border-color: #52d273;
+  background: radial-gradient(circle at 35% 30%, #7dff9a, #1f7a3a 75%);
+  animation: auto-glow 1.6s ease-in-out infinite;
+}
+
+@keyframes auto-glow {
+  50% {
+    box-shadow: 0 0 0 4px rgba(82, 210, 115, 0.45), 0 0 18px #52d273;
+  }
+}
+
+@media (min-width: 601px) {
+  #auto-button {
+    left: calc(env(safe-area-inset-left, 0px) + 304px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  #auto-button {
+    left: calc(env(safe-area-inset-left, 0px) + 140px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
+    width: 48px;
+    height: 48px;
+    font-size: 12px;
+  }
 }

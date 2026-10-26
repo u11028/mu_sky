@@ -388,6 +388,10 @@ function showJoinDialog(message: string) {
   partyBadge.hidden = true;
   menuBar.hidden = true;
   rideButton.hidden = true;
+  autoButton.hidden = true;
+  // Back at the start screen: the next game starts by hand.
+  hunting = false;
+  autoButton.classList.remove("on");
   teamFrames.hidden = true;
   document.querySelectorAll<HTMLElement>(".side-panel").forEach((panel) => (panel.hidden = true));
   stopMusic();
@@ -452,6 +456,8 @@ function startGame(joined: Room, region: RegionId) {
   actions.hidden = false;
   joystick.hidden = false;
   menuBar.hidden = false;
+  autoButton.hidden = false;
+  scene.setAuto(hunting);
   joined.onMessage("gold", (message: { amount: number; x: number; y: number }) => scene?.showGold(message.amount, message.x, message.y));
   joined.onMessage("potion", (message: { by: string; amount: number }) => {
     scene?.showPotion(message.by, message.amount);
@@ -800,6 +806,28 @@ joystick.addEventListener("pointermove", (event) => {
 });
 joystick.addEventListener("pointerup", releaseStick);
 joystick.addEventListener("pointercancel", releaseStick);
+
+// ---- Auto-hunting ----
+
+const autoButton = document.querySelector<HTMLButtonElement>("#auto-button")!;
+/** Stays on across regions, until the player turns it off. */
+let hunting = false;
+
+function setHunting(on: boolean) {
+  hunting = on;
+  scene?.setAuto(on);
+  autoButton.classList.toggle("on", on);
+  autoButton.setAttribute("aria-pressed", String(on));
+  showToast({ kind: on ? "quest" : "title", text: on ? "🤖 ล่าอัตโนมัติ: เปิด · ขยับจอยเมื่อไรก็ควบคุมเองได้ทันที" : "🤖 ล่าอัตโนมัติ: ปิด" });
+  play("click", 0.3);
+}
+
+autoButton.addEventListener("click", () => setHunting(!hunting));
+window.addEventListener("keydown", (event) => {
+  if (document.activeElement !== chatInput && !event.repeat && event.code === "KeyZ" && room) {
+    setHunting(!hunting);
+  }
+});
 
 // ---- Shop, potions, team, settings ----
 

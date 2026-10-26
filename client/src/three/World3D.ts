@@ -18,6 +18,9 @@ import { buildScenery, type Occluder, type Scenery } from "./scenery.ts";
 import { loadSounds, play } from "./sfx.ts";
 import { playMusic } from "./music.ts";
 import { BUZZ, buzz } from "../haptics.ts";
+import { AutoQuality, type Level } from "./autoQuality.ts";
+import { type MapView, Minimap } from "./minimap.ts";
+import { AutoHunt } from "./autoHunt.ts";
 import { onSettings, type Settings } from "../settings.ts";
 import { WEAPON_TIERS } from "../../../shared/items.ts";
 import { type LootEvent, RARITIES } from "../../../shared/loot.ts";
@@ -212,6 +215,15 @@ export class World3D {
   private myLevel = 1;
   private frame = 0;
   private frameCount = 0;
+  private autoQuality = new AutoQuality();
+  private minimap?: Minimap;
+  /** Auto-hunting: on or off, and the way it is walking now. */
+  private hunt = new AutoHunt();
+  private hunting = false;
+  private huntDir = { x: 0, y: 0 };
+  /** Which way the local player last walked, for the minimap's arrow. */
+  private heading = { x: 0, y: 1 };
+  private quality: Settings["quality"] = "auto";
   private last = performance.now();
   private disposed = false;
   private resize = new ResizeObserver(() => this.fit());
@@ -266,6 +278,8 @@ export class World3D {
       return;
     }
     this.addSafeZones();
+    this.minimap = new Minimap(document.querySelector<HTMLCanvasElement>("#minimap")!, this.regionId);
+    this.cleanup.push(() => this.minimap?.hide());
     // The shaders of the models new here are built off the main thread where the browser can,
     // instead of freezing the first frame.
     await this.renderer.compileAsync(this.scene, this.camera).catch(() => undefined);
@@ -474,6 +488,29 @@ export class World3D {
         this.effects.dust(actor.root.position, 1.2, "#f4e9d8");
       }
     });
+  }
+
+  /** Who is where, for the minimap. */
+  private mapView(): MapView {
+    const state = this.room.state as any;
+    const myTeam = state.players.get(this.room.sessionId)?.team ?? "";
+    const view: MapView = { mates: [], others: [], monsters: [] };
+    if (this.predicted) {
+      view.me = { ...this.predicted, facingX: this.heading.x, facingY: this.heading.y };
+    }
+    state.players.forEach((player: PlayerState, id: string) => {
+      if (id === this.room.sessionId || player.dead) {
+        return;
+      }
+      (myTeam && player.team === myTeam ? view.mates : view.others).push({ x: player.x, y: player.y });
+    });
+    state.monsters.forEach((monster: MonsterState) => {
+      const kind = monsterKind(monster.kind);
+      if (!monster.dead && kind) {
+        view.monsters.push({ x: monster.x, y: monster.y, boss: Boolean(kind.boss), world: Boolean(kind.world) });
+      }
+    });
+    return view;
   }
 
   /** A soft blue circle on the ground where nobody can fight, its rim slowly breathing. */
@@ -867,7 +904,49 @@ export class World3D {
         y += KEY_DIRECTIONS[code][1];
       }
     }
+    // The player's own hand always wins; auto-hunting walks only when they don't.
+    if (x === 0 && y === 0 && this.hunting) {
+      return { x: Math.round(this.huntDir.x * 20) / 20, y: Math.round(this.huntDir.y * 20) / 20 };
+    }
     return { x: Math.sign(x), y: Math.sign(y) };
+  }
+
+  /** Turns auto-hunting on or off. */
+  setAuto(on: boolean) {
+    this.hunting = on;
+    this.huntDir = { x: 0, y: 0 };
+    this.hunt.reset();
+  }
+
+  /** One decision of the auto-hunter, carried out through the usual messages. */
+  private huntStep(now: number) {
+    const me = this.playerStates.get(this.room.sessionId);
+    if (!me || !this.predicted || me.dead) {
+      this.huntDir = { x: 0, y: 0 };
+      return;
+    }
+    const monsters: { id: string; x: number; y: number; level: number; boss: boolean; world: boolean }[] = [];
+    (this.room.state as any).monsters.forEach((monster: MonsterState, id: string) => {
+      const kind = monsterKind(monster.kind);
+      if (!monster.dead && kind) {
+        monsters.push({ id, x: monster.x, y: monster.y, level: monster.level, boss: Boolean(kind.boss), world: Boolean(kind.world) });
+      }
+    });
+    const hero = this.heroes.get(this.room.sessionId) ?? heroOf(me.skin);
+    const move = this.hunt.decide(
+      { ...this.predicted, hp: me.hp, maxHp: me.maxHp, level: me.level, potions: me.potions, reach: hero.attack.range, monsters },
+      now,
+    );
+    this.huntDir = move.dir;
+    if (move.potion) {
+      this.room.send("potion");
+    }
+    if (move.attack) {
+      this.attack();
+    }
+    if (move.skill) {
+      this.useSkill(move.skill);
+    }
   }
 
   private sendKeyboardDirection() {
@@ -900,6 +979,7 @@ export class World3D {
     }
 
     if (dx !== 0 || dy !== 0) {
+      this.heading = { x: dx, y: dy };
       const { bounds } = REGIONS[this.regionId];
       const next = slide(regionLayout(this.regionId), position.x, position.y, dx, dy);
       position.x = THREE.MathUtils.clamp(next.x, bounds.minX, bounds.maxX);
@@ -941,7 +1021,16 @@ export class World3D {
     const delta = Math.min(100, now - this.last);
     this.last = now;
     this.frameCount++;
+    if (this.quality === "auto") {
+      const level = this.autoQuality.frame(now);
+      if (level) {
+        this.applyLevel(level);
+      }
+    }
 
+    if (this.hunting && this.frameCount % 3 === 0) {
+      this.huntStep(now);
+    }
     this.sendKeyboardDirection();
     const mine = this.players.get(this.room.sessionId);
     if (mine) {
@@ -973,6 +1062,9 @@ export class World3D {
       ring.scale.setScalar(1 + Math.sin(now / 250) * 0.12);
     });
     this.scenery?.animators.forEach((animate) => animate(now, delta));
+    if (this.frameCount % 6 === 0) {
+      this.minimap?.draw(this.mapView(), now);
+    }
     // Six times a second: is the local player in a safe zone? A badge says so, and the attack buttons dim.
     if (this.frameCount % 10 === 0 && this.predicted) {
       const safe = inSafeZone(this.regionId, this.predicted.x, this.predicted.y);
@@ -1079,10 +1171,16 @@ export class World3D {
 
   /** Sharper pictures and shadows on strong devices; fewer pixels and no shadows on weak ones. */
   private applyQuality(options: Settings) {
-    const ratio = { high: Math.min(devicePixelRatio, 2), medium: Math.min(devicePixelRatio, 1.25), low: 1 }[options.quality];
+    this.quality = options.quality;
+    this.applyLevel(options.quality === "auto" ? this.autoQuality.level : options.quality);
+  }
+
+  /** How much to draw: sharpness, and shadows (none on the lowest two). */
+  private applyLevel(level: Level) {
+    const ratio = { high: Math.min(devicePixelRatio, 2), medium: Math.min(devicePixelRatio, 1.25), low: 1, minimal: 0.75 }[level];
     this.renderer.setPixelRatio(ratio);
-    this.sun.castShadow = options.quality !== "low";
-    const size = options.quality === "high" ? 2048 : 1024;
+    this.sun.castShadow = level === "high" || level === "medium";
+    const size = level === "high" ? 2048 : 1024;
     if (this.sun.shadow.mapSize.x !== size) {
       this.sun.shadow.mapSize.setScalar(size);
       this.sun.shadow.map?.dispose();

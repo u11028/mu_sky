@@ -41,6 +41,8 @@
       <span id="online">ออฟไลน์</span>
     </div>
 
+    <canvas id="minimap" hidden aria-label="แผนที่ · แตะเพื่อขยาย"></canvas>
+
     <div id="safe-badge" hidden role="status">🛡 เขตปลอดภัย · ต่อสู้ไม่ได้ · เลือดฟื้นเร็ว</div>
 
     <div id="world-boss" hidden role="status">
@@ -62,6 +64,7 @@
     </div>
 
     <button id="ride-button" type="button" hidden title="ขึ้น/ลงสัตว์ขี่ (V)">🐎</button>
+    <button id="auto-button" type="button" hidden aria-pressed="false" title="ล่าอัตโนมัติ (Z)">AUTO</button>
 
     <div id="joystick" hidden aria-label="จอยสติ๊กเดิน">
       <div class="stick-knob"></div>
@@ -155,12 +158,13 @@
       <div class="setting">
         <span>🖥 กราฟิก</span>
         <div class="segmented" id="set-quality">
+          <button type="button" data-quality="auto">อัตโนมัติ</button>
           <button type="button" data-quality="low">ประหยัด</button>
           <button type="button" data-quality="medium">กลาง</button>
           <button type="button" data-quality="high">สูง</button>
         </div>
       </div>
-      <p class="muted">เครื่องกระตุกให้เลือก "ประหยัด" · ตั้งค่าจำไว้ในเครื่องนี้</p>
+      <p class="muted">"อัตโนมัติ" ลดหรือเพิ่มความละเอียดเองตามความลื่นของเครื่อง · ตั้งค่าจำไว้ในเครื่องนี้</p>
       <button type="button" id="log-out">🚪 ออกจากระบบ</button>
       <p id="log-out-note" class="muted"></p>
     </aside>

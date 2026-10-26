@@ -1,7 +1,8 @@
 // The player's own choices: music, sound and how much the graphics may ask of the device.
 // Kept in this browser only.
 
-export type Quality = "high" | "medium" | "low";
+/** "auto" lets the game find the most the device can draw smoothly (see three/autoQuality.ts). */
+export type Quality = "auto" | "high" | "medium" | "low";
 
 export interface Settings {
   music: boolean;
@@ -15,13 +16,12 @@ export interface Settings {
 const KEY = "mu-sky.settings";
 const listeners = new Set<(settings: Settings) => void>();
 
-/** Phones start one step lower, so the game runs smoothly before anyone touches a setting. */
 const DEFAULTS: Settings = {
   music: true,
   musicVolume: 0.5,
   sound: true,
   vibrate: true,
-  quality: matchMedia("(pointer: coarse)").matches ? "medium" : "high",
+  quality: "auto",
 };
 
 let current: Settings = { ...DEFAULTS };
